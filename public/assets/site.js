@@ -1,4 +1,4 @@
-/* RingaRoofer site.js — menu, tracking (US opt-out model, GPC honored), call-click conversions, live weather alerts, callback form */
+/* RingaRoofer site.js — menu, tracking (US opt-out model, GPC honored), call-click conversions with placement, project matcher */
 (function () {
   "use strict";
   var C = window.RR || {}, d = document;
@@ -39,10 +39,10 @@
   }
   if (C.clarity) (function (c, l, a, r, i) { c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); }; inject("https://www.clarity.ms/tag/" + i); })(window, d, "clarity", "script", C.clarity);
 
-  function conv(kind) {
+  function conv(kind, place) {
     try {
       if (kind === "call") {
-        gtag("event", "phone_call_click", { page_location: location.href });
+        gtag("event", "phone_call_click", { page_location: location.href, placement: place || "" });
         if (C.googleAds && C.googleAdsCallLabel) gtag("event", "conversion", { send_to: C.googleAds + "/" + C.googleAdsCallLabel });
         if (window.fbq) fbq("track", "Contact");
         if (window.uetq && window.uetq.push) window.uetq.push("event", "phone_call_click", {});
@@ -54,7 +54,16 @@
       }
     } catch (e) {}
   }
-  d.addEventListener("click", function (e) { if (e.target.closest("[data-call], a[href^='tel:']")) conv("call"); });
+  d.addEventListener("click", function (e) {
+    var c = e.target.closest("[data-call], a[href^='tel:']");
+    if (c) conv("call", c.getAttribute("data-call"));
+    var t = e.target.closest("[data-tt]");
+    if (t) try {
+      gtag("event", "thumbtack_click", { placement: t.getAttribute("data-tt"), transport_type: "beacon" });
+      if (C.googleAds && C.googleAdsThumbtackLabel) gtag("event", "conversion", { send_to: C.googleAds + "/" + C.googleAdsThumbtackLabel, transport_type: "beacon" });
+      if (window.uetq && window.uetq.push) window.uetq.push("event", "thumbtack_click", {});
+    } catch (x) {}
+  });
 
   // ---------- opt-out ----------
   $$("[data-optout-btn]").forEach(function (b) {
@@ -64,24 +73,106 @@
   });
 
   // ---------- live weather alerts (National Weather Service) ----------
-  var ROOF = /hail|tornado|severe thunderstorm|high wind|extreme wind|wind advisory|hurricane|tropical storm|winter storm|ice storm|blizzard|heavy snow|flash flood/i;
+  var WET = /severe thunderstorm|tornado|hurricane|tropical storm|high wind|extreme wind|wind advisory|winter storm|ice storm|blizzard|heavy snow|hail/i;
   $$("[data-alerts]").forEach(function (box) {
     var area = box.getAttribute("data-alerts"), url = "https://api.weather.gov/alerts/active?status=actual&message_type=alert" + (area !== "US" ? "&area=" + area : "");
     fetch(url, { headers: { Accept: "application/geo+json" } }).then(function (r) { return r.json(); }).then(function (j) {
       var seen = {}, list = [];
       (j.features || []).forEach(function (f) {
-        var p = f.properties || {}; if (!ROOF.test(p.event || "")) return;
+        var p = f.properties || {}; if (!WET.test(p.event || "")) return;
         var key = p.event + (area === "US" ? "" : "|" + (p.areaDesc || "").split(";")[0]); if (seen[key]) { seen[key].n++; return; }
         seen[key] = { e: p.event, a: (p.areaDesc || "").split(";").slice(0, 2).join(", "), n: 1 }; list.push(seen[key]);
       });
       if (!list.length) return;
       box.hidden = false;
-      box.innerHTML = '<p class="al-h"><span class="dot"></span>Live weather alerts ' + (area === "US" ? "nationwide" : "here") + ' that can affect roofs</p><ul>' +
+      box.innerHTML = '<p class="al-h"><span class="dot"></span>Live weather alerts ' + (area === "US" ? "nationwide" : "here") + ' that can hit roofs</p><ul>' +
         list.slice(0, 4).map(function (x) { return "<li><b>" + x.e.replace(/[<>&]/g, "") + "</b>" + (area !== "US" && x.a ? " · " + x.a.replace(/[<>&]/g, "") : x.n > 1 ? " · " + x.n + " active" : "") + "</li>"; }).join("") +
-        '</ul><p class="al-s">Source: National Weather Service. Roofers get busy fast after storms, so call early.</p>';
+        '</ul><p class="al-s">Source: National Weather Service. Roofers book up fast after storms, so call early.</p>';
     }).catch(function () {});
   });
 
+  // ---------- project matcher ----------
+  var mt = $("#match");
+  if (mt) {
+    var mi = $("[data-mimg]", mt), ti = $("[data-mtitle]", mt), tx = $("[data-mtext]", mt), ln = $("[data-mlink]", mt), mc = $(".m-call", mt), mtt = $(".m-tt", mt);
+    $$(".mchip", mt).forEach(function (b) {
+      b.addEventListener("click", function () {
+        $$(".mchip", mt).forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+        b.setAttribute("aria-pressed", "true");
+        ti.textContent = b.getAttribute("data-name"); tx.textContent = b.getAttribute("data-msg");
+        ln.setAttribute("href", b.getAttribute("data-url"));
+        var tt = b.getAttribute("data-route") === "thumbtack"; mc.hidden = tt; mtt.hidden = !tt;
+        mi.style.opacity = ".3"; var im = new Image(); im.onload = function () { mi.src = im.src; mi.style.opacity = "1"; }; im.onerror = function () { mi.style.opacity = "1"; }; im.src = b.getAttribute("data-photo");
+        try { gtag("event", "project_pick", { project: b.getAttribute("data-k") }); } catch (e) {}
+      });
+    });
+  }
+
+  // ---------- broken image fallback ----------
+  d.addEventListener("error", function (e) { var t = e.target; if (t && t.tagName === "IMG") { t.classList.add("img-x"); t.removeAttribute("srcset"); } }, true);
+
+  // header height for sticky sub-nav
+  var hd = $(".hdr"); function hh() { if (hd) d.documentElement.style.setProperty("--hh", hd.offsetHeight + "px"); } hh(); window.addEventListener("resize", hh);
+
+  // ---------- tab bar menu button ----------
+  $$(".tb-menu").forEach(function (b) { b.addEventListener("click", function () { var m = $("#mnav"); if (!m) return; m.hidden = !m.hidden; window.scrollTo({ top: 0, behavior: "smooth" }); }); });
+
+  // ---------- reviews (published, moderated, real callers) ----------
+  function esc2(x) { return String(x || "").replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function stars(n) { n = Math.round(n); return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n); }
+  function mon(m) { if (!m) return ""; var p = m.split("-"); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1] + " " + p[0]; }
+  $$("[data-reviews]").forEach(function (w) {
+    var pest = w.getAttribute("data-pest") || "", lim = w.getAttribute("data-limit") || "3";
+    fetch("/api/reviews?limit=" + lim + (pest ? "&pest=" + encodeURIComponent(pest) : "")).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      if (!j || !j.count) return;
+      $("[data-rv-empty]", w).hidden = true;
+      var s = $("[data-rv-sum]", w); s.hidden = false;
+      s.innerHTML = '<span class="rv-avg">' + j.avg.toFixed(1) + '</span><span><span class="rv-stars" aria-label="' + j.avg + ' out of 5">' + stars(j.avg) + '</span><br><span class="rv-meta">' + j.count + ' review' + (j.count > 1 ? "s" : "") + (pest ? " about " + esc2(pest.toLowerCase()) : "") + ' from callers</span></span>';
+      $("[data-rv-list]", w).innerHTML = j.reviews.map(function (r) {
+        return '<article class="rv"><div class="rv-stars" aria-label="' + r.rating + ' out of 5">' + stars(r.rating) + '</div><h3>' + esc2(r.title || r.pest) + '</h3><p>' + esc2(r.text) + '</p>' +
+          (r.reply ? '<p class="rv-reply"><b>Our reply:</b> ' + esc2(r.reply) + '</p>' : "") +
+          '<p class="rv-meta">' + esc2(r.name) + ' · ' + esc2([r.city, r.state].filter(Boolean).join(", ")) + ' · ' + esc2(r.pest) + (r.month ? " · " + mon(r.month) : "") + (r.verified ? '<span class="rv-ver">✓ Verified caller</span>' : "") + '</p></article>';
+      }).join("");
+    }).catch(function () {});
+  });
+  var rf = $("[data-review-form]");
+  if (rf) {
+    var msg = $("[data-f-msg]", rf), tsBox = $("[data-turnstile]", rf);
+    if (C.turnstileSiteKey && tsBox) { var ts = d.createElement("div"); ts.className = "cf-turnstile"; ts.setAttribute("data-sitekey", C.turnstileSiteKey); tsBox.appendChild(ts); inject("https://challenges.cloudflare.com/turnstile/v0/api.js"); }
+    rf.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(rf), b = {};
+      f.forEach(function (v, k) { b[k] = v; });
+      b.consent = !!rf.consent.checked; b.turnstile = f.get("cf-turnstile-response") || "";
+      if (!b.rating) { msg.className = "f-msg err"; msg.textContent = "Please choose a star rating."; return; }
+      msg.className = "f-msg"; msg.textContent = "Sending…";
+      fetch("/api/reviews", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(function (r) { return r.json(); }).then(function (j) {
+        if (j.ok) { rf.reset(); msg.className = "f-msg ok"; msg.textContent = "Thank you! Your review was received. We check every review against our call records before it appears, usually within a few days."; try { gtag("event", "review_submit", { rating: b.rating }); } catch (x) {} }
+        else { msg.className = "f-msg err"; msg.textContent = j.error || "Something went wrong. Please try again."; }
+      }).catch(function () { msg.className = "f-msg err"; msg.textContent = "Couldn't send. Please check your connection and try again."; });
+    });
+  }
+  var adm = $("[data-review-admin]");
+  if (adm) {
+    var tk = $("[data-adm-token]", adm), out = $("[data-adm-out]", adm);
+    try { tk.value = sessionStorage.getItem("ee_adm") || ""; } catch (x) {}
+    function api(m, body) { return fetch("/api/reviews-admin", { method: m, headers: { authorization: "Bearer " + tk.value, "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined }).then(function (r) { return r.json(); }); }
+    function load() {
+      try { sessionStorage.setItem("ee_adm", tk.value); } catch (x) {}
+      api("GET").then(function (j) {
+        if (j.error) { out.textContent = j.error; return; }
+        out.innerHTML = "<h2>Waiting for review (" + j.pending.length + ")</h2>" + (j.pending.map(function (r) {
+          return '<div class="adm" data-id="' + r.id + '"><b>' + stars(r.rating) + " " + esc2(r.title) + '</b><p>' + esc2(r.text) + '</p><p class="rv-meta">' + esc2(r.name) + " · " + esc2(r.city) + " " + r.state + " · " + esc2(r.pest) + " · call date " + (r.callDate || "?") + " · phone last 4: " + (r.last4 || "?") + " · " + esc2(r.email || "") + '</p>' +
+            '<textarea placeholder="Optional public reply" rows="2"></textarea><div class="row"><label><input type="checkbox" class="ver"> Matched to a call (Verified caller)</label><button class="btn btn-call sm" data-a="approve">Publish</button><button class="btn btn-ghost sm" data-a="reject">Reject (spam/abuse/not a caller)</button></div></div>';
+        }).join("") || "<p>Nothing waiting.</p>") + "<h2>Published</h2>" + j.published.map(function (r) { return '<div class="adm" data-id="' + r.id + '"><b>' + stars(r.rating) + " " + esc2(r.title) + '</b> <span class="rv-meta">' + esc2(r.name) + '</span><div class="row"><button class="btn btn-ghost sm" data-a="unpublish">Unpublish</button></div></div>'; }).join("");
+        $$("[data-a]", out).forEach(function (b) { b.addEventListener("click", function () {
+          var box = b.closest(".adm"), ta = $("textarea", box), ver = $(".ver", box);
+          api("POST", { id: box.getAttribute("data-id"), action: b.getAttribute("data-a"), verified: ver ? ver.checked : false, reply: ta ? ta.value : "" }).then(load);
+        }); });
+      });
+    }
+    $("[data-adm-load]", adm).addEventListener("click", load);
+  }
   // ---------- callback form ----------
   var f = $("#lead-form");
   if (f) {

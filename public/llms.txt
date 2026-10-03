@@ -1,11 +1,13 @@
 # RingaRoofer
 
-> RingaRoofer (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling (855) 635-9281 connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, new roofs, re-roofs and emergency roofing. RingaRoofer does not do roofing work and does not charge homeowners.
+> RingaRoofer (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling (855) 635-9281 connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, roof inspections, storm and hail repair, emergency roofing and tarping, roof replacement, new roofs and re-roofs on shingle, metal, flat, tile, slate and cedar shake roofs. It does not do roofing work and does not charge homeowners.
 
 ## Pages
-- [Need a roofer near you?](https://ringaroofer.com/): Need a roofer near you? One call connects you with a local roofing company for roof repair, leaks, new roofs, re-roofs and fast emergency service. Nationwide.
-- [Roofing services](https://ringaroofer.com/services/): Full service roofing: roof repair, leak repair, emergency roofing, storm and hail repair, roof replacement, new roofs and re-roofs. Call (855) 635-9281.
+- [Need a roofer near you?](https://ringaroofer.com/): Need a roofer near you? Call (855) 635-9281 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.
+- [Roofers near you](https://ringaroofer.com/roofers-near-me/): Looking for roofers near you? One call to (855) 635-9281 connects you with an independent local roofing company for repairs, leaks, inspections, new roofs and re-roofs.
+- [Roofing services](https://ringaroofer.com/services/): Full service roofing: roof repair, leak repair, inspections, emergency roofing, storm and hail repair, roof replacement, new roofs and re-roofs. Call (855) 635-9281.
 - [Roof repair near you, from one call](https://ringaroofer.com/services/roof-repair/): Need roof repair? One call connects you with a local roofing company for shingle, flashing, vent and ridge repairs. Call (855) 635-9281.
+- [Roof inspection from a local roofer](https://ringaroofer.com/services/roof-inspection/): Roof inspection after a storm, before buying or selling, or when the roof is getting older. Call (855) 635-9281 to connect with a local roofer.
 - [Roof leaking? Get a roofer on the phone today](https://ringaroofer.com/services/roof-leak-repair/): Roof leaking? Call (855) 635-9281 to connect with a local roofer for roof leak repair. Stains, drips and leaks during rain, handled fast.
 - [Emergency roof repair, fast](https://ringaroofer.com/services/emergency-roof-repair/): Emergency roof repair when water is coming in or the roof has opened up. Call (855) 635-9281 for fast emergency service from a local roofer.
 - [Emergency roof tarp service](https://ringaroofer.com/services/roof-tarping/): Emergency roof tarping to stop water getting in after a storm or leak. Call (855) 635-9281 to connect with a local roofer.
@@ -72,11 +74,16 @@
 - [Roofers in Wisconsin](https://ringaroofer.com/coverage/wisconsin/): Need a roofer in Wisconsin? Call (855) 635-9281 to connect with a local roofing company for roof repair, leaks, new roofs, re-roofs and emergency service.
 - [Roofers in Wyoming](https://ringaroofer.com/coverage/wyoming/): Need a roofer in Wyoming? Call (855) 635-9281 to connect with a local roofing company for roof repair, leaks, new roofs, re-roofs and emergency service.
 - [Roofers in Washington, D.C.](https://ringaroofer.com/coverage/washington-dc/): Need a roofer in Washington, D.C.? Call (855) 635-9281 to connect with a local roofing company for roof repair, leaks, new roofs, re-roofs and emergency service.
+- [Real roof problems](https://ringaroofer.com/community/): Common roof problems, from ceiling stains and wind-blown shingles to hail and worn-out roofs, and what helps in each.
 - [How it works](https://ringaroofer.com/how-it-works/): How RingaRoofer works: call, describe your roof problem and ZIP code, and we connect you with an independent roofing company serving your area.
-- [Roof Library](https://ringaroofer.com/library/): Plain-English roofing help for homeowners: what to do when the roof leaks, signs you need a new roof, choosing a roofing material and hail checklists.
+- [Roof Library](https://ringaroofer.com/library/): Plain-English roofing help: what to do when the roof leaks, signs you need a new roof, how long roofs last, repair or replace, materials and hail checklists.
 - [Roof leaking? What to do right now](https://ringaroofer.com/library/roof-leaking-what-to-do-now/): A simple plan for the first hour of a roof leak: protect your home, stay safe, document everything and get a roofer on the way.
 - [8 signs you need a new roof](https://ringaroofer.com/library/signs-you-need-a-new-roof/): Curling shingles, bald spots, repeat leaks and more: eight signs it's time to replace your roof, and what to do next.
 - [Shingle, metal, tile or flat? Choosing a roofing material](https://ringaroofer.com/library/choosing-a-roofing-material/): Compare asphalt shingle, metal, tile, slate, cedar shake and flat roofing by lifespan, climate fit and upkeep.
 - [After a hailstorm: a roof checklist](https://ringaroofer.com/library/after-a-hailstorm/): What to check after hail: marks on vents and metal, granules at downspouts, ceiling stains, and when to call a roofer.
+- [How long does a roof last?](https://ringaroofer.com/library/how-long-does-a-roof-last/): Typical lifespans for asphalt shingle, metal, tile, slate, cedar shake and flat roofs, and what shortens or stretches them.
+- [Repair or replace your roof?](https://ringaroofer.com/library/roof-repair-or-replace/): Age, how widespread the problem is, and repeat leaks: how to decide between a roof repair and a new roof.
 - [Request a callback](https://ringaroofer.com/contact/): Call (855) 635-9281 or request a callback. RingaRoofer connects you with an independent roofing company serving your area.
+- [Reviews](https://ringaroofer.com/reviews/): Genuine reviews from homeowners who called RingaRoofer about roof repairs, leaks, storm and hail, inspections and new roofs.
+- [Leave a review](https://ringaroofer.com/reviews/write/): Called RingaRoofer about your roof? Tell other homeowners how it went.
 - [Site map](https://ringaroofer.com/sitemap/): All pages on RingaRoofer.com.
