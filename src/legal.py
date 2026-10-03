@@ -81,7 +81,10 @@ PAGES = [
   body=S("Our commitment", "<p>We want ringaroofer.com to work for everyone and aim to meet WCAG 2.1 AA: keyboard access, readable contrast, text alternatives and clear structure.</p>") + S("Need help?", f"<p>If something doesn't work for you, call <a href='tel:{TEL}'>{PHONE}</a> or email <a href='mailto:{EMAIL}'>{EMAIL}</a> and tell us the page and the problem.</p>")),
 ]
 
-REDIRECTS = """/index.html                                   /                                          301
+REDIRECTS = """/reviews/write/                                /questions/                                301
+/reviews/                                     /questions/                                301
+/review-admin/                                /                                          301
+/index.html                                   /                                          301
 /how-it-works.html                            /how-it-works/                             301
 /faq.html                                     /#faq                                      301
 /about.html                                   /how-it-works/                             301
@@ -123,10 +126,6 @@ HEADERS = """/*
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net https://bat.bing.com https://www.clarity.ms https://*.clarity.ms https://api.trustedform.com https://cert.trustedform.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; frame-src https://challenges.cloudflare.com https://www.googletagmanager.com https://td.doubleclick.net https://www.facebook.com https://*.trustedform.com; form-action 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests
-
-/review-admin/*
-  X-Robots-Tag: noindex, nofollow
-  Cache-Control: no-store
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

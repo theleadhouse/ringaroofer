@@ -1,7 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /review-admin/
 
 User-agent: AhrefsBot
 Disallow: /

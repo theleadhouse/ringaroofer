@@ -1,11 +1,13 @@
 """RingaRoofer v2 static site generator -> ../public  (python3 build.py)
 Photo-led, call-first roofing referral site for Google/Microsoft paid search (inbound calls). Same URLs as v1 so ads, Search Console and links keep working.
-Adds: real photos, app-style mobile bar, roof-problem picker, real moderated reviews, search-style FAQs, roof inspection + 'roofers near me' pages, Thumbtack backup link."""
+Adds: real photos, app-style mobile bar, roof-problem picker, 60 Roof Questions answers (reviews removed), search-style FAQs, roof inspection + 'roofers near me' pages, Thumbtack backup link."""
 import os, re, json, shutil
 from html import escape as esc
 from content import *
 import legal
 import faqs as FQ
+from questions import Q as QS, CATS as QCATS
+QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
 V = "20261003"; UPDATED = "2026-10-03"
@@ -33,6 +35,7 @@ I = {
  "menu": '<path d="M3 6h18M3 12h18M3 18h18"/>', "chev": '<path d="m6 9 6 6 6-6"/>', "book": '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
  "calendar": '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>', "ext": '<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
  "home": '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-6h6v6"/>', "star": '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+ "chat": '<path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-6.4A8 8 0 1 1 21 12z"/>', "help": '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
  "grid": '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
 }
 def ic(n, s=22): return f'<svg class="ic" width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{I[n]}</svg>'
@@ -53,7 +56,7 @@ LOGO = ('<svg class="logo-mark" width="42" height="42" viewBox="0 0 40 40" aria-
         '<path d="M26.5 7.5a6 6 0 0 1 3.5 3.5M28 4.5a9.5 9.5 0 0 1 5.5 5.5" fill="none" stroke="#F26B1D" stroke-width="2" stroke-linecap="round"/></svg>')
 BRANDH = f'{LOGO}<span class="wm"><span>Ringa<em>Roofer</em></span><small>Roofers near you, one call</small></span>'
 NAV = [("Services", "/services/", [(s["name"], f"/services/{s['slug']}/") for s in SERVICES]), ("Roof Types", "/roof-types/", [(t["name"], f"/roof-types/{t['slug']}/") for t in TYPES]),
-       ("Roof Leak?", "/services/roof-leak-repair/", None), ("Coverage", "/coverage/", None), ("Reviews", "/reviews/", None)]
+       ("Roof Leak?", "/services/roof-leak-repair/", None), ("Coverage", "/coverage/", None), ("Roof Questions", "/questions/", None)]
 SOLO = ("/services/roof-leak-repair/",)
 
 def header(active):
@@ -91,13 +94,13 @@ def footer():
    <p><a class="f-phone" href="tel:{TEL}" data-call="footer">{ic("phone",18)} {PHONE}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a></p></div>
   <div><h2>Services</h2><ul>{svc}</ul></div>
   <div><h2>Roof Types</h2><ul>{typ}</ul></div>
-  <div><h2>RingaRoofer</h2><ul><li><a href="/roofers-near-me/">Roofers Near Me</a></li><li><a href="/reviews/">Reviews</a></li><li><a href="/how-it-works/">How It Works</a></li><li><a href="/coverage/">Coverage by State</a></li><li><a href="/community/">Real Roof Problems</a></li><li><a href="/library/">Roof Library</a></li><li><a href="/contact/">Request a Callback</a></li><li><a href="/sitemap/">Site Map</a></li></ul></div>
+  <div><h2>RingaRoofer</h2><ul><li><a href="/roofers-near-me/">Roofers Near Me</a></li><li><a href="/questions/">Roof Questions</a></li><li><a href="/how-it-works/">How It Works</a></li><li><a href="/coverage/">Coverage by State</a></li><li><a href="/community/">Real Roof Problems</a></li><li><a href="/library/">Roof Library</a></li><li><a href="/contact/">Request a Callback</a></li><li><a href="/sitemap/">Site Map</a></li></ul></div>
  </div>
  <p class="disc">{DISCLAIMER}</p>
  <div class="f-legal"><nav aria-label="Legal"><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms of Use</a><a href="/referral-disclosure/">Referral Disclosure</a><a href="/california-privacy/">California Privacy</a><a href="/california-privacy/#opt-out">Do Not Sell or Share My Personal Information</a><a href="/do-not-call/">Do Not Call</a><a href="/accessibility/">Accessibility</a></nav>
  <p>&copy; 2026 RingaRoofer.com</p></div>
 </div></footer>
-<nav class="tabbar" aria-label="Quick actions"><a href="/" class="tb-i">{ic("home",21)}<span>Home</span></a><a href="/services/" class="tb-i">{ic("grid",21)}<span>Services</span></a><a href="tel:{TEL}" class="tb-call" data-call="tabbar" aria-label="Call {PHONE}">{ic("phone",24)}<span>Call</span></a><a href="/reviews/" class="tb-i">{ic("star",21)}<span>Reviews</span></a><button type="button" class="tb-i tb-menu" aria-controls="mnav">{ic("menu",21)}<span>Menu</span></button></nav>'''
+<nav class="tabbar" aria-label="Quick actions"><a href="/" class="tb-i">{ic("home",21)}<span>Home</span></a><a href="/services/" class="tb-i">{ic("grid",21)}<span>Services</span></a><a href="tel:{TEL}" class="tb-call" data-call="tabbar" aria-label="Call {PHONE}">{ic("phone",24)}<span>Call</span></a><a href="/questions/" class="tb-i">{ic("help",21)}<span>Questions</span></a><button type="button" class="tb-i tb-menu" aria-controls="mnav">{ic("menu",21)}<span>Menu</span></button></nav>'''
 
 def crumbs(trail):
     if not trail: return ""
@@ -220,11 +223,12 @@ def story_cards(items=STORIES):
     return '<div class="stories">' + "".join(
         f'<article class="story"><div class="st-img">{pic(ph, 560, 360)}</div><div class="st-body"><p class="tag">Common situation</p><h3>{t}</h3><p>{what}</p><p class="tip"><b>What helps:</b> {tip}</p><a class="more" href="{u}">Get help with this {ic("arrow",16)}</a></div></article>'
         for t, ph, what, tip, u in items) + '</div>'
-def reviews_block(topic="", limit=3, more=True):
-    return (f'<div class="rv-wrap" data-reviews data-pest="{esc(topic)}" data-limit="{limit}">'
-            '<div class="rv-sum" data-rv-sum hidden></div><div class="rv-list" data-rv-list></div>'
-            '<div class="rv-empty" data-rv-empty><p><b>Called us about your roof?</b> Tell other homeowners how it went. We publish genuine reviews from callers, good or bad.</p></div>'
-            '<div class="btns">' + ('<a class="btn btn-ghost" href="/reviews/">All reviews</a>' if more else "") + f'<a class="btn btn-dark" href="/reviews/write/">{ic("star",18)}<span>Leave a review</span></a></div></div>')
+def q_cards(items, more=True):
+    return ('<div class="qlist">' + "".join(f'<a class="qcard" href="/questions/{q[0]}/"><span class="qc-ic">{ic("help",20)}</span><span><b>{q[1]}</b><small>{q[5][:118].rsplit(" ", 1)[0].rstrip(".,:;")}…</small></span>{ic("arrow",16)}</a>' for q in items) + '</div>'
+            + ('<p class="center"><a class="btn btn-ghost" href="/questions/">All 60 roof questions</a></p>' if more else ""))
+def related_q(url, n=4):
+    hits = [q for q in QS if q[4] == url]
+    return (hits + [q for q in QS if q not in hits])[:n]
 def jump(items):
     return '<nav class="jump" aria-label="On this page">' + "".join(f'<a href="#{i}">{t}</a>' for t, i in items) + f'<a class="j-call" href="tel:{TEL}" data-call="jump">{ic("phone",15)} Call</a></nav>'
 def trust():
@@ -268,7 +272,7 @@ home_body = (
  + sec(seasons(), "soft", "Roofing through the year", "Seasonal")
  + sec(pro_strip(), "", "Real roofs, real work", "Photos")
  + sec(story_cards(STORIES[:3]) + '<p class="center"><a class="btn btn-ghost" href="/community/">More real roof problems</a></p>', "soft", "Roof problems homeowners call about", "Sound familiar?", "Typical situations and what helps. These are examples, not reviews.")
- + sec(reviews_block("", 3), "", "Reviews from callers", "Real reviews", "Written by homeowners who called. Every genuine review is published, whatever the rating.", id_="reviews")
+ + sec(q_cards([QBY[k] for k in ("why-is-my-roof-leaking", "repair-or-replace-roof", "signs-you-need-a-new-roof", "how-to-tell-if-hail-hit-roof", "asphalt-shingles-vs-metal", "how-to-find-a-roofer-near-me")]), "", "Roof questions homeowners ask", "Roof Questions", "Straight answers to the questions homeowners search most.", id_="questions")
  + sec(ttbox("home"), "tight soft")
  + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofers in all 50 states", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
  + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq"))
@@ -283,7 +287,7 @@ add(url="/roofers-near-me/", title="Roofers Near Me | Local Roofing Companies ·
     h1="Roofers near you", trail=[("Roofers Near Me", "/roofers-near-me/")], faqs=RNM_FAQ, service="Roofing referral",
     hero=phero("Roofers near you, one call away", "Repairs, leaks, storm and hail, inspections, new roofs and re-roofs. Tell us your ZIP code and we'll connect you with an independent roofing company that serves your area.", [("Roofers Near Me", "/roofers-near-me/")], "roofers-near-me", "aerial", alerts="US"),
     body=sec(trust(), "tight trustsec") + sec(svc_cards(), "", "What local roofers handle", "Services") + sec(steps(), "soft", "How it works", "Simple")
-         + sec(reviews_block("", 3), "", "Reviews from callers", "Real reviews", id_="reviews") + sec(faq_html(RNM_FAQ), "soft", "Questions", "FAQ") + sec(ttbox("roofers-near-me"), "tight"))
+         + sec(q_cards([QBY[k] for k in ("how-to-find-a-roofer-near-me", "questions-to-ask-a-roofer", "how-fast-can-a-roofer-come", "roofer-door-to-door")]), "", "Before you hire", "Roof Questions", id_="questions") + sec(faq_html(RNM_FAQ), "soft", "Questions", "FAQ") + sec(ttbox("roofers-near-me"), "tight"))
 
 # ---------------------------------------------------------------- services
 add(url="/services/", title="Roofing Services: Repair, Leaks, Inspection, Replacement & Emergency | RingaRoofer", desc="Full service roofing: roof repair, leak repair, inspections, emergency roofing, storm and hail repair, roof replacement, new roofs and re-roofs. Call (855) 635-9281.",
@@ -296,12 +300,12 @@ for s in SERVICES:
     rel = [x for x in SERVICES if x is not s][:3]
     gal = [k for k in GAL if k != s["photo"]][(len(s["slug"]) % 5):][:3]
     side = f'<aside class="doc-side"><div class="sticky">{now_box()}</div></aside>'
-    body = (sec(jump([("What to know", "about"), ("Photos", "photos"), ("FAQ", "faq"), ("Reviews", "reviews")]), "jumpsec")
+    body = (sec(jump([("What to know", "about"), ("Photos", "photos"), ("FAQ", "faq"), ("Questions", "questions")]), "jumpsec")
             + sec('<div class="doc">' + "".join(f'<h2>{h}</h2>{b}' for h, b in s["sections"]) + '</div>' + side, "doc-wrap", id_="about")
             + sec('<div class="gal">' + "".join(f'<figure>{pic(k, 600, 440)}<figcaption>{P[k][1]}</figcaption></figure>' for k in gal) + '</div>', "soft", "Real roofs, real problems", "Photos", id_="photos")
             + sec(steps(), "", "How it works", "Simple")
             + sec(faq_html(s["faqs"]), "soft", f'{s["name"]}: common questions', "FAQ", id_="faq")
-            + sec(reviews_block(TOPIC.get(s["slug"], ""), 3), "", f'Reviews from callers about {s["name"].lower()}', "Real reviews", id_="reviews")
+            + sec(q_cards(related_q(u)), "", "Homeowners also ask", "Roof Questions", id_="questions")
             + sec(ttbox(s["slug"] + "-box"), "tight")
             + sec(svc_cards(rel), "soft", "Related roofing services"))
     add(url=u, title=s["title"], desc=s["desc"], h1=s["h1"], trail=[("Services", "/services/"), (s["name"], u)],
@@ -365,38 +369,24 @@ add(url="/contact/", title="Request a Callback From a Roofer | RingaRoofer", des
     hero=lhero("Request a callback", [("Request a Callback", "/contact/")], "The quickest way is to call. Prefer a callback? Fill in the form and a roofing company serving your area will reach out."),
     body=sec(legal.FORM, "soft"))
 
-# ---------------------------------------------------------------- reviews
-ST2 = [c for c, n, r, x, e in STATES if c != "DC"] + ["DC"]
-TOPICS = ["Roof repair", "Roof leak", "Emergency repair or tarp", "Storm or wind", "Hail", "Roof replacement or new roof", "Roof inspection", "Flat roof", "Other roofing"]
-POLICY = ('<div class="doc"><h2>How reviews work here</h2><ul class="ticks"><li><b>Real callers only.</b> Reviews come from homeowners who called our line. We ask for your call date and the last 4 digits of the phone you called from so we can match it to a real call. We never publish those details.</li>'
-          '<li><b>Every genuine review is published</b>, good or bad. We don\'t remove reviews for being negative and we don\'t pay or reward anyone for reviews.</li>'
-          '<li><b>What we don\'t publish:</b> spam, offensive language, other people\'s personal details, or reviews that aren\'t about a roofing job.</li>'
-          '<li><b>"Verified caller"</b> means we matched the review to a call in our records.</li>'
-          '<li>Reviews describe the independent roofing company the caller was connected with, not work done by RingaRoofer.</li></ul></div>')
-add(url="/reviews/", title="Reviews from Homeowners Who Called | RingaRoofer", desc="Genuine reviews from homeowners who called RingaRoofer about roof repairs, leaks, storm and hail, inspections and new roofs.",
-    h1="Reviews", trail=[("Reviews", "/reviews/")], hero=lhero("Reviews from homeowners who called", [("Reviews", "/reviews/")], "Real callers, real experiences. Every genuine review is published, whatever the rating."),
-    body=sec(reviews_block("", 50, more=False)) + sec(POLICY, "soft"))
-t_opts = "".join(f'<option>{p}</option>' for p in TOPICS); st_opts = "".join(f'<option value="{c}">{c}</option>' for c in ST2)
-stars_in = "".join(f'<input type="radio" id="st{n}" name="rating" value="{n}" required><label for="st{n}" title="{n} star{"s" if n > 1 else ""}">★</label>' for n in (5, 4, 3, 2, 1))
-rform = (f'<form class="rvform" data-review-form novalidate><div class="f-row"><label>Your star rating<span class="stars-in" role="radiogroup" aria-label="Star rating">{stars_in}</span></label></div>'
-        '<div class="f-grid2"><label>First name and last initial<input name="name" maxlength="40" autocomplete="given-name" required placeholder="e.g. James R."></label>'
-        '<label>City<input name="city" maxlength="40" autocomplete="address-level2" placeholder="e.g. Dallas"></label>'
-        f'<label>State<select name="state" required><option value="">Choose</option>{st_opts}</select></label>'
-        f'<label>What was the job?<select name="pest" required><option value="">Choose</option>{t_opts}</select></label>'
-        '<label>When did you call?<input name="callDate" type="date"></label>'
-        '<label>Last 4 digits of the phone you called from<input name="last4" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="1234"></label></div>'
-        '<label>Headline<input name="title" maxlength="80" placeholder="e.g. Leak fixed the same week"></label>'
-        '<label>Your review<textarea name="text" rows="6" maxlength="1500" required placeholder="What was the problem, how quickly did a roofer come, and how did it go?"></textarea></label>'
-        '<label>Email (optional, never shown)<input name="email" type="email" maxlength="120" autocomplete="email"></label>'
-        '<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><div data-turnstile></div>'
-        '<label class="chk"><input type="checkbox" name="consent" required> This is my own honest experience, and RingaRoofer may publish my review with my first name, last initial, city and state.</label>'
-        '<button class="btn btn-call xl block" type="submit">Submit my review</button><p class="f-msg" data-f-msg role="status"></p></form>')
-add(url="/reviews/write/", title="Leave a Review | RingaRoofer", desc="Called RingaRoofer about your roof? Tell other homeowners how it went.",
-    h1="Leave a review", trail=[("Reviews", "/reviews/"), ("Leave a review", "/reviews/write/")], hero=lhero("Leave a review", [("Reviews", "/reviews/"), ("Leave a review", "/reviews/write/")], "Takes about two minutes. Your review helps other homeowners."),
-    body=sec(f'<div class="rv-write">{rform}<aside>{POLICY}</aside></div>'))
-add(url="/review-admin/", title="Review moderation | RingaRoofer", desc="Moderation.", h1="Review moderation", noindex=True, trail=[("Review moderation", "/review-admin/")],
-    hero=lhero("Review moderation", [("Review moderation", "/review-admin/")], "Private page. Enter your admin token."),
-    body=sec('<div class="rv-admin" data-review-admin><label>Admin token<input type="password" data-adm-token autocomplete="off"></label><button class="btn btn-dark" data-adm-load>Load</button><div data-adm-out></div></div>'))
+# ---------------------------------------------------------------- roof questions (our editorial answers)
+qhub = "".join(sec(q_cards([q for q in QS if q[2] == k], more=False), "soft" if i % 2 else "", n, None, None, k) for i, (k, n) in enumerate(QCATS))
+qnav = '<nav class="jump qjump" aria-label="Topics">' + "".join(f'<a href="#{k}">{n}</a>' for k, n in QCATS) + '</nav>'
+add(url="/questions/", title="Roof Questions: Straight Answers for Homeowners | RingaRoofer", desc="Answers to the roofing questions homeowners search most: leaks, repair or replace, new roofs, storms and hail, materials, inspections and hiring a roofer.",
+    h1="Roof Questions", trail=[("Roof Questions", "/questions/")], hero=lhero("Roof questions, straight answers", [("Roof Questions", "/questions/")], "60 answers to the questions homeowners search most. Need a roofer now? Call " + PHONE + "."),
+    body=sec(qnav, "jumpsec") + qhub)
+CATN = dict(QCATS)
+for slug, qq, cat, ph, link, short, pts in QS:
+    u = f"/questions/{slug}/"
+    same = [q for q in QS if q[2] == cat and q[0] != slug][:4]
+    svc_name = next((x["name"] for x in SERVICES if f'/services/{x["slug"]}/' == link), None) or next((t["name"] for t in TYPES if f'/roof-types/{t["slug"]}/' == link), None) or ("Roofers near you" if link == "/roofers-near-me/" else "Roof Library")
+    body = sec(f'<div class="doc qa"><p class="qa-tag">{ic("chat",16)} Answered by RingaRoofer · {CATN[cat]}</p><p class="qa-short">{short}</p><h2>What to know</h2><ul class="ticks">' + "".join(f"<li>{p}</li>" for p in pts) + '</ul>'
+               f'<div class="qa-cta"><div><b>Need a roofer for this?</b><span>One call connects you with an independent roofing company that serves your area.</span></div>{call_btn("btn btn-call", None, "question-" + slug)}</div>'
+               f'<p class="small">General information for homeowners, not a substitute for a roofer looking at your roof. More on this: <a href="{link}">{svc_name}</a>.</p></div>'
+               f'<aside class="doc-side"><div class="sticky">{now_box()}</div></aside>', "doc-wrap") + sec(q_cards(same, more=True), "soft", f"More about {CATN[cat].lower()}", "Roof Questions")
+    add(url=u, title=f"{qq} | RingaRoofer", desc=(short[:155].rsplit(" ", 1)[0] + "…") if len(short) > 155 else short, h1=qq, trail=[("Roof Questions", "/questions/"), (qq, u)], article=True,
+        faqs=[(qq, short)], ogimg=img(P[ph][0], 1200, 630),
+        hero=phero(qq, short, [("Roof Questions", "/questions/"), (qq, u)], "question-" + slug, ph), body=body)
 
 for lp in legal.PAGES:
     add(url=lp["url"], title=lp["title"] + " | RingaRoofer", desc=lp["desc"], h1=lp["h1"], trail=[(lp["h1"], lp["url"])], legal=True,
@@ -405,7 +395,7 @@ def sitemap_page():
     groups = {"Main": [], "Services": [], "Roof Types": [], "Coverage": [], "Roof Library": [], "Legal": []}
     for p in PAGES:
         if p.get("noindex"): continue
-        u = p["url"]; k = ("Legal" if p.get("legal") else "Services" if u.startswith("/services") else "Roof Types" if u.startswith("/roof-types") else "Coverage" if u.startswith("/coverage") else "Roof Library" if u.startswith("/library") else "Main")
+        u = p["url"]; k = ("Legal" if p.get("legal") else "Services" if u.startswith("/services") else "Roof Types" if u.startswith("/roof-types") else "Coverage" if u.startswith("/coverage") else "Roof Library" if u.startswith(("/library", "/questions")) else "Main")
         groups[k].append(f'<li><a href="{u}">{p["h1"]}</a></li>')
     return sec('<div class="smap">' + "".join(f'<div><h2>{k}</h2><ul>{"".join(v)}</ul></div>' for k, v in groups.items()) + '</div>')
 add(url="/sitemap/", title="Site Map | RingaRoofer", desc="All pages on RingaRoofer.com.", h1="Site map", trail=[("Site Map", "/sitemap/")], hero=lhero("Site map", [("Site Map", "/sitemap/")]), body="__SMAP__")
@@ -440,7 +430,7 @@ def main():
     open(os.path.join(OUT, "404.html"), "w").write(page(nf).replace(f'<link rel="canonical" href="{URL}/404/">', ""))
     open(os.path.join(OUT, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(
         f'<url><loc>{URL}{p["url"]}</loc><lastmod>{UPDATED}</lastmod></url>' for p in PAGES if not p.get("noindex")) + "\n</urlset>\n")
-    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /review-admin/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
+    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
     open(os.path.join(OUT, "llms.txt"), "w").write(f"# {BRAND}\n\n> {BRAND} (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling {PHONE} connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, roof inspections, storm and hail repair, emergency roofing and tarping, roof replacement, new roofs and re-roofs on shingle, metal, flat, tile, slate and cedar shake roofs. It does not do roofing work and does not charge homeowners.\n\n## Pages\n" + "\n".join(f"- [{p['h1']}]({URL}{p['url']}): {p['desc']}" for p in PAGES if not p.get("legal") and not p.get("noindex")) + "\n")
     open(os.path.join(OUT, "google6cdd134560bcda8a.html"), "w").write("google-site-verification: google6cdd134560bcda8a.html")
     open(os.path.join(OUT, "_redirects"), "w").write(legal.REDIRECTS)
