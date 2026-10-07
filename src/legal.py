@@ -130,3 +130,7 @@ HEADERS = """/*
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 """
+
+# --- buyer-approved legal text ---
+import tlh_legal
+tlh_legal.apply(PAGES, domain='ringaroofer.com', email='contact@ringaroofer.com', tt=True, trade='roofing', contractor='roofing contractor', notdo='roof repair, roof inspection, or roof replacement services', request='a roofing service quote or inspection')

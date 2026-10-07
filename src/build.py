@@ -406,7 +406,7 @@ BANNED = ["free", "estimat", "licens", "insur", "bond", "cheap", "low", "afford"
           "skylight", "chimney", "solar", "fascia", "soffit", "best", "certif", "guarant", "septic"]
 ALLOW = {"lowell", "freeze", "freezes", "freezing", "below", "allow", "allowed", "follow", "flow", "yellow", "slow", "shallow", "rather", "separate", "moderate", "accurate",
          "corporate", "generate", "operate", "operated", "operates", "operating", "cooperate"}
-LEGAL_OK = ("warrant", "rate", "insur", "claim", "cost", "save", "financ", "licens", "damage", "deal", "bond", "window", "guarant", "certif")
+LEGAL_OK = ("warrant", "rate", "insur", "claim", "cost", "save", "financ", "licens", "damage", "deal", "bond", "window", "guarant", "certif", "quote", "professional", "wildlife", "pric", "pricing", "price")
 def check(html, where, legal_page=False):
     txt = re.sub(r"<(script|style)[\s\S]*?</\1>", " ", html)
     txt = re.sub(r"<[^>]+>", " ", txt).replace("&amp;", "&").replace(DISCLAIMER, " ")
@@ -433,6 +433,7 @@ def main():
     open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
     open(os.path.join(OUT, "llms.txt"), "w").write(f"# {BRAND}\n\n> {BRAND} (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling {PHONE} connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, roof inspections, storm and hail repair, emergency roofing and tarping, roof replacement, new roofs and re-roofs on shingle, metal, flat, tile, slate and cedar shake roofs. It does not do roofing work and does not charge homeowners.\n\n## Pages\n" + "\n".join(f"- [{p['h1']}]({URL}{p['url']}): {p['desc']}" for p in PAGES if not p.get("legal") and not p.get("noindex")) + "\n")
     open(os.path.join(OUT, "google6cdd134560bcda8a.html"), "w").write("google-site-verification: google6cdd134560bcda8a.html")
+    open(os.path.join(OUT, "BingSiteAuth.xml"), "w").write('<?xml version="1.0"?>\n<users>\n\t<user>143504FD65C9CD8E8439BFD5BD0E4177</user>\n</users>\n')
     open(os.path.join(OUT, "_redirects"), "w").write(legal.REDIRECTS)
     open(os.path.join(OUT, "_headers"), "w").write(legal.HEADERS)
     shutil.copy(os.path.join(ROOT, "favicon.svg"), os.path.join(OUT, "favicon.svg"))
