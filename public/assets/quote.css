@@ -101,3 +101,6 @@ body.lp{margin:0;font:400 17px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe
 .qband{background:#fff;border-top:1px solid #E4E8EE;border-bottom:1px solid #E4E8EE;font-family:var(--f)}
 .qband-in{max-width:1180px;margin:0 auto;padding:22px 16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px 18px;text-align:center}
 .qband-in p{margin:0;font-size:1.1rem;color:#13202E}.qband-call{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--dark);text-decoration:none}
+
+.qf-ttnote{margin:.2rem 0 1rem;font-size:1rem;line-height:1.45;color:#334}
+.qf-secure span a{color:inherit;text-decoration:underline}
