@@ -60,12 +60,22 @@
   f.addEventListener("keydown", function (e) { if (e.key === "Enter" && cur === 1) { e.preventDefault(); if (ready()) show(2); } });
   // ---- phone format + clear errors
   var ph = q("input[name=phone]");
-  ph.addEventListener("input", function () { var p = ph.value.replace(/\D/g, ""); if (p.length === 11 && p[0] === "1") p = p.slice(1); p = p.slice(0, 10);
+  if (ph) ph.addEventListener("input", function () { var p = ph.value.replace(/\D/g, ""); if (p.length === 11 && p[0] === "1") p = p.slice(1); p = p.slice(0, 10);
     ph.value = p.length > 6 ? "(" + p.slice(0, 3) + ") " + p.slice(3, 6) + "-" + p.slice(6) : p.length > 3 ? "(" + p.slice(0, 3) + ") " + p.slice(3) : p; });
   f.addEventListener("input", function (e) { if (e.target.classList) e.target.classList.remove("bad"); var s = e.target.closest(".qf-step"); if (s) { var er = q("[data-err]", s); if (er) er.hidden = true; } });
   // ---- submit
   f.addEventListener("submit", function (e) {
     e.preventDefault(); if (cur !== 2) return;
+    if (cfg.mode === "thumbtack" && cfg.tt) {   // no contact details collected: hand the visitor to our Thumbtack partner page
+      var C0 = window.RR || window.BV || {}, p = { vertical: cfg.vertical, method: "form_to_thumbtack", placement: "quote-form", transport_type: "beacon" };
+      Object.keys(data).forEach(function (k) { if (k !== "homeowner") p[k] = data[k]; });
+      try { if (window.gtag && C0.googleAds && C0.googleAdsFormLabel) gtag("event", "conversion", { send_to: C0.googleAds + "/" + C0.googleAdsFormLabel, transport_type: "beacon" }); } catch (x) {}
+      try { if (window.fbq) { fbq("track", "Lead"); fbq("trackCustom", "ThumbtackClick", { placement: "quote-form" }); } } catch (x) {}
+      track("generate_lead", p);
+      steps.forEach(function (x) { x.hidden = true; }); q(".qf-steps").hidden = true; q("[data-wait]").hidden = false;
+      setTimeout(function () { location.href = cfg.tt; }, 900);
+      return;
+    }
     var nm = q("input[name=full_name]"), em = q("input[name=email]"), ad = q("input[name=address]"), ok = true;
     var parts = nm.value.trim().replace(/\s+/g, " ").split(" ");
     if (parts.length < 2 || parts[0].length < 1 || parts[parts.length - 1].length < 2) { nm.classList.add("bad"); ok = false; }

@@ -10,7 +10,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261007"; UPDATED = "2026-10-07"
+V = "20261007b"; UPDATED = "2026-10-07"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -451,7 +451,7 @@ def main():
     open(os.path.join(OUT, "_headers"), "w").write(legal.HEADERS)
     shutil.copy(os.path.join(ROOT, "favicon.svg"), os.path.join(OUT, "favicon.svg"))
     import quote_funnel, funnel_cfg
-    if not funnel_cfg.PARTNERS: print("WARNING: funnel_cfg.PARTNERS is empty: add your buyer's company name(s) before running ads to /get-a-quote/")
+    if funnel_cfg.MODE == "leads" and not funnel_cfg.PARTNERS: print("WARNING: funnel_cfg.PARTNERS is empty: add your buyer's company name(s) before running ads to /get-a-quote/")
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
     print(f"Built {len(PAGES)} pages")
 

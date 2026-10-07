@@ -22,6 +22,18 @@ LOCK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="curr
 PHONE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>'
 PIN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>'
 
+OLD_STEP3 = '''<fieldset class="qf-step" data-step="2" hidden><legend class="qf-q">{q}</legend>
+ <div class="qf-sum" data-sum></div>
+ <div class="qf-fields"><label>Full name<input class="qf-in" name="full_name" autocomplete="name" placeholder="First and last name"></label>
+ <label>Mobile phone<input class="qf-in" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555"></label>
+ <label>Email<input class="qf-in" name="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
+ <label>Street address <span class="opt">(optional, helps local pros)</span><input class="qf-in" name="address" autocomplete="street-address" placeholder="123 Main St"></label></div>
+ {consent}
+ <button type="submit" class="qf-btn block go" data-tf-element-role="submit">{submit}</button>
+ <p class="qf-err" data-err hidden>Please add your full name, a valid mobile number and email.</p>
+ <p class="qf-secure">{LOCK} Secure · Your details go only to the companies named above.</p></fieldset>
+'''
+
 def consent(c):
     return (f"<p class='qf-consent' data-tf-element-role='consent-language'>By clicking “<span data-tf-element-role='submit-text'>{c['submit']}</span>”, I agree to the "
             "<a href='/terms/' target='_blank' rel='noopener'>Terms</a> and <a href='/privacy/' target='_blank' rel='noopener'>Privacy Policy</a> and give my express written consent for "
@@ -41,6 +53,20 @@ def form_html(c, eager=True):
         (f'<span class="qt-img"><img src="{im}" alt="" width="320" height="220" {"fetchpriority=high" if eager and i < 4 else "loading=lazy"}></span>' if im else f'<span class="qt-ic">{ico}</span>') +
         f'<span class="qt-l">{esc(l)}</span></button>' for i, (v, l, im, ico) in enumerate(s1["opts"]))
     extra = "".join(f'<div class="qf-lbl">{esc(g["q"])}</div>{chips(g["name"], g["opts"], g.get("required", True))}' for g in c["step2_chips"])
+    hp = '<input type="text" name="website" tabindex="-1" autocomplete="off" class="qf-hp" aria-hidden="true">'
+    if c.get("mode") == "thumbtack":
+        step3 = (f'<fieldset class="qf-step" data-step="2" hidden><legend class="qf-q">{esc(c["step3_q"])}</legend>\n <div class="qf-sum" data-sum></div>\n'
+                 f' <p class="qf-ttnote">{c["tt_note"]}</p>\n'
+                 f' <button type="submit" class="qf-btn block go" data-tt="quote-form">{esc(c["submit"])}</button>\n'
+                 f' <p class="qf-secure">{LOCK} <span>Next you&rsquo;ll go to Thumbtack, our partner site, to compare {c["pros"]} near you. Thumbtack&rsquo;s '
+                 "<a href='https://www.thumbtack.com/privacy/' target='_blank' rel='noopener'>Privacy Policy</a> and "
+                 "<a href='https://www.thumbtack.com/terms/' target='_blank' rel='noopener'>Terms</a> apply.</span></p></fieldset>\n")
+        wait = f'<div class="qf-wait" data-wait hidden><span class="qf-spin"></span><h3>Finding {c["pros"]} near you…</h3><p>Opening Thumbtack with {c["trade"]} pros that serve your area.</p></div>'
+        hidden = hp
+    else:
+        step3 = OLD_STEP3.format(q=esc(c["step3_q"]), submit=c["submit"], consent=consent(c), LOCK=LOCK)
+        wait = f'<div class="qf-wait" data-wait hidden><span class="qf-spin"></span><h3>Finding local pros near you…</h3><p>Checking {c["trade"]} companies that serve your ZIP code.</p></div>'
+        hidden = hp + '<input type="hidden" name="xxTrustedFormCertUrl">'
     form = f'''<form class="qf" id="qf" novalidate>
 <div class="qf-steps" aria-hidden="true"><span class="on" data-dot="0">1</span><i></i><span data-dot="1">2</span><i></i><span data-dot="2">3</span></div>
 <fieldset class="qf-step" data-step="0"><legend class="qf-q">{esc(s1["q"])}</legend><div class="qt-grid">{tiles}</div><p class="qf-tap">Tap one to start · takes about 30 seconds</p></fieldset>
@@ -50,19 +76,9 @@ def form_html(c, eager=True):
  <div class="qf-lbl">Do you own this home?</div>{chips("homeowner", [("yes", "Yes, I own it"), ("no", "No")], True)}
  {extra}
  <button type="button" class="qf-btn block" data-next disabled>Continue</button><p class="qf-err" data-err hidden>Please enter a valid ZIP and answer each question.</p></fieldset>
-<fieldset class="qf-step" data-step="2" hidden><legend class="qf-q">{esc(c["step3_q"])}</legend>
- <div class="qf-sum" data-sum></div>
- <div class="qf-fields"><label>Full name<input class="qf-in" name="full_name" autocomplete="name" placeholder="First and last name"></label>
- <label>Mobile phone<input class="qf-in" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555"></label>
- <label>Email<input class="qf-in" name="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
- <label>Street address <span class="opt">(optional, helps local pros)</span><input class="qf-in" name="address" autocomplete="street-address" placeholder="123 Main St"></label></div>
- {consent(c)}
- <button type="submit" class="qf-btn block go" data-tf-element-role="submit">{c["submit"]}</button>
- <p class="qf-err" data-err hidden>Please add your full name, a valid mobile number and email.</p>
- <p class="qf-secure">{LOCK} Secure · Your details go only to the companies named above.</p></fieldset>
-<div class="qf-dq" data-dq hidden><h3>Thanks for checking</h3><p>The {c["trade"]} companies in our network work with homeowners. If you manage the property for an owner, ask them to start the request, or call us at <a href="tel:{c["tel"]}">{c["phone"]}</a>.</p><button type="button" class="qf-link" data-restart>Start over</button></div>
-<div class="qf-wait" data-wait hidden><span class="qf-spin"></span><h3>Finding local pros near you…</h3><p>Checking {c["trade"]} companies that serve your ZIP code.</p></div>
-<input type="text" name="website" tabindex="-1" autocomplete="off" class="qf-hp" aria-hidden="true"><input type="hidden" name="xxTrustedFormCertUrl"></form>'''
+{step3}<div class="qf-dq" data-dq hidden><h3>Thanks for checking</h3><p>The {c["trade"]} companies in our network work with homeowners. If you manage the property for an owner, ask them to start the request, or call us at <a href="tel:{c["tel"]}">{c["phone"]}</a>.</p><button type="button" class="qf-link" data-restart>Start over</button></div>
+{wait}
+{hidden}</form>'''
     return form
 
 def embed(c, check):
@@ -73,14 +89,14 @@ def embed(c, check):
                 f'<div class="qsec-copy"><p class="qsec-k">{c["embed_kicker"]}</p><h2>{c["embed_h2"]}</h2><p>{c["embed_sub"]}</p><ul class="lp-ticks">{pts}</ul>'
                 f'<a class="qsec-call" href="tel:{c["tel"]}" data-call="quote-section">{PHONE}<span>Rather talk now? <b>{c["phone"]}</b></span></a></div>'
                 f'<div class="lp-card">{form_html(c, eager=False)}</div></div>'
-                f'<script type="application/json" id="qf-cfg">{json.dumps({"vertical": c["vertical"], "labels": c["labels"], "trade": c["trade"]})}</script></section><!--/qf-->')
+                f'<script type="application/json" id="qf-cfg">{json.dumps({"vertical": c["vertical"], "labels": c["labels"], "trade": c["trade"], "mode": c.get("mode", "leads"), "tt": c.get("tt", "")})}</script></section><!--/qf-->')
     band = (f'<!--qf--><section class="qband" style="--brand:{c["brand_color"]};--dark:{c["dark"]}"><div class="qband-in"><p><b>{c["band_text"]}</b></p>'
             f'<a class="qf-btn" href="#quote">{c["again"]}</a><a class="qband-call" href="tel:{c["tel"]}" data-call="quote-band">{PHONE} {c["phone"]}</a></div></section><!--/qf-->')
     probe = (sec_html + band).replace(consent(c), " ")
     probe = re.sub(r"(?i)\bquotes?\b", " ", probe)
     check(probe.replace("<!--qf-->", "").replace("<!--/qf-->", ""), "embedded quote section")
     head = f'<link rel="stylesheet" href="/assets/quote.css?v={c["v"]}">'
-    end = TF + f'<script src="/assets/quote.js?v={c["v"]}" defer></script>'
+    end = ("" if c.get("mode") == "thumbtack" else TF) + f'<script src="/assets/quote.js?v={c["v"]}" defer></script>'
     return sec_html, head, end, band
 
 def write(out, c, check):
@@ -96,11 +112,12 @@ def write(out, c, check):
 <script src="/assets/config.js?v={c["v"]}"></script><script src="/assets/site.js?v={c["v"]}" defer></script>{extra}</head>'''
     top = (f'<header class="lp-top"><div class="lp-wrap lp-top-in"><a class="lp-brand" href="/">{c["logo_html"]}</a>'
            f'<a class="lp-call" href="tel:{c["tel"]}" data-call="get-a-quote-top">{PHONE}<span>Rather talk? <b>{c["phone"]}</b></span></a></div></header>')
+    plink = "" if c.get("mode") == "thumbtack" else '<a href="/partners/">Marketing Partners</a>'
     foot = (f'<footer class="lp-foot"><div class="lp-wrap"><p>{c["disclaimer"]}</p><nav><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms</a>'
-            f'<a href="{c["ca"]}">California Privacy</a><a href="{c["ca"]}#opt-out">Do Not Sell or Share My Personal Information</a><a href="/partners/">Marketing Partners</a>'
+            f'<a href="{c["ca"]}">California Privacy</a><a href="{c["ca"]}#opt-out">Do Not Sell or Share My Personal Information</a>{plink}'
             f'<a href="/referral-disclosure/">Referral Disclosure</a></nav><p>&copy; 2026 {c["brand"]}</p></div></footer>')
-    cfgjs = json.dumps({"vertical": c["vertical"], "labels": c["labels"], "trade": c["trade"]})
-    page = (head(c["title"], c["desc"], "index, follow", TF) + '<body class="lp">' + top +
+    cfgjs = json.dumps({"vertical": c["vertical"], "labels": c["labels"], "trade": c["trade"], "mode": c.get("mode", "leads"), "tt": c.get("tt", "")})
+    page = (head(c["title"], c["desc"], "index, follow", "" if c.get("mode") == "thumbtack" else TF) + '<body class="lp">' + top +
             f'<main><section class="lp-hero"><div class="lp-bg"><img src="{c["hero_img"]}" alt="" width="1800" height="1000"></div><div class="lp-wrap lp-hero-in">'
             f'<div class="lp-copy"><p class="lp-kick">{c["kicker"]}</p><h1>{c["h1"]}</h1><p class="lp-sub">{c["sub"]}</p><ul class="lp-ticks">{bullets}</ul></div>'
             f'<div class="lp-card">{form}</div></div></section>'
@@ -126,7 +143,8 @@ def write(out, c, check):
     import shutil
     old = os.path.join(out, "get-matched")
     if os.path.isdir(old): shutil.rmtree(old)
-    for path, html in (("get-a-quote", page), ("get-a-quote/thanks", thanks), ("partners", partners)):
+    pages = (("get-a-quote", page), ("get-a-quote/thanks", thanks)) + ((("partners", partners),) if c.get("mode") != "thumbtack" else ())
+    for path, html in pages:
         d = os.path.join(out, path); os.makedirs(d, exist_ok=True); open(os.path.join(d, "index.html"), "w").write(html)
     for f in ("quote.css", "quote.js", "zip3.json"):
         open(os.path.join(out, "assets", f), "w").write(open(os.path.join(HERE, "qf_assets", f)).read())
