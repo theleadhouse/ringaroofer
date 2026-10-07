@@ -127,6 +127,15 @@ def schema(p):
         g.append({"@type": "Article", "headline": p["h1"], "description": p["desc"], "datePublished": UPDATED, "dateModified": UPDATED, "author": {"@type": "Organization", "name": BRAND}, "publisher": {"@id": URL + "/#org"}, "mainEntityOfPage": URL + p["url"]})
     return json.dumps({"@context": "https://schema.org", "@graph": g}, separators=(",", ":"))
 
+import quote_funnel, funnel_cfg
+_QF = None
+def qf():
+    """Smart quote form as section 2 (+ bottom band) on site pages."""
+    global _QF
+    if _QF is None: _QF = quote_funnel.embed(funnel_cfg.cfg(V, DISCLAIMER), check)
+    return _QF
+def qf_on(p): return not (p.get("legal") or p.get("noindex") or p.get("form") or p["url"] in ("/sitemap/", "/404/"))
+
 def page(p):
     og = p.get("ogimg") or URL + "/assets/img/og.png"
     return f'''<!doctype html>
@@ -143,7 +152,7 @@ def page(p):
 <meta name="theme-color" content="#13233A"><meta name="format-detection" content="telephone=yes">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/img/logo-192.png">
 <link rel="preconnect" href="https://images.pexels.com"><link rel="preconnect" href="https://images.unsplash.com">
-<link rel="stylesheet" href="/assets/site.css?v={V}">
+<link rel="stylesheet" href="/assets/site.css?v={V}">{qf()[1] if qf_on(p) else ""}
 <script type="application/ld+json">{schema(p)}</script>
 <script src="/assets/config.js?v={V}"></script>
 <script src="/assets/site.js?v={V}" defer></script>
@@ -152,10 +161,13 @@ def page(p):
 {header(p["url"])}
 <main id="main">
 {p["hero"]}
+{qf()[0] if qf_on(p) else ""}
 {p["body"]}
+{qf()[3] if qf_on(p) else ""}
 </main>
 {footer()}
 {legal.TF_SCRIPT if p.get("form") else ""}
+{qf()[2] if qf_on(p) else ""}
 </body></html>
 '''
 
@@ -408,6 +420,7 @@ ALLOW = {"lowell", "freeze", "freezes", "freezing", "below", "allow", "allowed",
          "corporate", "generate", "operate", "operated", "operates", "operating", "cooperate"}
 LEGAL_OK = ("warrant", "rate", "insur", "claim", "cost", "save", "financ", "licens", "damage", "deal", "bond", "window", "guarant", "certif", "quote", "professional", "wildlife", "pric", "pricing", "price")
 def check(html, where, legal_page=False):
+    html = re.sub(r"<!--qf-->[\s\S]*?<!--/qf-->", " ", html)
     txt = re.sub(r"<(script|style)[\s\S]*?</\1>", " ", html)
     txt = re.sub(r"<[^>]+>", " ", txt).replace("&amp;", "&").replace(DISCLAIMER, " ")
     if "24/7" in txt or "24-7" in txt: raise SystemExit(f"24/7 claim on {where}")

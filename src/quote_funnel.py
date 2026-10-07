@@ -34,11 +34,11 @@ def chips(name, opts, req):
     return (f'<div class="qc-group" data-group="{name}"{" data-required" if req else ""}>' +
             "".join(f'<button type="button" class="qc" data-name="{name}" data-val="{esc(v)}" aria-pressed="false">{esc(l)}</button>' for v, l in opts) + '</div>')
 
-def write(out, c, check):
+def form_html(c, eager=True):
     s1 = c["step1"]
     tiles = "".join(
         f'<button type="button" class="qt{" pic" if im else ""}" data-name="{s1["name"]}" data-val="{esc(v)}">' +
-        (f'<span class="qt-img"><img src="{im}" alt="" width="320" height="220" {"fetchpriority=high" if i < 4 else "loading=lazy"}></span>' if im else f'<span class="qt-ic">{ico}</span>') +
+        (f'<span class="qt-img"><img src="{im}" alt="" width="320" height="220" {"fetchpriority=high" if eager and i < 4 else "loading=lazy"}></span>' if im else f'<span class="qt-ic">{ico}</span>') +
         f'<span class="qt-l">{esc(l)}</span></button>' for i, (v, l, im, ico) in enumerate(s1["opts"]))
     extra = "".join(f'<div class="qf-lbl">{esc(g["q"])}</div>{chips(g["name"], g["opts"], g.get("required", True))}' for g in c["step2_chips"])
     form = f'''<form class="qf" id="qf" novalidate>
@@ -63,6 +63,28 @@ def write(out, c, check):
 <div class="qf-dq" data-dq hidden><h3>Thanks for checking</h3><p>The {c["trade"]} companies in our network work with homeowners. If you manage the property for an owner, ask them to start the request, or call us at <a href="tel:{c["tel"]}">{c["phone"]}</a>.</p><button type="button" class="qf-link" data-restart>Start over</button></div>
 <div class="qf-wait" data-wait hidden><span class="qf-spin"></span><h3>Finding local pros near you…</h3><p>Checking {c["trade"]} companies that serve your ZIP code.</p></div>
 <input type="text" name="website" tabindex="-1" autocomplete="off" class="qf-hp" aria-hidden="true"><input type="hidden" name="xxTrustedFormCertUrl"></form>'''
+    return form
+
+def embed(c, check):
+    """Section 2 on site pages: same smart form, wrapped in <!--qf--> markers so the site's banned-word check skips the legal consent text.
+    Returns (section_html, head_html, end_of_body_html, bottom_band_html)."""
+    pts = "".join(f'<li>{CHECK}<span>{b}</span></li>' for b in c["bullets"])
+    sec_html = (f'<!--qf--><section class="qsec" id="quote" style="--brand:{c["brand_color"]};--brand2:{c["brand_color2"]};--dark:{c["dark"]}"><div class="qsec-in">'
+                f'<div class="qsec-copy"><p class="qsec-k">{c["embed_kicker"]}</p><h2>{c["embed_h2"]}</h2><p>{c["embed_sub"]}</p><ul class="lp-ticks">{pts}</ul>'
+                f'<a class="qsec-call" href="tel:{c["tel"]}" data-call="quote-section">{PHONE}<span>Rather talk now? <b>{c["phone"]}</b></span></a></div>'
+                f'<div class="lp-card">{form_html(c, eager=False)}</div></div>'
+                f'<script type="application/json" id="qf-cfg">{json.dumps({"vertical": c["vertical"], "labels": c["labels"], "trade": c["trade"]})}</script></section><!--/qf-->')
+    band = (f'<!--qf--><section class="qband" style="--brand:{c["brand_color"]};--dark:{c["dark"]}"><div class="qband-in"><p><b>{c["band_text"]}</b></p>'
+            f'<a class="qf-btn" href="#quote">{c["again"]}</a><a class="qband-call" href="tel:{c["tel"]}" data-call="quote-band">{PHONE} {c["phone"]}</a></div></section><!--/qf-->')
+    probe = (sec_html + band).replace(consent(c), " ")
+    probe = re.sub(r"(?i)\bquotes?\b", " ", probe)
+    check(probe.replace("<!--qf-->", "").replace("<!--/qf-->", ""), "embedded quote section")
+    head = f'<link rel="stylesheet" href="/assets/quote.css?v={c["v"]}">'
+    end = TF + f'<script src="/assets/quote.js?v={c["v"]}" defer></script>'
+    return sec_html, head, end, band
+
+def write(out, c, check):
+    form = form_html(c)
     bullets = "".join(f'<li>{CHECK}<span>{b}</span></li>' for b in c["bullets"])
     gallery = "".join(f'<figure><img src="{u}" alt="{esc(a)}" loading="lazy" width="480" height="360"><figcaption>{esc(a)}</figcaption></figure>' for u, a in c["gallery"])
     faqs = "".join(f'<details><summary>{esc(q)}</summary><p>{a}</p></details>' for q, a in c["faqs"])

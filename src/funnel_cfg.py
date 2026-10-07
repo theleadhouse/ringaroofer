@@ -10,7 +10,7 @@ def cfg(v, disclaimer):
         title="Roofing Quotes From Local Roofers | RingaRoofer", desc="Get roofing quotes from local roofers in about 30 seconds. Roof replacement, repairs and storm or hail repairs for homeowners.",
         kicker="Roof replacement &amp; repair · For homeowners", h1="Get roofing quotes from <em>local roofers</em> in 30 seconds",
         sub="Tap your roof type, add your ZIP, and we'll connect you with roofing companies that serve your area.",
-        bullets=["3 quick taps, no long forms", "Local roofing companies near you", "No obligation to hire anyone"], submit="Get my quote", again="Get my roofing quote",
+        bullets=["3 quick taps, no long forms", "Local roofing companies near you", "No obligation to hire anyone"], submit="Get my quote", embed_kicker="Rather not call?", embed_h2="Get roofing quotes online in 30 seconds", embed_sub="Tap your roof type and add your ZIP. Local roofing companies that serve your area will reach out.", band_text="Rather not call? Get matched with local roofers online.", again="Get my roofing quote",
         hero_img=img(P["roofer2"][0], 1800, 1000),
         step1=dict(name="material", q="What type of roof do you need help with?", opts=[
             ("Asphalt shingle", "Asphalt shingles", pic("shingles2"), ""), ("Metal", "Metal roof", pic("metal"), ""), ("Tile", "Tile roof", pic("tile"), ""),
