@@ -34,7 +34,7 @@
   }
   if (!optedOut && C.microsoftUet) {
     window.uetq = window.uetq || [];
-    var u = inject("https://bat.bing.com/bat.js");
+    var u = inject("https://bat.bing.net/bat.js");
     u.onload = function () { var o = { ti: C.microsoftUet, enableAutoSpaTracking: true }; o.q = window.uetq; window.uetq = new UET(o); window.uetq.push("pageLoad"); };
   }
   if (C.clarity) (function (c, l, a, r, i) { c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); }; inject("https://www.clarity.ms/tag/" + i); })(window, d, "clarity", "script", C.clarity);
