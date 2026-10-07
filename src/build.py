@@ -438,7 +438,7 @@ def main():
     open(os.path.join(OUT, "_headers"), "w").write(legal.HEADERS)
     shutil.copy(os.path.join(ROOT, "favicon.svg"), os.path.join(OUT, "favicon.svg"))
     import quote_funnel, funnel_cfg
-    if not funnel_cfg.PARTNERS: print("WARNING: funnel_cfg.PARTNERS is empty: add your buyer's company name(s) before running ads to /get-matched/")
+    if not funnel_cfg.PARTNERS: print("WARNING: funnel_cfg.PARTNERS is empty: add your buyer's company name(s) before running ads to /get-a-quote/")
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
     print(f"Built {len(PAGES)} pages")
 

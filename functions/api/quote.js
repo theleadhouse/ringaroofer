@@ -1,5 +1,5 @@
 /**
- * POST /api/quote — "Get matched" web-lead funnel (RingaRoofer roofing, BathVisionary bathroom).
+ * POST /api/quote — smart quote form (/get-a-quote/) (RingaRoofer roofing, BathVisionary bathroom).
  * Validates + bot-checks the lead, then sends it to your ping tree and/or email. Configure in Cloudflare Pages →
  * Settings → Variables and Secrets (no code changes needed when the buyer's spec arrives):
  *   QUOTE_POST_URL     ping tree / lead platform POST URL (required to sell leads)
@@ -19,13 +19,13 @@ export async function onRequestPost({ request, env }) {
   if (origin && !ALLOWED.test(origin)) return J({ error: "origin" }, 403);
   let d; try { d = await request.json(); } catch { return J({ error: "bad request" }, 400); }
   if (d.website) return J({ ok: true });                                  // honeypot
-  if ((+d.elapsed_ms || 0) < 6000) return J({ error: "too fast" }, 400);  // humans need > 6s for 8 steps
+  if ((+d.elapsed_ms || 0) < 4000) return J({ error: "too fast" }, 400);  // humans need > 4s for 3 steps
   const phone = S(d.phone).replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
   if (!/^[2-9]\d{2}[2-9]\d{6}$/.test(phone) || /^(\d)\1{9}$/.test(phone)) return J({ error: "phone" }, 400);
   if (!/^\d{5}$/.test(S(d.zip))) return J({ error: "zip" }, 400);
   if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(S(d.email))) return J({ error: "email" }, 400);
   if (d.consent !== "yes") return J({ error: "consent" }, 400);
-  if (!S(d.first_name) || !S(d.last_name) || !S(d.address)) return J({ error: "missing" }, 400);
+  if (!S(d.first_name) || !S(d.last_name)) return J({ error: "missing" }, 400);
   const host = new URL(request.url).hostname.replace(/^www\./, "");
   const lead = {
     vertical: S(d.vertical, 20), source_site: host, first_name: S(d.first_name, 60), last_name: S(d.last_name, 60), phone, email: S(d.email).toLowerCase(),
