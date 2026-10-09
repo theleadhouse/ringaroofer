@@ -455,4 +455,6 @@ def main():
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
     print(f"Built {len(PAGES)} pages")
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    main()
+    import ai_visibility; ai_visibility.apply(OUT)   # AI search visibility: robots.txt + IndexNow key
