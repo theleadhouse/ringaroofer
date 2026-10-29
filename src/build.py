@@ -86,7 +86,7 @@ DISCLAIMER = ("RingaRoofer.com is a referral service that connects homeowners wi
 def footer():
     svc = "".join(f'<li><a href="/services/{s["slug"]}/">{s["name"]}</a></li>' for s in SERVICES)
     typ = "".join(f'<li><a href="/roof-types/{t["slug"]}/">{t["name"]}</a></li>' for t in TYPES)
-    return f'''<section class="cta-final"><div class="cta-bg">{pic("newroof", 1600, 700)}</div><div class="wrap cta-in"><p class="kick">Roof problem?</p><h2>Talk to a roofer today.</h2><p>One call connects you with an independent roofing company that serves your area: repairs, leaks, new roofs, re-roofs and fast emergency service.</p>
+    return f'''<section class="cta-final"><div class="cta-bg">{pic("newroof", 1600, 700)}</div><div class="wrap cta-in"><p class="kick">Roof problem?</p><h2>Talk to a roofer today.</h2><p>One call connects you with an independent roofing company that serves your area: repairs, leaks, new roofs, re-roofs and emergency service.</p>
 <div class="btns">{call_btn("btn btn-call xl", None, "footer-cta")}<a class="btn btn-ghost light xl" href="/contact/">Request a callback</a></div>{tt_link("footer", cls="tt-text light")}</div></section>
 <footer class="ftr"><div class="wrap">
  <div class="f-grid">
@@ -244,7 +244,7 @@ def related_q(url, n=4):
 def jump(items):
     return '<nav class="jump" aria-label="On this page">' + "".join(f'<a href="#{i}">{t}</a>' for t, i in items) + f'<a class="j-call" href="tel:{TEL}" data-call="jump">{ic("phone",15)} Call</a></nav>'
 def trust():
-    return ('<div class="trust"><div>' + ic("users") + '<span><b>One call, one roofer</b>A company that serves your area</span></div><div>' + ic("siren") + '<span><b>Fast emergency service</b>Leaks and storm-hit roofs</span></div><div>'
+    return ('<div class="trust"><div>' + ic("users") + '<span><b>One call, one roofer</b>A company that serves your area</span></div><div>' + ic("siren") + '<span><b>Emergency service</b>Leaks and storm-hit roofs</span></div><div>'
             + ic("house") + '<span><b>Full service roofing</b>Repairs, new roofs, re-roofs</span></div><div>' + ic("map") + '<span><b>Nationwide</b>Roofers in all 50 states</span></div></div>')
 
 PAGES = []
@@ -269,7 +269,7 @@ home_hero = f'''<section class="hero">
 HOME_FAQS = [
  ("What is RingaRoofer?", "A roofing referral service. When you call, we connect you with an independent roofing company that serves your area. We don't do roofing work ourselves."),
  ("Is there a charge to call?", "No. RingaRoofer doesn't charge homeowners. You agree any work and terms directly with the roofing company."),
- ("What roofing work is covered?", "Full service roofing: repairs, leak repairs, inspections, new roofs, re-roofs and fast emergency service, on asphalt shingle, metal, flat, tile, slate and cedar shake roofs."),
+ ("What roofing work is covered?", "Full service roofing: repairs, leak repairs, inspections, new roofs, re-roofs and emergency service, on asphalt shingle, metal, flat, tile, slate and cedar shake roofs."),
  ("Do you cover my area?", "Our network covers all 50 states. Availability can vary by ZIP code and type of work, so call and we'll check for you."),
  ("Are the photos your jobs?", "No. They're real photographs from Pexels and Unsplash. Ask the roofer you speak with about their own work.")] + FQ.HOME
 home_body = (
@@ -303,7 +303,7 @@ add(url="/roofers-near-me/", title="Roofers Near Me | Local Roofing Companies ·
 
 # ---------------------------------------------------------------- services
 add(url="/services/", title="Roofing Services: Repair, Leaks, Inspection, Replacement & Emergency | RingaRoofer", desc="Full service roofing: roof repair, leak repair, inspections, emergency roofing, storm and hail repair, roof replacement, new roofs and re-roofs. Call (855) 635-9281.",
-    h1="Roofing services", trail=[("Services", "/services/")], hero=phero("Full service roofing, one call away", "Repairs, inspections, new roofs, re-roofs and fast emergency service. Choose your problem below, or just call.", [("Services", "/services/")], "services", "roofer"),
+    h1="Roofing services", trail=[("Services", "/services/")], hero=phero("Full service roofing, one call away", "Repairs, inspections, new roofs, re-roofs and emergency service. Choose your problem below, or just call.", [("Services", "/services/")], "services", "roofer"),
     body=sec(svc_cards()) + sec(steps(), "soft", "How it works") + sec(ttbox("services"), "tight"))
 GAL = ["roofer", "shingles2", "storm2", "hail", "tearoff", "inspect", "aerial", "flat2", "newroof"]
 STORMY = ("storm-roof-repair", "hail-roof-repair", "emergency-roof-repair", "roof-tarping")

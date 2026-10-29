@@ -39,10 +39,10 @@ SERVICES = [
         ("Can a leak be fixed in winter?", "Yes. Roofers repair leaks year-round and use temporary measures when it's too cold for some materials to seal.")],
   group="Roof Leak"),
  dict(slug="emergency-roof-repair", name="Emergency Roof Repair", icon="siren", short="Roof opened up, water pouring in, storm-hit roofs.",
-  title="Emergency Roof Repair | Fast Emergency Roofing Service | RingaRoofer",
-  desc="Emergency roof repair when water is coming in or the roof has opened up. Call (855) 635-9281 for fast emergency service from a local roofer.",
+  title="Emergency Roof Repair | Emergency Roofing Service | RingaRoofer",
+  desc="Emergency roof repair when water is coming in or the roof has opened up. Call (855) 635-9281 for emergency service from a local roofer.",
   h1="Emergency roof repair, fast",
-  lead="Water pouring in, shingles torn off, a tree limb through the roof. Call now for fast emergency service. We'll connect you with a roofing company taking emergency calls in your area.",
+  lead="Water pouring in, shingles torn off, a tree limb through the roof. Call now for emergency service. We'll connect you with a roofing company taking emergency calls in your area.",
   sections=[
    ("When it's an emergency", "<ul class='ticks'><li>Water is coming into the living space and won't stop.</li><li>Part of the roof is open to the sky after wind or a fallen limb.</li><li>The ceiling is bulging or sagging with trapped water.</li><li>More rain or snow is on the way and the roof is already compromised.</li></ul>"),
    ("Safety first", "<ol><li>If the ceiling is sagging, leave the room and keep others out.</li><li>If water is near outlets or light fixtures, switch off power at the breaker only if you can do it from a dry spot.</li><li>Never go up on a roof during or right after a storm.</li><li>If there is fire, a gas smell or an injury, call 911 first.</li></ol>"),

@@ -27,7 +27,7 @@ FORM = f'''<div class="form-wrap"><form class="lead-form" id="lead-form" novalid
 <p class="form-status" role="status" aria-live="polite"></p>
 </form>
 <aside class="panel"><h3>Faster by phone</h3><p>Calls connect straight to a roofing company serving your area.</p><a class="btn btn-call block" href="tel:{TEL}" data-call>Call {PHONE}</a>
-<ul class="ticks sm"><li>Roof repairs and leaks</li><li>New roofs and re-roofs</li><li>Fast emergency service</li></ul></aside></div>'''
+<ul class="ticks sm"><li>Roof repairs and leaks</li><li>New roofs and re-roofs</li><li>Emergency service</li></ul></aside></div>'''
 
 TF_SCRIPT = '''<script>
 (function () {
