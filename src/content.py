@@ -94,7 +94,7 @@ PROBLEMS = [
 ]
 STORIES = [
  ("Ceiling stain after a week of rain", "ceiling", "A brown ring appeared on the bedroom ceiling and grew after every storm.", "Catch the water, photograph it, and call. The leak often starts a few feet from the stain.", "/services/roof-leak-repair/"),
- ("Shingles in the yard after high wind", "oldroof", "After a windy night, shingles were scattered across the lawn and the felt was showing.", "Don't climb up. A roofer can tarp it the same day or next, then plan the repair.", "/services/storm-roof-repair/"),
+ ("Shingles in the yard after high wind", "oldroof", "After a windy night, shingles were scattered across the lawn and the felt was showing.", "Don't climb up. A roofer can often tarp it the same day or next, subject to availability, then plan the repair.", "/services/storm-roof-repair/"),
  ("Hail the size of quarters", "hail", "A short, loud hailstorm. Nothing looked wrong from the ground.", "Write down the date and call for an inspection; hail marks are only visible up close.", "/services/hail-roof-repair/"),
  ("Twenty-five-year-old roof, leaking in two places", "tearoff", "Two new leaks in one season and curling shingles on the south side.", "Time to compare a repair with a full re-roof. A roofer can show you photos of both slopes.", "/services/roof-replacement/"),
  ("Selling the house next spring", "inspect", "The buyer's inspector will look at the roof, so the owners wanted to know first.", "A roof inspection now gives you time to fix small things.", "/services/roof-inspection/"),

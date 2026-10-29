@@ -82,7 +82,7 @@ def header(active):
 DISCLAIMER = ("RingaRoofer.com is a referral service that connects homeowners with independent local roofing contractors. RingaRoofer does not charge homeowners and does not perform roofing work. "
               "All contractors are independent, and RingaRoofer does not warrant or guarantee any work performed. Homeowners should confirm that any contractor they hire holds the credentials and coverage required for the work in their area. "
               "RingaRoofer is a Thumbtack partner and may be paid when you use Thumbtack through links on this site. Thumbtack is a separate company. "
-              "Photos are real photographs from Pexels and Unsplash shown for illustration; they do not show specific companies or jobs. Calls may be recorded for quality purposes.")
+              "Photos are real photographs from Pexels and Unsplash shown for illustration; they do not show specific companies or jobs. Images are for illustration only. Any people shown are actors or models, not actual contractors, technicians or customers. Same-day service is subject to availability and is not guaranteed; timing depends on the provider, your location and local demand. Calls may be recorded for quality purposes.")
 def footer():
     svc = "".join(f'<li><a href="/services/{s["slug"]}/">{s["name"]}</a></li>' for s in SERVICES)
     typ = "".join(f'<li><a href="/roof-types/{t["slug"]}/">{t["name"]}</a></li>' for t in TYPES)
