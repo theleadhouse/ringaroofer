@@ -36,7 +36,8 @@ def ic(n, s=22): return f'<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill
 
 DEF_URG = {"high": ("Call today", "u-high"), "med": ("Call this week", "u-med"), "low": ("Not urgent", "u-low")}
 
-def render(G, pic, call, theme):
+def render(G, pic, call, theme, info=None):
+    info = info or {}
     U = dict(DEF_URG); U.update(G.get("urgency", {}))
     items, n_items = G["items"], len(G["items"])
     def photo(it, w, h):
@@ -106,11 +107,21 @@ def render(G, pic, call, theme):
            f'</ol><div class="gk-toc-cta">{call("gk-toc", "gk-btn gk-btn-cta gk-block")}<button type="button" class="gk-btn gk-btn-ghost gk-block" data-gk-print>Print or download PDF</button></div>'
            f'<p class="gk-legend"><i class="gk-dot u-high"></i>{U["high"][0]} <i class="gk-dot u-med"></i>{U["med"][0]} <i class="gk-dot u-low"></i>{U["low"][0]}</p></div></aside>')
     mj = '<div class="gk-mj"><nav class="gk-mjn" aria-label="Jump to">' + '<a href="#identifier">Identifier</a>' + "".join(f'<a href="#{k}">{t}</a>' for k, t, _ in toc_items) + '</nav></div>'
+    I_ = info
+    inside = "".join(f'<li><span>{num(i + 2)}</span>{it["name"]}</li>' for i, it in enumerate(items))
+    cover_img = pic(I_["cover_photo"], 1400, 900) if (pic and I_.get("cover_photo")) else f'<span class="gk-ph">{ic("home", 90)}</span>'
+    phone_html = f'<p class="gk-pc-call"><small>Call a local pro</small>{I_["phone"]}</p>' if I_.get("phone") else ""
+    pcover = (f'<div class="gk-pcover"><div class="gk-pc-top"><b>{I_.get("brand", "")}</b><span>{I_.get("url", "")}</span></div>'
+              f'<div class="gk-pc-img">{cover_img}</div><p class="gk-k">The homeowner\'s field guide</p><h1>{I_.get("title", "")}</h1><p class="gk-pc-lead">{I_.get("lead", "")}</p>'
+              f'<div class="gk-pc-grid"><div><p class="gk-pc-h">Inside this guide</p><ol class="gk-pc-in">{inside}</ol></div><div class="gk-pc-box">{phone_html}<p>Keep this guide where you can find it fast: by the water heater, in a kitchen drawer or on the fridge.</p></div></div></div>')
+    pback = (f'<div class="gk-pback"><p class="gk-k">When you need help</p><h2>One call to a local pro</h2>{phone_html}<p class="gk-pb-url">{I_.get("url", "")}</p>'
+             f'<p class="gk-pb-note">{I_.get("disclaimer", "")}</p></div>')
     t = theme
     style = (f'--gk-dark:{t["dark"]};--gk-accent:{t["accent"]};--gk-soft:{t["soft"]};--gk-line:{t["line"]};--gk-ink:{t["ink"]};--gk-ink2:{t["ink2"]};'
              f'--gk-muted:{t["muted"]};--gk-cta:{t["cta"]};--gk-cta2:{t.get("cta2", t["cta"])};--gk-ctaink:{t.get("ctaink", "#fff")};--gk-warm:{t["warm"]};--gk-bg:{t["bg"]};--gk-hi:{t.get("hi", t["accent"])};--gk-pop:{t.get("pop", t["accent"])}')
-    return (f'<style>{CSS}</style><div class="gk" style="{style}">{finder}{mj}<section class="gk-bk"><div class="gk-wrap gk-layout">{toc}<div class="gk-main">'
-            f'{sig}{"".join(chs)}{cmp}{tips}{faq}</div></div></section></div><script>{JS}</script>')
+    pstyle = f'@media print{{@page{{@bottom-left{{content:"{I_.get("brand", "")} \\00b7  {I_.get("phone", "") or I_.get("url", "")}";font:600 8.5pt system-ui,sans-serif;color:#667}}@bottom-right{{content:counter(page);font:700 8.5pt system-ui,sans-serif;color:#667}}}}@page:first{{@bottom-left{{content:none}}@bottom-right{{content:none}}}}}}'
+    return (f'<style>{CSS}{pstyle}</style><div class="gk" style="{style}">{pcover}{finder}{mj}<section class="gk-bk"><div class="gk-wrap gk-layout">{toc}<div class="gk-main">'
+            f'{sig}{"".join(chs)}{cmp}{tips}{faq}{pback}</div></div></section></div><script>{JS}</script>')
 
 def faq_schema(G): return G["faq"]
 
@@ -118,7 +129,9 @@ JS = r'''(function(){var g=document.querySelector(".gk");if(!g)return;
 var l=g.querySelectorAll(".gk-toc a[href^='#']"),m={};l.forEach(function(a){m[a.getAttribute("href").slice(1)]=a});
 if("IntersectionObserver" in window){var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){l.forEach(function(a){a.classList.remove("on")});var a=m[e.target.id];if(a)a.classList.add("on")}})},{rootMargin:"-30% 0px -60% 0px"});g.querySelectorAll(".gk-ch[id]").forEach(function(s){o.observe(s)})}
 var c=g.querySelectorAll(".gk-chip"),t=g.querySelectorAll(".gk-tile");c.forEach(function(b){b.addEventListener("click",function(){c.forEach(function(x){x.classList.remove("on");x.setAttribute("aria-pressed","false")});b.classList.add("on");b.setAttribute("aria-pressed","true");var r=b.getAttribute("data-f");t.forEach(function(e){e.hidden=!(r==="all"||(" "+e.getAttribute("data-f")+" ").indexOf(" "+r+" ")>-1)})})});
-var p=g.querySelector("[data-gk-print]");if(p)p.addEventListener("click",function(){g.querySelectorAll("details").forEach(function(d){d.open=true});window.print()});
+function prep(){g.querySelectorAll("details").forEach(function(d){d.open=true});var im=[].slice.call(document.querySelectorAll("main img"));im.forEach(function(i){i.loading="eager";if(i.dataset.src)i.src=i.dataset.src});return Promise.all(im.map(function(i){return i.complete&&i.naturalWidth?1:new Promise(function(r){i.addEventListener("load",r,{once:true});i.addEventListener("error",r,{once:true});setTimeout(r,6000)})}))}
+window.addEventListener("beforeprint",function(){g.querySelectorAll("details").forEach(function(d){d.open=true})});
+g.querySelectorAll("[data-gk-print]").forEach(function(p){p.addEventListener("click",function(){var t=p.textContent;p.textContent="Preparing pages…";prep().then(function(){p.textContent=t;window.print()})})});
 var f=g.querySelector("[data-gkq]"),out=g.querySelector("[data-gkq-out]"),d=JSON.parse((document.getElementById("gk-data")||{}).textContent||"{}");if(!f)return;
 f.addEventListener("submit",function(e){e.preventDefault();var pk=[].map.call(f.querySelectorAll("input:checked"),function(i){return i.value});if(!pk.length){out.innerHTML="<p class=gk-empty>Pick at least one answer.</p>";return}
 var s=Object.keys(d).map(function(k){var n=0;pk.forEach(function(v){if(d[k].t.indexOf(v)>-1)n++});return[k,n]}).filter(function(x){return x[1]>0}).sort(function(a,b){return b[1]-a[1]});
@@ -236,5 +249,49 @@ CSS = r'''
 @media(max-width:560px){.gk-ch{padding:20px 16px;border-radius:16px}.gk-num{font-size:32px;min-width:42px}.gk-ch-h{flex-wrap:wrap;gap:10px 14px}.gk-ch-h .gk-urg{margin-left:0}
  .gk-tips,.gk-stats{grid-template-columns:1fr}.gk-cta .gk-btns,.gk-cta .gk-btn{width:100%}.gk-unsure{padding:22px 18px}.gk-sign{flex-direction:column;align-items:flex-start;gap:4px}
  .gk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gk-lk th,.gk-lk td{padding:9px 8px;font-size:13.5px}.gk-lk tbody th{font-size:10.5px}}
-@media print{.gk-toc,.gk-mj,.gk-fd,.gk-cta,.gk-pn,.gk-unsure{display:none!important}.gk-layout{display:block}.gk-ch{break-inside:avoid;box-shadow:none;margin-bottom:18px}}
+.gk-pcover,.gk-pback{display:none}
+@media print{
+ @page{size:letter;margin:.55in .6in .7in}
+ html,body{background:#fff!important;padding:0!important;margin:0!important}
+ body.guidepage>*:not(main),body.guidepage main>*:not(.gk):not(style):not(script){display:none!important}
+ .gk{font-size:11pt;color:#111}
+ .gk *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none!important;animation:none!important;transition:none!important}
+ .gk-fd,.gk-mj,.gk-toc,.gk-pn,.gk-btns,.gk-faq summary i{display:none!important}
+ .gk-cta{display:block;margin-top:14px;padding:12px 16px;break-inside:avoid}.gk-cta p{font-size:11pt}
+ .gk-bk{padding:0;background:#fff}.gk-wrap{padding:0;max-width:none}.gk-layout{display:block}.gk-main{display:block}
+ .gk-pcover{display:flex;flex-direction:column;min-height:9.6in;break-after:page}
+ .gk-pc-top{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--gk-dark);padding-bottom:10px;margin-bottom:18px}
+ .gk-pc-top b{font-size:17pt;color:var(--gk-dark);letter-spacing:-.02em}.gk-pc-top span{font-size:10pt;color:var(--gk-muted)}
+ .gk-pc-img img,.gk-pc-img .gk-ph{width:100%;height:3.9in;object-fit:cover;border-radius:10px;display:block}
+ .gk-pcover .gk-k{margin:22px 0 6px}.gk-pcover h1{font-size:34pt;line-height:1.02;margin:0 0 10px;color:var(--gk-dark);letter-spacing:-.03em}
+ .gk-pc-lead{font-size:13pt;color:var(--gk-ink2);margin:0 0 18px;max-width:6in}
+ .gk-pc-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:22px;margin-top:auto}
+ .gk-pc-h{font-weight:800;font-size:9pt;letter-spacing:.14em;text-transform:uppercase;color:var(--gk-muted);margin:0 0 8px}
+ .gk-pc-in{list-style:none;margin:0;padding:0;columns:2;column-gap:18px;font-size:10pt}
+ .gk-pc-in li{break-inside:avoid;padding:3px 0;border-bottom:1px solid var(--gk-line);display:flex;gap:8px}.gk-pc-in span{font-weight:800;color:var(--gk-accent)}
+ .gk-pc-box{background:var(--gk-dark);color:#fff;border-radius:12px;padding:16px 18px;font-size:10pt}.gk-pc-box p{margin:8px 0 0;color:rgba(255,255,255,.85)}
+ .gk-pc-call{font-size:22pt;font-weight:800;margin:0!important;color:#fff!important;line-height:1.1}.gk-pc-call small{display:block;font-size:8.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--gk-pop);margin-bottom:4px}
+ .gk-ch{break-before:page;break-inside:auto;border:0;border-radius:0;padding:0;margin:0}
+ .gk-ch#quick-check{break-before:auto}
+ .gk-ch-h{padding-bottom:10px;margin-bottom:14px;border-bottom:2px solid var(--gk-dark)}
+ .gk-num{font-size:30pt;min-width:48px}.gk-ch-h h2{font-size:21pt}
+ .gk-spread{grid-template-columns:1fr 1fr!important;gap:18px}
+ .gk-fig img,.gk-fig .gk-ph{height:3.7in;aspect-ratio:auto}.gk-fig figcaption{font-size:8pt}
+ .gk-stats{grid-template-columns:1fr!important;gap:8px;margin-bottom:12px}.gk-stats div{padding:10px 12px}.gk-stats b{font-size:11pt}
+ .gk-info h3,.gk-box h3{font-size:12pt;margin-bottom:5px}.gk-info p{font-size:11pt;margin-bottom:12px;line-height:1.5}
+ .gk-cols{grid-template-columns:1fr 1fr!important;gap:14px;margin-top:18px}.gk-box{break-inside:avoid}
+ .gk-ticks,.gk-box.now ol{font-size:11pt}.gk-ticks li,.gk-box.now li{margin-bottom:7px}.gk-box{padding:16px 18px}
+ .gk-ch .gk-urg{font-size:8pt;padding:6px 10px}
+ .gk-signs{grid-template-columns:1fr 1fr!important;gap:8px}.gk-sign{padding:11px 12px;font-size:10.5pt;break-inside:avoid}.gk-sign svg{display:none}
+ .gk-intro{font-size:10.5pt;margin:0 0 12px}
+ .gk-tips{grid-template-columns:repeat(3,1fr)!important;gap:8px}.gk-tips>div{padding:10px;break-inside:avoid}.gk-tips p{font-size:9.5pt}.gk-tic{width:30px;height:30px;margin-bottom:6px}
+ .gk-unsure{padding:14px 18px;margin-top:6px}.gk-unsure h2{font-size:15pt}
+ .gk-lk{break-inside:avoid;margin-bottom:10px}.gk-lk th,.gk-lk td{padding:6px 8px;font-size:9.5pt}
+ .gk-faq{columns:2;column-gap:22px}.gk-faq details{break-inside:avoid;border:0;margin-bottom:8px}.gk-faq summary{padding:0 0 3px;font-size:10.5pt}.gk-faq details p{font-size:9.5pt;margin:0}
+ .gk-faq details:not([open])>p{display:block}
+ .gk-pback{display:block;break-before:page;text-align:center;padding-top:2.4in}
+ .gk-pback h2{font-size:28pt;margin:0 0 18px}.gk-pback .gk-pc-call{display:inline-block;background:var(--gk-dark);border-radius:14px;padding:18px 30px;font-size:30pt}
+ .gk-pb-url{font-size:14pt;font-weight:700;color:var(--gk-dark);margin:16px 0 30px}.gk-pb-note{font-size:8.5pt;color:var(--gk-muted);max-width:5.6in;margin:0 auto;line-height:1.5}
+ .gk-foot{font-size:8.5pt}
+}
 '''

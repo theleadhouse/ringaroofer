@@ -414,12 +414,16 @@ add(url="/sitemap/", title="Site Map | RingaRoofer", desc="All pages on RingaRoo
 
 # ---------------------------------------------------------------- compliance (build fails on any hit)
 
+
+
 # ---------------------------------------------------------------- guide (guidekit)
 import guidekit, g_home
 _GD = g_home.ROOF
 add(url='/roof-problem-guide/', title='Roof Problem Guide: Leaks, Hail, Wind, Missing Shingles & Sagging | RingARoofer', desc='Identify roof problems: leaks, wind-lifted and hail-hit shingles, worn shingles, sagging, flashing failure, attic warning signs and moss. Repair or replace, and when to call a roofer.', h1='Roof problem guide', trail=[('Roof Problem Guide', '/roof-problem-guide/')], article=True, faqs=_GD["faq"], cls="guidepage",
     hero=phero('Roof problem guide', 'Spot roof problems from the ground and the attic, see how urgent each one is and what to do now.', [('Roof Problem Guide', '/roof-problem-guide/')], 'roof-guide', 'storm'),
-    body=guidekit.render(_GD, lambda k, w, h: pic(k, w, h), lambda place, cls: call_btn(cls, None, place), {'dark': '#13253F', 'accent': '#1F6FB2', 'soft': '#EAF4FB', 'line': '#DCE5EF', 'ink': '#13202E', 'ink2': '#3E4E60', 'muted': '#66768A', 'cta': '#F26B1D', 'cta2': '#D85A12', 'warm': '#FFF3EC', 'bg': '#F3F7FB', 'hi': '#5DB7E8', 'pop': '#FFB547', 'ctaink': '#fff'}))
+    body=guidekit.render(_GD, lambda k, w, h: pic(k, w, h), lambda place, cls: call_btn(cls, None, place), {'dark': '#13253F', 'accent': '#1F6FB2', 'soft': '#EAF4FB', 'line': '#DCE5EF', 'ink': '#13202E', 'ink2': '#3E4E60', 'muted': '#66768A', 'cta': '#F26B1D', 'cta2': '#D85A12', 'warm': '#FFF3EC', 'bg': '#F3F7FB', 'hi': '#5DB7E8', 'pop': '#FFB547', 'ctaink': '#fff'},
+        dict(brand='RingARoofer', phone=PHONE, url=URL.split("//")[-1].strip("/"), title='Roof problem guide', lead='Spot roof problems from the ground and the attic, see how urgent each one is and what to do now.',
+             cover_photo='storm', disclaimer=_GD.get("footnote", "") + " Your call connects you with an independent local company. We are a referral service and do not perform the work.")))
 # ---------------------------------------------------------------- end guide
 
 BANNED = ["free", "estimat", "licens", "insur", "bond", "cheap", "low", "afford", "discount", "budget", "bargain", "inexpensive", "gutter", "window",

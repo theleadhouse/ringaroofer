@@ -60,7 +60,7 @@ GUTTER = dict(
   dict(k="rust", name="Rust, holes and old gutters", photo="plant", lvl="low", tags=dict(area=["front", "back", "corners"], noticed=["rust", "leak", "growth"], when=["always", "rain"]),
        stats=[("Typical life", "About 20 years"), ("Upgrade", "Seamless gutters, guards")],
        info=[("How to recognize it", "Orange rust spots, pinholes, cracks, or patched sections that keep leaking."),
-             ("When to replace", "When repairs keep piling up, the gutters are pulling away, or you're dealing with water at the foundation.")],
+             ("When to replace", "When repairs keep piling up, the gutters are pulling away, or water is reaching the foundation.")],
        signs=["Rust spots or flaking", "Pinholes or cracks", "Many patched areas", "Paint peeling off gutters"],
        now=["Note where water escapes during rain.", "Photograph damaged sections.", "Ask about seamless gutters and guards."],
        note="Not urgent. Plan a replacement before the next rainy season.", link=("/services/seamless-gutters/", "Seamless gutters")),
