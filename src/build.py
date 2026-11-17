@@ -94,7 +94,7 @@ def footer():
    <p><a class="f-phone" href="tel:{TEL}" data-call="footer">{ic("phone",18)} {PHONE}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a></p></div>
   <div><h2>Services</h2><ul>{svc}</ul></div>
   <div><h2>Roof Types</h2><ul>{typ}</ul></div>
-  <div><h2>RingaRoofer</h2><ul><li><a href="/roofers-near-me/">Roofers Near Me</a></li><li><a href="/questions/">Roof Questions</a></li><li><a href="/how-it-works/">How It Works</a></li><li><a href="/coverage/">Coverage by State</a></li><li><a href="/community/">Real Roof Problems</a></li><li><a href="/library/">Roof Library</a></li><li><a href="/contact/">Request a Callback</a></li><li><a href="/sitemap/">Site Map</a></li></ul></div>
+  <div><h2>RingaRoofer</h2><ul><li><a href="/roofers-near-me/">Roofers Near Me</a></li><li><a href="/questions/">Roof Questions</a></li><li><a href="/roof-problem-guide/">Roof Problem Guide</a></li><li><a href="/how-it-works/">How It Works</a></li><li><a href="/coverage/">Coverage by State</a></li><li><a href="/community/">Real Roof Problems</a></li><li><a href="/library/">Roof Library</a></li><li><a href="/contact/">Request a Callback</a></li><li><a href="/sitemap/">Site Map</a></li></ul></div>
  </div>
  <p class="disc">{DISCLAIMER}</p>
  <div class="f-legal"><nav aria-label="Legal"><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms of Use</a><a href="/referral-disclosure/">Referral Disclosure</a><a href="/california-privacy/">California Privacy</a><a href="/california-privacy/#opt-out">Do Not Sell or Share My Personal Information</a><a href="/do-not-call/">Do Not Call</a><a href="/accessibility/">Accessibility</a></nav>
@@ -413,6 +413,15 @@ def sitemap_page():
 add(url="/sitemap/", title="Site Map | RingaRoofer", desc="All pages on RingaRoofer.com.", h1="Site map", trail=[("Site Map", "/sitemap/")], hero=lhero("Site map", [("Site Map", "/sitemap/")]), body="__SMAP__")
 
 # ---------------------------------------------------------------- compliance (build fails on any hit)
+
+# ---------------------------------------------------------------- guide (guidekit)
+import guidekit, g_home
+_GD = g_home.ROOF
+add(url='/roof-problem-guide/', title='Roof Problem Guide: Leaks, Hail, Wind, Missing Shingles & Sagging | RingARoofer', desc='Identify roof problems: leaks, wind-lifted and hail-hit shingles, worn shingles, sagging, flashing failure, attic warning signs and moss. Repair or replace, and when to call a roofer.', h1='Roof problem guide', trail=[('Roof Problem Guide', '/roof-problem-guide/')], article=True, faqs=_GD["faq"], cls="guidepage",
+    hero=phero('Roof problem guide', 'Spot roof problems from the ground and the attic, see how urgent each one is and what to do now.', [('Roof Problem Guide', '/roof-problem-guide/')], 'roof-guide', 'storm'),
+    body=guidekit.render(_GD, lambda k, w, h: pic(k, w, h), lambda place, cls: call_btn(cls, None, place), {'dark': '#13253F', 'accent': '#1F6FB2', 'soft': '#EAF4FB', 'line': '#DCE5EF', 'ink': '#13202E', 'ink2': '#3E4E60', 'muted': '#66768A', 'cta': '#F26B1D', 'cta2': '#D85A12', 'warm': '#FFF3EC', 'bg': '#F3F7FB', 'hi': '#5DB7E8', 'pop': '#FFB547', 'ctaink': '#fff'}))
+# ---------------------------------------------------------------- end guide
+
 BANNED = ["free", "estimat", "licens", "insur", "bond", "cheap", "low", "afford", "discount", "budget", "bargain", "inexpensive", "gutter", "window",
           "siding", "deal", "save", "saving", "price", "pricing", "cost", "rate", "rates", "quote", "damage", "warrant", "claim", "financ", "professional",
           "skylight", "chimney", "solar", "fascia", "soffit", "best", "certif", "guarant", "septic"]
