@@ -110,7 +110,7 @@ MLPP.update(
  urgency={"high": ("Emergency: call now", "u-high"), "med": ("Call this week", "u-med"), "low": ("Can wait", "u-low")},
  faq_title="Plumbing emergency questions",
 )
-_ph = {"clogged-drain": "drain", "sewer-line": "plunger", "burst-pipe": "frozen", "water-heater": "heater", "toilet": "toilet", "leak": "leak", "water-line": "meter", "gas-smell": "gas"}
+_ph = {"clogged-drain": "drain", "sewer-line": "flooded", "burst-pipe": "frozen", "water-heater": "heater", "toilet": "toilet", "leak": "leak", "water-line": "meter", "gas-smell": "gas"}
 MLPP["items"] = [dict(it, photo=_ph[it["k"]]) for it in DRAIN["items"]]
 MLPP["faq"] = [
   ("What counts as a plumbing emergency?", "A burst pipe, sewage backing up, a leaking water heater tank, no water at all, or a gas smell. These can't wait."),

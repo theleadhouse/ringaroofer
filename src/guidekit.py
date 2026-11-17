@@ -102,11 +102,12 @@ def render(G, pic, call, theme, info=None):
     toc_items = [("quick-check", "Identify by sign", None)] + [(it["k"], it["name"], U[it["lvl"]][1]) for it in items]
     if G.get("compare"): toc_items.append(("compare", "Side by side", None))
     toc_items += [("tips", G["tips_title"], None), ("faq", "Questions", None)]
+    dl = (f'<a class="gk-btn gk-btn-ghost gk-block gk-dl" href="{info["pdf"]}" download data-gk-dl>Download the booklet (PDF)</a>' if info.get("pdf") else "")
     toc = ('<aside class="gk-toc"><div class="gk-toc-in"><p class="gk-toc-t">Contents</p><ol>' +
            "".join(f'<li><a href="#{k}"><span class="n">{num(i + 1)}</span>{t}' + (f'<i class="gk-dot {c}"></i>' if c else "") + '</a></li>' for i, (k, t, c) in enumerate(toc_items)) +
-           f'</ol><div class="gk-toc-cta">{call("gk-toc", "gk-btn gk-btn-cta gk-block")}<button type="button" class="gk-btn gk-btn-ghost gk-block" data-gk-print>Print or download PDF</button></div>'
+           f'</ol><div class="gk-toc-cta">{call("gk-toc", "gk-btn gk-btn-cta gk-block")}{dl}<button type="button" class="gk-btn gk-btn-ghost gk-block" data-gk-print>Print this page</button></div>'
            f'<p class="gk-legend"><i class="gk-dot u-high"></i>{U["high"][0]} <i class="gk-dot u-med"></i>{U["med"][0]} <i class="gk-dot u-low"></i>{U["low"][0]}</p></div></aside>')
-    mj = '<div class="gk-mj"><nav class="gk-mjn" aria-label="Jump to">' + '<a href="#identifier">Identifier</a>' + "".join(f'<a href="#{k}">{t}</a>' for k, t, _ in toc_items) + '</nav></div>'
+    mj = '<div class="gk-mj"><nav class="gk-mjn" aria-label="Jump to">' + (f'<a href="{info["pdf"]}" download>Booklet PDF</a>' if info.get("pdf") else "") + '<a href="#identifier">Identifier</a>' + "".join(f'<a href="#{k}">{t}</a>' for k, t, _ in toc_items) + '</nav></div>'
     I_ = info
     inside = "".join(f'<li><span>{num(i + 2)}</span>{it["name"]}</li>' for i, it in enumerate(items))
     cover_img = pic(I_["cover_photo"], 1400, 900) if (pic and I_.get("cover_photo")) else f'<span class="gk-ph">{ic("home", 90)}</span>'
@@ -195,7 +196,7 @@ CSS = r'''
 .gk-toc a{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;color:var(--gk-ink2);text-decoration:none;font-size:15px;font-weight:600;line-height:1.25}
 .gk-toc a:hover{background:var(--gk-soft);color:var(--gk-dark)}.gk-toc a.on{background:var(--gk-dark);color:#fff}.gk-toc a.on .n{color:var(--gk-pop)}
 .gk-toc .n{font-weight:800;font-size:12px;line-height:1;color:var(--gk-muted);min-width:20px}.gk-toc a .gk-dot{margin-left:auto}
-.gk-toc-cta{display:grid;gap:8px}.gk-toc a.gk-btn{display:inline-flex;justify-content:center;padding:0 16px;font-size:15px;font-weight:800;border-radius:12px}.gk-toc a.gk-btn-cta,.gk-toc a.gk-btn-cta:hover{color:var(--gk-ctaink);background:var(--gk-cta)}.gk-toc a.gk-btn-cta:hover{background:var(--gk-cta2)}
+.gk-toc-cta{display:grid;gap:8px}.gk-toc a.gk-dl{color:var(--gk-dark);background:#fff;border:2px solid var(--gk-dark)}.gk-toc a.gk-btn{display:inline-flex;justify-content:center;padding:0 16px;font-size:15px;font-weight:800;border-radius:12px}.gk-toc a.gk-btn-cta,.gk-toc a.gk-btn-cta:hover{color:var(--gk-ctaink);background:var(--gk-cta)}.gk-toc a.gk-btn-cta:hover{background:var(--gk-cta2)}
 .gk-legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--gk-muted);margin:12px 4px 0}.gk-legend .gk-dot{margin-left:6px}.gk-legend .gk-dot:first-child{margin-left:0}
 .gk-main{display:grid;gap:28px;min-width:0}
 .gk-ch{background:#fff;border:1px solid var(--gk-line);border-radius:20px;padding:30px 32px;scroll-margin-top:96px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
