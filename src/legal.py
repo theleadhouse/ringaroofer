@@ -133,9 +133,9 @@ REDIRECTS = """/services/roof-leak                           /services/roof-leak
 /resources/roof-leak-what-to-do.html          /library/roof-leaking-what-to-do-now/      301
 /resources/signs-you-need-a-new-roof.html     /library/signs-you-need-a-new-roof/        301
 /resources/roofing-estimate-checklist.html    /library/choosing-a-roofing-material/      301
-/call                                         tel:+18556359281                           302
+/call                                         tel:+18882611486                           302
 """
-REDIRECTS = REDIRECTS.replace("/call                                         tel:+18556359281                           302\n", "")
+REDIRECTS = REDIRECTS.replace("/call                                         tel:+18882611486                           302\n", "")
 
 HEADERS = """/*
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload

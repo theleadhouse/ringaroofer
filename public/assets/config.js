@@ -1,7 +1,7 @@
 /* RingaRoofer — site settings. IDs are public; secrets never go here. */
 window.RR = {
-  phone: "+18556359281",
-  phoneDisplay: "(855) 635-9281",
+  phone: "+18882611486",
+  phoneDisplay: "(888) 261-1486",
   ga4: "G-QYPPCFZGRC",
   googleAds: "AW-395361655",
   googleAdsCallLabel: "",                 // Google Ads > Goals > new "Phone call clicks on website" conversion > copy its label here

@@ -50,7 +50,7 @@ PHOTO = {"roof-repair": "roofer", "roof-leak-repair": "ceiling", "emergency-roof
 # New high-search service: roof inspections (people search "roof inspection near me" before most repairs and re-roofs)
 SERVICES.insert(1, dict(slug="roof-inspection", name="Roof Inspection", icon="shield", short="A roofer checks shingles, flashing, vents and the attic.",
   title="Roof Inspection Near You | Call a Local Roofer | RingaRoofer",
-  desc="Roof inspection after a storm, before buying or selling, or when the roof is getting older. Call (855) 635-9281 to connect with a local roofer.",
+  desc="Roof inspection after a storm, before buying or selling, or when the roof is getting older. Call (888) 261-1486 to connect with a local roofer.",
   h1="Roof inspection from a local roofer",
   lead="After a storm, before a sale, or because the roof is getting older. Call and we'll connect you with a roofer who can look the roof over and tell you where it stands.",
   sections=[

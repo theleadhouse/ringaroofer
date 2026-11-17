@@ -2,8 +2,8 @@
 Never add: free, estimate(s), licensed, insured, bonded, cheap/low rates, affordable, discount, price/cost wording,
 gutters, windows, siding, or any non-roofing service."""
 
-PHONE = "(855) 635-9281"
-TEL = "+18556359281"
+PHONE = "(888) 261-1486"
+TEL = "+18882611486"
 EMAIL = "contact@ringaroofer.com"
 URL = "https://ringaroofer.com"
 
@@ -12,7 +12,7 @@ URL = "https://ringaroofer.com"
 SERVICES = [
  dict(slug="roof-repair", name="Roof Repair", icon="hammer", short="Shingles, flashing, vents, ridge caps and sagging sections.",
   title="Roof Repair Near You | Call a Local Roofer | RingaRoofer",
-  desc="Need roof repair? One call connects you with a local roofing company for shingle, flashing, vent and ridge repairs. Call (855) 635-9281.",
+  desc="Need roof repair? One call connects you with a local roofing company for shingle, flashing, vent and ridge repairs. Call (888) 261-1486.",
   h1="Roof repair near you, from one call",
   lead="Missing shingles, lifted flashing, a cracked vent boot or a sagging section. Call and we'll connect you with a roofing company that serves your area.",
   sections=[
@@ -26,7 +26,7 @@ SERVICES = [
   group="Roof Repair"),
  dict(slug="roof-leak-repair", name="Roof Leak Repair", icon="drop", short="Active leaks, ceiling stains and drips during rain.",
   title="Roof Leak Repair Near You | Leaking Roof? Call Now | RingaRoofer",
-  desc="Roof leaking? Call (855) 635-9281 to connect with a local roofer for roof leak repair. Stains, drips and leaks during rain, handled fast.",
+  desc="Roof leaking? Call (888) 261-1486 to connect with a local roofer for roof leak repair. Stains, drips and leaks during rain, handled fast.",
   h1="Roof leaking? Get a roofer on the phone today",
   lead="A ceiling stain, a drip during rain or water running down a wall. Leaks get worse the longer they run, so call now and we'll connect you with a roofer near you.",
   sections=[
@@ -40,7 +40,7 @@ SERVICES = [
   group="Roof Leak"),
  dict(slug="emergency-roof-repair", name="Emergency Roof Repair", icon="siren", short="Roof opened up, water pouring in, storm-hit roofs.",
   title="Emergency Roof Repair | Emergency Roofing Service | RingaRoofer",
-  desc="Emergency roof repair when water is coming in or the roof has opened up. Call (855) 635-9281 for emergency service from a local roofer.",
+  desc="Emergency roof repair when water is coming in or the roof has opened up. Call (888) 261-1486 for emergency service from a local roofer.",
   h1="Emergency roof repair, fast",
   lead="Water pouring in, shingles torn off, a tree limb through the roof. Call now for emergency service. We'll connect you with a roofing company taking emergency calls in your area.",
   sections=[
@@ -54,7 +54,7 @@ SERVICES = [
   group="Emergency Roofing"),
  dict(slug="roof-tarping", name="Emergency Roof Tarping", icon="tarp", short="Temporary tarp to stop water until the repair.",
   title="Emergency Roof Tarp Service Near You | RingaRoofer",
-  desc="Emergency roof tarping to stop water getting in after a storm or leak. Call (855) 635-9281 to connect with a local roofer.",
+  desc="Emergency roof tarping to stop water getting in after a storm or leak. Call (888) 261-1486 to connect with a local roofer.",
   h1="Emergency roof tarp service",
   lead="A tarp buys time. When the roof is open or leaking badly, a roofer can secure a heavy tarp to keep rain out until the permanent repair.",
   sections=[
@@ -67,7 +67,7 @@ SERVICES = [
   group="Emergency Roofing"),
  dict(slug="storm-roof-repair", name="Storm Roof Repair", icon="storm", short="Wind-lifted shingles, torn flashing, debris impact.",
   title="Storm Roof Repair Near You | Roofers After a Storm | RingaRoofer",
-  desc="Roof hit by a storm? Call (855) 635-9281 to connect with a local roofer for storm roof repair: lifted shingles, torn flashing and debris impact.",
+  desc="Roof hit by a storm? Call (888) 261-1486 to connect with a local roofer for storm roof repair: lifted shingles, torn flashing and debris impact.",
   h1="Storm roof repair from a local roofer",
   lead="High wind lifts shingles, tears flashing and throws debris. Call and we'll connect you with a roofer who can inspect the roof and repair it.",
   sections=[
@@ -80,7 +80,7 @@ SERVICES = [
   group="Storm & Hail Roofing"),
  dict(slug="hail-roof-repair", name="Hail Roof Repair", icon="hail", short="Bruised and cracked shingles, dented metal.",
   title="Hail Roof Repair & Replacement Near You | RingaRoofer",
-  desc="Hail hit your roof? Call (855) 635-9281 to connect with a local roofer for hail roof repair or replacement. Nationwide roofer network.",
+  desc="Hail hit your roof? Call (888) 261-1486 to connect with a local roofer for hail roof repair or replacement. Nationwide roofer network.",
   h1="Hail hit your roof? Get it checked by a roofer",
   lead="Hail bruises shingles, knocks off granules and dents metal. The effects often show up months later as leaks. Call and we'll connect you with a roofer who knows hail.",
   sections=[
@@ -93,7 +93,7 @@ SERVICES = [
   group="Storm & Hail Roofing"),
  dict(slug="roof-replacement", name="Roof Replacement", icon="house", short="Full tear-off and replacement of worn roofs.",
   title="Roof Replacement Near You | Call a Local Roofer | RingaRoofer",
-  desc="Roof replacement for worn, aging or storm-hit roofs. Call (855) 635-9281 to connect with a local roofing company for a full replacement.",
+  desc="Roof replacement for worn, aging or storm-hit roofs. Call (888) 261-1486 to connect with a local roofing company for a full replacement.",
   h1="Roof replacement, start with one call",
   lead="Curling shingles, repeated leaks, bald patches or a roof past its age. Call and we'll connect you with a roofing company that handles full replacements in your area.",
   sections=[
@@ -107,7 +107,7 @@ SERVICES = [
   group="Roof Replacement"),
  dict(slug="new-roof", name="New Roofs & Re-Roofs", icon="layers", short="New roof installation and re-roofing.",
   title="New Roof Installation & Re-Roofing Near You | RingaRoofer",
-  desc="New roof installation and re-roofing: asphalt shingle, metal, tile and flat roofs. Call (855) 635-9281 to connect with a local roofing company.",
+  desc="New roof installation and re-roofing: asphalt shingle, metal, tile and flat roofs. Call (888) 261-1486 to connect with a local roofing company.",
   h1="New roofs and re-roofs",
   lead="Whether you're re-roofing an older home or need a new roof on an addition, one call connects you with a roofing company that installs it.",
   sections=[
@@ -124,32 +124,32 @@ SERVICES = [
 TYPES = [
  dict(slug="asphalt-shingle", name="Asphalt Shingle", icon="shingle",
   title="Asphalt Shingle Roofing: Repair & Replacement | RingaRoofer",
-  desc="Asphalt shingle roof repair and replacement, including architectural shingles. Call (855) 635-9281 to connect with a local shingle roofer.",
+  desc="Asphalt shingle roof repair and replacement, including architectural shingles. Call (888) 261-1486 to connect with a local shingle roofer.",
   h1="Asphalt shingle roofing", lead="The most common roof in America: three-tab and architectural shingles, repaired and replaced by roofers near you.",
   body="<p>Asphalt shingles cover most homes in the country because they suit almost any climate and style. <b>Architectural (dimensional) shingles</b> are thicker, look more textured and handle wind better than older three-tab shingles.</p><h2>Typical lifespan</h2><p>Around 20 to 30 years, shorter in hot, sunny climates and after repeated hail.</p><h2>Common repairs</h2><ul class='ticks'><li>Replacing missing or wind-lifted shingles</li><li>Resealing or replacing flashing and pipe boots</li><li>Ridge cap replacement</li></ul><h2>When to re-roof</h2><p>Widespread curling, cracking, granule loss or repeated leaks usually mean it's time for a new shingle roof.</p>"),
  dict(slug="metal", name="Metal Roofing", icon="metal",
   title="Metal Roofing: Installation, Repair & Standing Seam | RingaRoofer",
-  desc="Metal roof installation, replacement and repair, including standing seam. Call (855) 635-9281 to connect with a local metal roofer.",
+  desc="Metal roof installation, replacement and repair, including standing seam. Call (888) 261-1486 to connect with a local metal roofer.",
   h1="Metal roofing", lead="Standing seam and metal shingle roofs, installed and repaired by roofers near you.",
   body="<p>Metal roofs are popular for their long life, fire resistance and ability to shed snow. <b>Standing seam</b> panels have raised seams that hide the fasteners; <b>exposed-fastener</b> panels are simpler; <b>metal shingles</b> mimic the look of shingle, slate or shake.</p><h2>Typical lifespan</h2><p>40 years or more with care.</p><h2>Common repairs</h2><ul class='ticks'><li>Re-securing loose panels and trim</li><li>Replacing worn fastener washers on exposed-fastener roofs</li><li>Sealing seams and flashing</li></ul><h2>Good to know</h2><p>Large hail can leave cosmetic dents. Ask a roofer about impact-resistant panels if you live in hail country.</p>"),
  dict(slug="flat", name="Flat Roofing", icon="flat",
   title="Flat Roof Repair & Replacement: TPO, EPDM, Rubber | RingaRoofer",
-  desc="Flat roof repair and replacement: TPO, EPDM rubber and modified bitumen. Call (855) 635-9281 to connect with a local flat roofer.",
+  desc="Flat roof repair and replacement: TPO, EPDM rubber and modified bitumen. Call (888) 261-1486 to connect with a local flat roofer.",
   h1="Flat roofing", lead="TPO, EPDM rubber and modified bitumen roofs on homes, porches and additions.",
   body="<p>Flat roofs aren't perfectly flat; they have a slight slope to drain. Because water moves slowly, seams and drains matter most.</p><h2>Main systems</h2><ul class='ticks'><li><b>TPO:</b> white single-ply membrane with heat-welded seams, reflects sun.</li><li><b>EPDM:</b> black rubber membrane, durable and flexible in the cold.</li><li><b>Modified bitumen:</b> layered asphalt-based sheets, common on homes.</li></ul><h2>Common problems</h2><ul class='ticks'><li>Ponding water that doesn't drain</li><li>Split seams and blisters</li><li>Leaks around drains, vents and walls</li></ul>"),
  dict(slug="tile", name="Tile Roofing", icon="tile",
   title="Tile Roof Repair & Replacement: Clay & Concrete | RingaRoofer",
-  desc="Clay and concrete tile roof repair and replacement. Call (855) 635-9281 to connect with a local tile roofer.",
+  desc="Clay and concrete tile roof repair and replacement. Call (888) 261-1486 to connect with a local tile roofer.",
   h1="Tile roofing", lead="Clay and concrete tile roofs, common across the South and West, repaired and replaced by roofers who know tile.",
   body="<p>Tile roofs can last for decades, but the tiles themselves aren't the whole roof: the <b>underlayment</b> beneath them does much of the waterproofing and wears out sooner.</p><h2>Common repairs</h2><ul class='ticks'><li>Replacing cracked or slipped tiles</li><li>Re-laying tiles over new underlayment</li><li>Repairing flashing and ridge details</li></ul><h2>Good to know</h2><p>Walking on tile can crack it. Leave inspections to a roofer who works with tile.</p>"),
  dict(slug="slate", name="Slate Roofing", icon="slate",
   title="Slate Roof Repair & Replacement | RingaRoofer",
-  desc="Slate roof repair and replacement from roofers who work with natural slate. Call (855) 635-9281 to connect with a local roofer.",
+  desc="Slate roof repair and replacement from roofers who work with natural slate. Call (888) 261-1486 to connect with a local roofer.",
   h1="Slate roofing", lead="Natural slate roofs, common on older homes in the Northeast and Mid-Atlantic, repaired by roofers who specialize in slate.",
   body="<p>Slate is one of the longest-lasting roofing materials, often outliving the nails and flashing that hold it. Many slate problems are repairable one slate at a time.</p><h2>Common repairs</h2><ul class='ticks'><li>Replacing cracked or missing slates</li><li>Copper or metal flashing repairs</li><li>Re-securing slipped slates</li></ul><h2>Good to know</h2><p>Slate needs a specialist. Ask the roofer about their experience with slate specifically.</p>"),
  dict(slug="cedar-shake", name="Cedar Shake", icon="shake",
   title="Cedar Shake Roof Repair & Replacement | RingaRoofer",
-  desc="Cedar shake and wood shingle roof repair and replacement. Call (855) 635-9281 to connect with a local roofer.",
+  desc="Cedar shake and wood shingle roof repair and replacement. Call (888) 261-1486 to connect with a local roofer.",
   h1="Cedar shake roofing", lead="Wood shake and shingle roofs, repaired and replaced by roofers near you.",
   body="<p>Cedar shake gives a natural, textured look. It needs airflow and upkeep to last, especially in damp climates.</p><h2>Common repairs</h2><ul class='ticks'><li>Replacing split or curled shakes</li><li>Clearing moss and debris that hold moisture</li><li>Flashing repairs</li></ul><h2>Good to know</h2><p>Some areas have fire rules for wood roofs. A local roofer will know what's allowed where you live.</p>"),
 ]

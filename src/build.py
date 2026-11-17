@@ -288,21 +288,21 @@ home_body = (
  + sec(ttbox("home"), "tight soft")
  + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofers in all 50 states", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
  + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq"))
-add(url="/", title="Roofers Near You | Roof Repair & New Roofs · Call (855) 635-9281 | RingaRoofer", desc="Need a roofer near you? Call (855) 635-9281 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.",
+add(url="/", title="Roofers Near You | Roof Repair & New Roofs · Call (888) 261-1486 | RingaRoofer", desc="Need a roofer near you? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.",
     h1="Need a roofer near you?", hero=home_hero, body=home_body, faqs=HOME_FAQS, cls="home", ogimg=img(P["roofer2"][0], 1200, 630))
 
 # ---------------------------------------------------------------- roofers near me (head-term ad landing page)
 RNM_FAQ = [("How do I find a roofer near me?", f"Call {PHONE}. Tell us your ZIP code and what's going on with your roof, and we'll connect you with an independent roofing company that serves your area."),
            ("What should I ask a roofer before hiring?", "How long they've worked locally, who will be on the roof, what the written scope of work includes, how they protect your property, and the credentials your state requires."),
            ("Can a roofer come out this week?", "Often, yes. It depends on your area and recent weather. After storms, roofers book up quickly, so call early.")]
-add(url="/roofers-near-me/", title="Roofers Near Me | Local Roofing Companies · Call (855) 635-9281 | RingaRoofer", desc="Looking for roofers near you? One call to (855) 635-9281 connects you with an independent local roofing company for repairs, leaks, inspections, new roofs and re-roofs.",
+add(url="/roofers-near-me/", title="Roofers Near Me | Local Roofing Companies · Call (888) 261-1486 | RingaRoofer", desc="Looking for roofers near you? One call to (888) 261-1486 connects you with an independent local roofing company for repairs, leaks, inspections, new roofs and re-roofs.",
     h1="Roofers near you", trail=[("Roofers Near Me", "/roofers-near-me/")], faqs=RNM_FAQ, service="Roofing referral",
     hero=phero("Roofers near you, one call away", "Repairs, leaks, storm and hail, inspections, new roofs and re-roofs. Tell us your ZIP code and we'll connect you with an independent roofing company that serves your area.", [("Roofers Near Me", "/roofers-near-me/")], "roofers-near-me", "aerial", alerts="US"),
     body=sec(trust(), "tight trustsec") + sec(svc_cards(), "", "What local roofers handle", "Services") + sec(steps(), "soft", "How it works", "Simple")
          + sec(q_cards([QBY[k] for k in ("how-to-find-a-roofer-near-me", "questions-to-ask-a-roofer", "how-fast-can-a-roofer-come", "roofer-door-to-door")]), "", "Before you hire", "Roof Questions", id_="questions") + sec(faq_html(RNM_FAQ), "soft", "Questions", "FAQ") + sec(ttbox("roofers-near-me"), "tight"))
 
 # ---------------------------------------------------------------- services
-add(url="/services/", title="Roofing Services: Repair, Leaks, Inspection, Replacement & Emergency | RingaRoofer", desc="Full service roofing: roof repair, leak repair, inspections, emergency roofing, storm and hail repair, roof replacement, new roofs and re-roofs. Call (855) 635-9281.",
+add(url="/services/", title="Roofing Services: Repair, Leaks, Inspection, Replacement & Emergency | RingaRoofer", desc="Full service roofing: roof repair, leak repair, inspections, emergency roofing, storm and hail repair, roof replacement, new roofs and re-roofs. Call (888) 261-1486.",
     h1="Roofing services", trail=[("Services", "/services/")], hero=phero("Full service roofing, one call away", "Repairs, inspections, new roofs, re-roofs and emergency service. Choose your problem below, or just call.", [("Services", "/services/")], "services", "roofer"),
     body=sec(svc_cards()) + sec(steps(), "soft", "How it works") + sec(ttbox("services"), "tight"))
 GAL = ["roofer", "shingles2", "storm2", "hail", "tearoff", "inspect", "aerial", "flat2", "newroof"]
@@ -325,7 +325,7 @@ for s in SERVICES:
         body=body, faqs=s["faqs"], service=s["name"], ogimg=img(P[s["photo"]][0], 1200, 630))
 
 # ---------------------------------------------------------------- roof types
-add(url="/roof-types/", title="Roof Types: Shingle, Metal, Flat, Tile, Slate & Cedar | RingaRoofer", desc="Asphalt shingle, metal, flat (TPO, EPDM), tile, slate and cedar shake roofs: repairs and replacements from roofers near you. Call (855) 635-9281.",
+add(url="/roof-types/", title="Roof Types: Shingle, Metal, Flat, Tile, Slate & Cedar | RingaRoofer", desc="Asphalt shingle, metal, flat (TPO, EPDM), tile, slate and cedar shake roofs: repairs and replacements from roofers near you. Call (888) 261-1486.",
     h1="Roof types", trail=[("Roof Types", "/roof-types/")], hero=phero("Every type of roof", "Whatever your roof is made of, one call connects you with a roofer who works with it.", [("Roof Types", "/roof-types/")], "roof-types", "shingles"),
     body=sec(type_cards()) + sec('<p class="center"><a class="btn btn-ghost" href="/library/choosing-a-roofing-material/">Compare roofing materials</a></p>', "tight"))
 for t in TYPES:
@@ -340,7 +340,7 @@ RPHOTO = {"Northeast": "shingles2", "Southeast": "storm2", "Midwest": "hail", "S
 by_region = {}
 for code, name, reg, cities, extra in STATES: by_region.setdefault(reg, []).append(name)
 cov = "".join(f'<div class="region"><div class="rg-img">{pic(RPHOTO[r], 520, 340)}</div><div><h3>{r}</h3><p>{REGIONS[r]}</p><div class="states">' + "".join(f'<a href="/coverage/{st_slug(n)}/">{n}</a>' for n in v) + '</div></div></div>' for r, v in by_region.items())
-add(url="/coverage/", title="Roofers Near You in All 50 States | RingaRoofer Coverage", desc="RingaRoofer connects homeowners with independent roofing companies in all 50 states and D.C. Find roofing help in your state. Call (855) 635-9281.",
+add(url="/coverage/", title="Roofers Near You in All 50 States | RingaRoofer Coverage", desc="RingaRoofer connects homeowners with independent roofing companies in all 50 states and D.C. Find roofing help in your state. Call (888) 261-1486.",
     h1="Coverage", trail=[("Coverage", "/coverage/")], hero=phero("Roofers near you, nationwide", "Our network connects homeowners with independent roofing companies across the country. Availability can vary by ZIP code.", [("Coverage", "/coverage/")], "coverage", "aerial2", alerts="US"),
     body=sec(cov))
 for code, name, reg, cities, extra in STATES:
@@ -353,7 +353,7 @@ for code, name, reg, cities, extra in STATES:
                 + f'<h2>Before you hire a roofer in {name}</h2><ul class="ticks"><li>Ask how long they\'ve worked in {name} and for local references.</li><li>Confirm they hold the credentials and coverage {name} requires for roofing work.</li><li>Get the scope of work in writing before work starts.</li><li>After big storms, be cautious with door-to-door crews.</li></ul></div>'
                 f'<aside class="doc-side"><div class="sticky">{now_box()}</div></aside>', "doc-wrap")
             + sec(svc_cards(SERVICES[:3]), "soft", f"Popular roofing services in {name}") + sec(ttbox("state-" + code.lower()), "tight") + sec(faq_html(fq), "", "Questions"))
-    add(url=u, title=f"Roofers in {name} | Roof Repair & Replacement | RingaRoofer", desc=f"Need a roofer in {name}? Call (855) 635-9281 to connect with a local roofing company for roof repair, leaks, new roofs, re-roofs and emergency service.",
+    add(url=u, title=f"Roofers in {name} | Roof Repair & Replacement | RingaRoofer", desc=f"Need a roofer in {name}? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, new roofs, re-roofs and emergency service.",
         h1=f"Roofers in {name}", trail=[("Coverage", "/coverage/"), (name, u)],
         hero=phero(f"Need a roofer in {name}?", f"Roof leak, storm-hit roof or a new roof in {name}? One call connects you with an independent roofing company that serves your area.", [("Coverage", "/coverage/"), (name, u)], "state-" + code.lower(), RPHOTO[reg], alerts=code),
         body=body, faqs=fq, service="Roofing referral", state=name)
@@ -376,7 +376,7 @@ for a in ARTICLES:
     add(url=u, title=a["title"], desc=a["desc"], h1=a["h1"], trail=[("Roof Library", "/library/"), (a["h1"], u)], article=True, ogimg=img(P[a["photo"]][0], 1200, 630),
         hero=phero(a["h1"], a["lead"], [("Roof Library", "/library/"), (a["h1"], u)], "library-" + a["slug"], a["photo"]),
         body=sec(f'<div class="doc">{a["body"]}</div><aside class="doc-side"><div class="sticky">{now_box()}</div></aside>', "doc-wrap"))
-add(url="/contact/", title="Request a Callback From a Roofer | RingaRoofer", desc="Call (855) 635-9281 or request a callback. RingaRoofer connects you with an independent roofing company serving your area.",
+add(url="/contact/", title="Request a Callback From a Roofer | RingaRoofer", desc="Call (888) 261-1486 or request a callback. RingaRoofer connects you with an independent roofing company serving your area.",
     h1="Request a callback", trail=[("Request a Callback", "/contact/")], form=True,
     hero=lhero("Request a callback", [("Request a Callback", "/contact/")], "The quickest way is to call. Prefer a callback? Fill in the form and a roofing company serving your area will reach out."),
     body=sec(legal.FORM, "soft"))
