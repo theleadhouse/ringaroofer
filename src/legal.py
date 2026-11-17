@@ -81,7 +81,25 @@ PAGES = [
   body=S("Our commitment", "<p>We want ringaroofer.com to work for everyone and aim to meet WCAG 2.1 AA: keyboard access, readable contrast, text alternatives and clear structure.</p>") + S("Need help?", f"<p>If something doesn't work for you, call <a href='tel:{TEL}'>{PHONE}</a> or email <a href='mailto:{EMAIL}'>{EMAIL}</a> and tell us the page and the problem.</p>")),
 ]
 
-REDIRECTS = """/reviews/write/                                /questions/                                301
+REDIRECTS = """/services/roof-leak                           /services/roof-leak-repair/                301
+/services/roof-maintenance                    /services/roof-repair/                     301
+/services/hail-damage                         /services/hail-roof-repair/                301
+/services/storm-damage                        /services/storm-roof-repair/               301
+/services/emergency-roofing                   /services/emergency-roof-repair/           301
+/services/roof-repair.html                    /services/roof-repair/                     301
+/roofing-types/shingle-roofing                /roof-types/asphalt-shingle/               301
+/roofing-types/metal-roofing                  /roof-types/metal/                         301
+/roofing-types/flat-roofing                   /roof-types/flat/                          301
+/roofing-types/tile-roofing                   /roof-types/tile/                          301
+/resources/signs-you-need-a-new-roof          /library/signs-you-need-a-new-roof/        301
+/resources/roof-leak-what-to-do               /library/roof-leaking-what-to-do-now/      301
+/resources/roofing-estimate-checklist         /library/choosing-a-roofing-material/      301
+/resources/repair-vs-replacement.html         /library/roof-repair-or-replace/           301
+/resources/repair-vs-replacement              /library/roof-repair-or-replace/           301
+/reviews                                      /questions/                                301
+/about                                        /how-it-works/                             301
+/faq                                          /#faq                                      301
+/reviews/write/                                /questions/                                301
 /reviews/                                     /questions/                                301
 /review-admin/                                /                                          301
 /index.html                                   /                                          301
