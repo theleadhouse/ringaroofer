@@ -8,6 +8,6 @@ window.RR = {
   googleAdsFormLabel: "srUWCMz155QbEPf6wrwB",
   microsoftUet: "97273766",                       // Microsoft Ads > Tools > UET tag > tag ID
   metaPixel: "2575491546254965",
-  clarity: "",                            // optional Microsoft Clarity project ID
+  clarity: "zfom7yj4m0",                            // optional Microsoft Clarity project ID
   formEndpoint: "/api/lead"
 };
