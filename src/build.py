@@ -6,6 +6,7 @@ from html import escape as esc
 from content import *
 import legal
 import faqs as FQ
+from rr_state_detail import detail
 from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
@@ -347,7 +348,8 @@ for code, name, reg, cities, extra in STATES:
     u = f"/coverage/{st_slug(name)}/"
     fq = [(f"Do you have roofers in {name}?", f"Yes. Our network connects homeowners across {name} with independent roofing companies. Availability can vary by ZIP code and type of work."),
           (f"How fast can a roofer come out in {name}?", "It depends on your location, the season and recent weather. After major storms roofers book up quickly, so call early.")]
-    body = (sec(f'<div class="doc"><h2>Roofing in {name}</h2><p>{extra} {REGIONS[reg]}</p><h2>Roofing help we connect {name} homeowners with</h2><ul class="ticks">'
+    _dh, _dq = detail(code, name, cities); fq = fq + _dq
+    body = (sec(f'<div class="doc"><h2>Roofing in {name}</h2><p>{extra} {REGIONS[reg]}</p>{_dh}<h2>Roofing help we connect {name} homeowners with</h2><ul class="ticks">'
                 + "".join(f'<li><a href="/services/{s["slug"]}/">{s["name"]}</a>: {s["short"]}</li>' for s in SERVICES) + '</ul>'
                 + f'<h2>Areas served in {name}</h2><p>Homeowners across {name} call us, including in and around ' + ", ".join(cities[:-1]) + f' and {cities[-1]}. Call and we\'ll check availability for your ZIP code.</p>'
                 + f'<h2>Before you hire a roofer in {name}</h2><ul class="ticks"><li>Ask how long they\'ve worked in {name} and for local references.</li><li>Confirm they hold the credentials and coverage {name} requires for roofing work.</li><li>Get the scope of work in writing before work starts.</li><li>After big storms, be cautious with door-to-door crews.</li></ul></div>'
