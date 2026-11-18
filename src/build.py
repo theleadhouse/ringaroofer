@@ -11,7 +11,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261118k"; UPDATED = "2026-10-07"
+V = "20261118m"; UPDATED = "2026-10-07"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -202,7 +202,7 @@ def now_box():
             '<li><b>Take photos</b> of the ceiling and the roof from the ground.</li><li><b>Stay off the roof</b>, especially when it\'s wet.</li></ol>'
             f'{call_btn("btn btn-call block", None, "now-box")}</div>')
 def phero(h1, lead, trail, campaign, photo, alerts=None):
-    al = f'<div class="alerts" data-alerts="{alerts}" hidden></div>' if alerts else ""
+    al = ""  # weather alerts removed from RingaRoofer (Nov 2026)
     return (f'<section class="phero"><div class="ph-bg">{pic(photo, 1600, 760, eager=True)}</div><div class="wrap phero-in"><div class="ph-txt">{crumbs(trail)}<h1>{h1}</h1><p class="lead">{lead}</p>'
             f'<div class="btns">{call_btn("btn btn-call xl", None, "page-hero")}<a class="btn btn-ghost light xl" href="/contact/">Request a callback</a></div>{tt_link(campaign, cls="tt-text light")}'
             f'<p class="ph-note">{ic("check",16)} Independent local roofing companies · Repairs, new roofs and re-roofs · No obligation</p>{al}</div></div></section>')
@@ -265,8 +265,7 @@ home_hero = f'''<section class="hero">
   <div class="hero-side">{now_box()}</div>
  </div>
 </section>
-{marquee()}
-<section class="alertband" id="alerts"><div class="wrap"><div class="alerts" data-alerts="US" hidden></div></div></section>'''
+{marquee()}'''
 HOME_FAQS = [
  ("What is RingaRoofer?", "A roofing referral service. When you call, we connect you with an independent roofing company that serves your area. We don't do roofing work ourselves."),
  ("Is there a charge to call?", "No. RingaRoofer doesn't charge homeowners. You agree any work and terms directly with the roofing company."),
