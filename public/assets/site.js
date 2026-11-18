@@ -203,7 +203,7 @@
 /* Local touch: show the visitor's approximate area (from Cloudflare). Honest wording: "serving", never "located in". */
 (function(){try{
   if (/^\/coverage\//.test(location.pathname)) return;
-  var box = document.querySelector(".ph-txt, .hero-txt, .whero3 .wrap, .hero .wrap"); if (!box) return;
+  var box = document.querySelector(".ph-txt, .hero-txt, .w3-txt"); if (!box) return;
   fetch("/api/where", {credentials: "omit"}).then(function(r){return r.ok ? r.json() : null}).then(function(g){
     if (!g || g.country !== "US" || !g.region) return;
     var st = g.region, code = g.regionCode || "", city = (g.city || "").trim();
@@ -213,7 +213,7 @@
     p.innerHTML = '<span class="geo-dot" aria-hidden="true"></span><span>Connecting homeowners in <b></b> and nearby</span> <a></a>';
     p.querySelector("b").textContent = where;
     var a = p.querySelector("a"); a.href = "/coverage/" + slug + "/"; a.textContent = st + " page →";
-    var h1 = box.querySelector("h1"); (h1 && h1.nextSibling) ? box.insertBefore(p, h1.nextSibling) : box.appendChild(p);
+    var h1 = box.querySelector("h1"); h1 ? h1.parentNode.insertBefore(p, h1.nextSibling) : box.appendChild(p);
     var css = document.createElement("style");
     css.textContent = ".geo-pill{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 4px;padding:8px 14px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:inherit;font-size:14px;line-height:1.35;backdrop-filter:none}.geo-pill a{color:inherit;text-decoration:underline;font-weight:700}.geo-dot{width:9px;height:9px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 4px rgba(61,220,132,.25);flex:none}";
     document.head.appendChild(css);
