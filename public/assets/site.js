@@ -215,7 +215,7 @@
     var a = p.querySelector("a"); a.href = "/coverage/" + slug + "/"; a.textContent = st + " page →";
     var h1 = box.querySelector("h1"); h1 ? h1.parentNode.insertBefore(p, h1.nextSibling) : box.appendChild(p);
     var css = document.createElement("style");
-    css.textContent = ".geo-pill{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 4px;padding:8px 14px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:inherit;font-size:14px;line-height:1.35;backdrop-filter:none}.geo-pill a{color:inherit;text-decoration:underline;font-weight:700}.geo-dot{width:9px;height:9px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 4px rgba(61,220,132,.25);flex:none}";
+    css.textContent = ".geo-pill{display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 4px;padding:8px 14px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:inherit;font-size:14px;line-height:1.35;backdrop-filter:none}.geo-pill>span:nth-child(2){flex:1 1 180px}.geo-pill a{color:inherit;text-decoration:underline;font-weight:700}.geo-dot{width:9px;height:9px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 4px rgba(61,220,132,.25);flex:none}";
     document.head.appendChild(css);
     if (window.gtag) gtag("event", "geo_shown", {region: code});
   }).catch(function(){});
