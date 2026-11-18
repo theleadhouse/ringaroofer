@@ -60,5 +60,4 @@ HOME = [
  ("How do I find a good roofer near me?", "Ask how long they've worked in your area, ask for local references, confirm the credentials your state requires, and get the scope of work in writing. Or call us and we'll connect you with a local roofing company."),
  ("How fast can a roofer come out?", "Often within a few days, and sooner for active leaks. After big storms, roofers book up quickly, so call early."),
  ("Do roofers work in winter?", "Yes. Roofers repair leaks and do emergency work year-round, and many replace roofs in winter when the weather allows."),
- ("Can I leave a review after my roofing job?", "Yes. If you called through RingaRoofer, you can leave a review on our <a href='/reviews/'>reviews page</a>. We publish genuine reviews, good or bad."),
 ]

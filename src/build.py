@@ -71,7 +71,7 @@ def header(active):
             li.append(f'<li><a href="{h}"{cur}>{t}</a></li>')
     mob = "".join(f'<a href="{h}">{t}</a>' + ("".join(f'<a class="sub" href="{u}">{n}</a>' for n, u in sub) if sub else "") for t, h, sub in NAV)
     return f'''<a class="skip" href="#main">Skip to content</a>
-<div class="topbar"><div class="wrap tb-in"><span>{ic("storm",15)} Leaks, storm-hit roofs, new roofs and re-roofs · Roofers in all 50 states</span><a href="tel:{TEL}" data-call="topbar">Call {PHONE}</a></div></div>
+<div class="topbar"><div class="wrap tb-in"><span>{ic("storm",15)} Leaks, storm-hit roofs, new roofs and re-roofs · Roofing companies across the U.S.</span><a href="tel:{TEL}" data-call="topbar">Call {PHONE}</a></div></div>
 <header class="hdr"><div class="wrap hdr-in">
  <a class="brand" href="/" aria-label="RingaRoofer home">{BRANDH}</a>
  <nav class="nav" aria-label="Main"><ul>{"".join(li)}</ul></nav>
@@ -246,7 +246,7 @@ def jump(items):
     return '<nav class="jump" aria-label="On this page">' + "".join(f'<a href="#{i}">{t}</a>' for t, i in items) + f'<a class="j-call" href="tel:{TEL}" data-call="jump">{ic("phone",15)} Call</a></nav>'
 def trust():
     return ('<div class="trust"><div>' + ic("users") + '<span><b>One call, one roofer</b>A company that serves your area</span></div><div>' + ic("siren") + '<span><b>Emergency service</b>Leaks and storm-hit roofs</span></div><div>'
-            + ic("house") + '<span><b>Full service roofing</b>Repairs, new roofs, re-roofs</span></div><div>' + ic("map") + '<span><b>Nationwide</b>Roofers in all 50 states</span></div></div>')
+            + ic("house") + '<span><b>Full service roofing</b>Repairs, new roofs, re-roofs</span></div><div>' + ic("map") + '<span><b>Nationwide</b>Availability varies by ZIP</span></div></div>')
 
 PAGES = []
 def add(**p): PAGES.append(p)
@@ -270,7 +270,7 @@ HOME_FAQS = [
  ("What is RingaRoofer?", "A roofing referral service. When you call, we connect you with an independent roofing company that serves your area. We don't do roofing work ourselves."),
  ("Is there a charge to call?", "No. RingaRoofer doesn't charge homeowners. You agree any work and terms directly with the roofing company."),
  ("What roofing work is covered?", "Full service roofing: repairs, leak repairs, inspections, new roofs, re-roofs and emergency service, on asphalt shingle, metal, flat, tile, slate and cedar shake roofs."),
- ("Do you cover my area?", "Our network covers all 50 states. Availability can vary by ZIP code and type of work, so call and we'll check for you."),
+ ("Do you cover my area?", "Our network includes independent roofing companies across the country. Availability can vary by ZIP code and type of work, so call and we'll check for you."),
  ("Are the photos your jobs?", "No. They're real photographs from Pexels and Unsplash. Ask the roofer you speak with about their own work.")] + FQ.HOME
 home_body = (
  sec(trust(), "tight trustsec")
@@ -286,7 +286,7 @@ home_body = (
  + sec(story_cards(STORIES[:3]) + '<p class="center"><a class="btn btn-ghost" href="/community/">More real roof problems</a></p>', "soft", "Roof problems homeowners call about", "Sound familiar?", "Typical situations and what helps. These are examples, not reviews.")
  + sec(q_cards([QBY[k] for k in ("why-is-my-roof-leaking", "repair-or-replace-roof", "signs-you-need-a-new-roof", "how-to-tell-if-hail-hit-roof", "asphalt-shingles-vs-metal", "how-to-find-a-roofer-near-me")]), "", "Roof questions homeowners ask", "Roof Questions", "Straight answers to the questions homeowners search most.", id_="questions")
  + sec(ttbox("home"), "tight soft")
- + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofers in all 50 states", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
+ + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofing help in every state", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
  + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq"))
 add(url="/", title="Roofers Near You | Roof Repair & New Roofs · Call (888) 261-1486 | RingaRoofer", desc="Need a roofer near you? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.",
     h1="Need a roofer near you?", hero=home_hero, body=home_body, faqs=HOME_FAQS, cls="home", ogimg=img(P["roofer2"][0], 1200, 630))
@@ -340,7 +340,7 @@ RPHOTO = {"Northeast": "shingles2", "Southeast": "storm2", "Midwest": "hail", "S
 by_region = {}
 for code, name, reg, cities, extra in STATES: by_region.setdefault(reg, []).append(name)
 cov = "".join(f'<div class="region"><div class="rg-img">{pic(RPHOTO[r], 520, 340)}</div><div><h3>{r}</h3><p>{REGIONS[r]}</p><div class="states">' + "".join(f'<a href="/coverage/{st_slug(n)}/">{n}</a>' for n in v) + '</div></div></div>' for r, v in by_region.items())
-add(url="/coverage/", title="Roofers Near You in All 50 States | RingaRoofer Coverage", desc="RingaRoofer connects homeowners with independent roofing companies in all 50 states and D.C. Find roofing help in your state. Call (888) 261-1486.",
+add(url="/coverage/", title="Roofers Near You, State by State | RingaRoofer Coverage", desc="RingaRoofer connects homeowners with independent roofing companies across the U.S. Find roofing help in your state. Call (888) 261-1486.",
     h1="Coverage", trail=[("Coverage", "/coverage/")], hero=phero("Roofers near you, nationwide", "Our network connects homeowners with independent roofing companies across the country. Availability can vary by ZIP code.", [("Coverage", "/coverage/")], "coverage", "aerial2", alerts="US"),
     body=sec(cov))
 for code, name, reg, cities, extra in STATES:
