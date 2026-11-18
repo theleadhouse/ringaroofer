@@ -353,7 +353,10 @@ for code, name, reg, cities, extra in STATES:
                 + f'<h2>Before you hire a roofer in {name}</h2><ul class="ticks"><li>Ask how long they\'ve worked in {name} and for local references.</li><li>Confirm they hold the credentials and coverage {name} requires for roofing work.</li><li>Get the scope of work in writing before work starts.</li><li>After big storms, be cautious with door-to-door crews.</li></ul></div>'
                 f'<aside class="doc-side"><div class="sticky">{now_box()}</div></aside>', "doc-wrap")
             + sec(svc_cards(SERVICES[:3]), "soft", f"Popular roofing services in {name}") + sec(ttbox("state-" + code.lower()), "tight") + sec(faq_html(fq), "", "Questions"))
-    add(url=u, title=f"Roofers in {name} | Roof Repair & Replacement | RingaRoofer", desc=f"Need a roofer in {name}? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, new roofs, re-roofs and emergency service.",
+    _t = f"Roofers in {name}: {cities[0]}, {cities[1]} & Nearby | RingaRoofer"
+    if len(_t) > 62: _t = f"Roofers in {name}: {cities[0]} & Nearby | RingaRoofer"
+    if len(_t) > 62: _t = f"Roofers in {name} | Local Roof Repair | RingaRoofer"
+    add(url=u, title=_t, desc=f"Roof leaking or storm-hit in {name}? Call {PHONE} to reach a local roofer serving {cities[0]}, {cities[1]}, {cities[2]} and nearby. Repairs, leaks and new roofs.",
         h1=f"Roofers in {name}", trail=[("Coverage", "/coverage/"), (name, u)],
         hero=phero(f"Need a roofer in {name}?", f"Roof leak, storm-hit roof or a new roof in {name}? One call connects you with an independent roofing company that serves your area.", [("Coverage", "/coverage/"), (name, u)], "state-" + code.lower(), RPHOTO[reg], alerts=code),
         body=body, faqs=fq, service="Roofing referral", state=name)
