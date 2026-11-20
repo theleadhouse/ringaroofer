@@ -60,7 +60,7 @@ LOGO = ('<svg class="logo-mark" width="42" height="42" viewBox="0 0 40 40" aria-
         '<path d="M26.5 7.5a6 6 0 0 1 3.5 3.5M28 4.5a9.5 9.5 0 0 1 5.5 5.5" fill="none" stroke="#F26B1D" stroke-width="2" stroke-linecap="round"/></svg>')
 BRANDH = f'{LOGO}<span class="wm"><span>Ringa<em>Roofer</em></span><small>Roofers near you, one call</small></span>'
 NAV = [("Roof Problems", "/roof-problems/", [(n, f"/roof-problems/#{k}") for k, n in RP.CATS]), ("Services", "/services/", [(s["name"], f"/services/{s['slug']}/") for s in SERVICES]), ("Roof Types", "/roof-types/", [(t["name"], f"/roof-types/{t['slug']}/") for t in TYPES]),
-       ("Roof Leak?", "/services/roof-leak-repair/", None), ("Coverage", "/coverage/", None), ("Roof Questions", "/questions/", None)]
+       ("Coverage", "/coverage/", None), ("Roof Questions", "/questions/", None)]
 SOLO = ("/services/roof-leak-repair/",)
 
 def header(active):
@@ -138,6 +138,13 @@ def qf():
     global _QF
     if _QF is None: _QF = quote_funnel.embed(funnel_cfg.cfg(V, DISCLAIMER), check)
     return _QF
+def qf_body(p):
+    """Expert-first order (Nov 2026): the quote funnel sits further down the page (before the FAQ), not right under the hero."""
+    b = p["body"]
+    if not qf_on(p): return b
+    i = b.find(" id=faq>")
+    j = b.rfind("<section", 0, i) if i > -1 else -1
+    return (b[:j] + qf()[0] + b[j:]) if j > -1 else (b + qf()[0])
 def qf_on(p): return not (p.get("legal") or p.get("noindex") or p.get("form") or p["url"] in ("/sitemap/", "/404/"))
 
 def page(p):
@@ -165,8 +172,7 @@ def page(p):
 {header(p["url"])}
 <main id="main">
 {p["hero"]}
-{qf()[0] if qf_on(p) else ""}
-{p["body"]}
+{qf_body(p)}
 {qf()[3] if qf_on(p) else ""}
 </main>
 {footer()}
