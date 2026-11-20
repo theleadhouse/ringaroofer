@@ -60,9 +60,9 @@ def detail(code, name, cities):
     risks = "".join(f"<li><b>{t}:</b> {w}</li>" for t, w, _, _, _ in fl)
     seasons = "".join(f"<li><b>{t}:</b> {s}</li>" for t, _, s, _, _ in fl)
     checks = "".join(f"<li>{c}</li>" for _, _, _, c, _ in fl)
-    html = (f'<h2>Main roof risks in {name}</h2><ul class="ticks">{risks}</ul>'
+    html = (f'<h2 id="risks">Main roof risks in {name}</h2><ul class="ticks">{risks}</ul>'
             f'<h2>When roofs in {name} take the most wear</h2><ul class="ticks">{seasons}</ul>'
-            f'<h2>What {name} homeowners can check from the ground</h2><ul class="ticks">{checks}'
+            f'<h2 id="check-ground">What {name} homeowners can check from the ground</h2><ul class="ticks">{checks}'
             f'<li>Never climb onto a wet, icy or steep roof. A roofer can check it safely.</li></ul>'
             f'<p>Calls come in from across {name}, from {cities[0]} and {cities[1]} to smaller towns. Call and we\'ll check which roofing companies serve your ZIP code.</p>')
     faqs = [(q.format(name=name), a.format(name=name)) for _, _, _, _, (q, a) in fl]
