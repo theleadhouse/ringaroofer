@@ -2,6 +2,7 @@
 Photo-led, call-first roofing referral site for Google/Microsoft paid search (inbound calls). Same URLs as v1 so ads, Search Console and links keep working.
 Adds: real photos, app-style mobile bar, roof-problem picker, 60 Roof Questions answers (reviews removed), search-style FAQs, roof inspection + 'roofers near me' pages, Thumbtack backup link."""
 import rr_problems as RP
+import rr_more as RM
 import os, re, json, shutil
 from html import escape as esc
 from content import *
@@ -12,7 +13,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261120a"; UPDATED = "2026-11-20"
+V = "20261123r"; UPDATED = "2026-11-20"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -59,7 +60,7 @@ LOGO = ('<svg class="logo-mark" width="42" height="42" viewBox="0 0 40 40" aria-
         '<path d="M12 21v9h16v-9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
         '<path d="M26.5 7.5a6 6 0 0 1 3.5 3.5M28 4.5a9.5 9.5 0 0 1 5.5 5.5" fill="none" stroke="#F26B1D" stroke-width="2" stroke-linecap="round"/></svg>')
 BRANDH = f'{LOGO}<span class="wm"><span>Ringa<em>Roofer</em></span><small>Roofers near you, one call</small></span>'
-NAV = [("Roof Problems", "/roof-problems/", [(n, f"/roof-problems/#{k}") for k, n in RP.CATS]), ("Services", "/services/", [(s["name"], f"/services/{s['slug']}/") for s in SERVICES]), ("Roof Types", "/roof-types/", [(t["name"], f"/roof-types/{t['slug']}/") for t in TYPES]),
+NAV = [("Roof Problems", "/roof-problems/", [(n, f"/roof-problems/{k}/") for k, n in RP.CATS] + [("Roof dictionary", "/roof-dictionary/"), ("Roof tools", "/tools/")]), ("Services", "/services/", [(s["name"], f"/services/{s['slug']}/") for s in SERVICES]), ("Roof Types", "/roof-types/", [(t["name"], f"/roof-types/{t['slug']}/") for t in TYPES]),
        ("Coverage", "/coverage/", None), ("Roof Questions", "/questions/", None)]
 SOLO = ("/services/roof-leak-repair/",)
 
@@ -98,7 +99,7 @@ def footer():
    <p><a class="f-phone" href="tel:{TEL}" data-call="footer">{ic("phone",18)} {PHONE}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a></p></div>
   <div><h2>Services</h2><ul>{svc}</ul></div>
   <div><h2>Roof Types</h2><ul>{typ}</ul></div>
-  <div><h2>RingaRoofer</h2><ul><li><a href="/roofers-near-me/">Roofers Near Me</a></li><li><a href="/questions/">Roof Questions</a></li><li><a href="/roof-problem-guide/">Roof Problem Guide</a></li><li><a href="/assets/guides/roof-problem-guide.pdf" download>Download the Guide (PDF)</a></li><li><a href="/how-it-works/">How It Works</a></li><li><a href="/coverage/">Coverage by State</a></li><li><a href="/community/">Real Roof Problems</a></li><li><a href="/library/">Roof Library</a></li><li><a href="/contact/">Request a Callback</a></li><li><a href="/sitemap/">Site Map</a></li></ul></div>
+  <div><h2>RingaRoofer</h2><ul><li><a href="/roofers-near-me/">Roofers Near Me</a></li><li><a href="/questions/">Roof Questions</a></li><li><a href="/roof-problem-guide/">Roof Problem Guide</a></li><li><a href="/assets/guides/roof-problem-guide.pdf" download>Download the Guide (PDF)</a></li><li><a href="/how-it-works/">How It Works</a></li><li><a href="/coverage/">Coverage by State</a></li><li><a href="/community/">Real Roof Problems</a></li><li><a href="/library/">Roof Library</a></li><li><a href="/roof-dictionary/">Roof Dictionary</a></li><li><a href="/tools/">Roof Tools</a></li><li><a href="/for-roofing-pros/">For Roofing Pros</a></li><li><a href="/contact/">Request a Callback</a></li><li><a href="/sitemap/">Site Map</a></li></ul></div>
  </div>
  <p class="disc">{DISCLAIMER}</p>
  <div class="f-legal"><nav aria-label="Legal"><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms of Use</a><a href="/referral-disclosure/">Referral Disclosure</a><a href="/california-privacy/">California Privacy</a><a href="/california-privacy/#opt-out">Do Not Sell or Share My Personal Information</a><a href="/do-not-call/">Do Not Call</a><a href="/accessibility/">Accessibility</a></nav>
@@ -283,6 +284,24 @@ URG = [("u3", "Get help today", "Water coming in, a bulging ceiling, bare roof d
        ("u1", "Check first, plan ahead", "Shingle grit, curling shingles, moss, nail pops, or deciding between repair and a new roof.", ["granules-in-downspouts", "curling-or-cracked-shingles", "repair-or-replace-roof"])]
 def urgency():
     return '<div class="urg three">' + "".join(f'<div class="ur {k}"><h3>{t}</h3><p>{d}</p>' + "".join(f'<a href="/roof-problems/{sl}/">{RPB[sl]["h1"].rstrip("?")} {ic("arrow",14)}</a>' for sl in links) + '</div>' for k, t, d, links in URG) + '</div>'
+RCN = dict(RP.CATS)
+def cat_url(k): return f"/roof-problems/{k}/"
+def dlink(l): return l if l.startswith("/") else (cat_url(l) if l in RCN else (f"/roof-problems/{l}/" if l else ""))
+DB = {d[0]: d for d in RM.D}
+def words_for(slug, cat):
+    w = [d for d in RM.D if d[3] == slug]
+    return (w + [d for d in RM.D if d[3] == cat and d not in w])[:6]
+def words_box(ws):
+    if not ws: return ""
+    return ('<div class="wordsbox"><h3>' + ic("book",18) + ' Words you may hear</h3><dl>' + "".join(f'<div><dt><a href="/roof-dictionary/#{k}">{t}</a></dt><dd>{d}</dd></div>' for k, t, d, l in ws)
+            + '</dl><p class="small"><a href="/roof-dictionary/">Open the full roof dictionary</a></p></div>')
+def say_box(say, fix):
+    s2 = re.sub(r"\[([^\]]+)\]", r'<mark>\1</mark>', say)
+    return (f'<div class="two"><div class="col"><h3>{ic("check",18)} What a roofer usually does</h3>{ticks2(fix)}</div>'
+            f'<div class="col saybox"><h3>{ic("phone",18)} What to tell the roofer</h3><p class="say">&ldquo;{s2}&rdquo;</p><p class="small">Fill in the highlighted parts. A clear description helps the roofer tell you what it likely involves.</p></div></div>')
+def catcards(keys=None):
+    keys = keys or [k for k, n in RP.CATS]
+    return '<div class="catgrid">' + "".join(f'<a class="catc" href="{cat_url(k)}"><div class="cc-img">{pic(RM.CAT[k]["photo"], 480, 300)}</div><div class="cc-b"><h3>{RCN[k]}</h3><p>{RM.CAT[k]["short"]}</p><span class="more">{sum(1 for x in RP.P if x["cat"] == k)} problems explained {ic("arrow",16)}</span></div></a>' for k in keys) + '</div>'
 DEFQ = ["roof-leaking-right-now", "water-stain-on-ceiling", "shingles-blown-off", "hail-hit-my-roof", "repair-or-replace-roof", "door-to-door-roofer"]
 
 # ---------------------------------------------------------------- home
@@ -403,15 +422,16 @@ for code, name, reg, cities, extra in STATES:
         body=body, faqs=fq, service="Roofing referral", state=name)
 
 # ---------------------------------------------------------------- roof problems hub + pages
-JUMPP = [("check", "Check first"), ("if-you-see", "If you see"), ("what-to-do", "What to do"), ("example", "Example"), ("pro", "When to call"), ("faq", "FAQ")]
-hub = "".join(sec(pcards([x for x in RP.P if x["cat"] == k]), "soft" if i % 2 else "", n, None, None, k) for i, (k, n) in enumerate(RP.CATS))
+JUMPP = [("check", "Check first"), ("if-you-see", "If you see"), ("what-to-do", "What to do"), ("roofer", "What a roofer does"), ("example", "Example"), ("faq", "Questions"), ("words", "Words")]
+hub = "".join(sec(f'<p class="catlead">{RM.CAT[k]["short"]} <a href="{cat_url(k)}">How this part of your roof works {ic("arrow",14)}</a></p>' + pcards([x for x in RP.P if x["cat"] == k]), "soft" if i % 2 else "", n, None, None, k) for i, (k, n) in enumerate(RP.CATS))
 add(url="/roof-problems/", title="Roof Problems: Leaks, Missing Shingles, Hail, Ice Dams & More | RingaRoofer", desc="Roof leaking, shingles blown off, hail, ice dams, sagging, moss, flat-roof ponding: what to check from the ground, what it usually means and when to call a roofer.",
     h1="Roof problems", trail=[("Roof Problems", "/roof-problems/")], cls="pestpage",
     hero=ehero("What's going on with your roof?", "Pick the problem that matches. Each page shows what to check from the ground, what the signs usually mean, an example situation, and when to call a roofer. Based on public guidance from the FTC, FEMA, the Department of Energy and ENERGY STAR.", [("Roof Problems", "/roof-problems/")], "ceiling", "Roof problems",
-               qs=[(n, k) for k, n in RP.CATS]),
-    body=sec(urgency(), "tight") + hub + sec(f'<div class="srcbox"><h3>Where our information comes from</h3>{srclist(list(RP.SRC.keys()))}<p class="small">{RP.NOTE}</p></div>', "soft"))
+               qs=[(n, cat_url(k)) for k, n in RP.CATS]),
+    body=sec(urgency(), "tight") + hub + sec(f'<div class="dteaser"><div><p class="kick">{ic("book",16)} Roof dictionary</p><h3>Flashing? Underlayment? Pipe boot?</h3><p>{len(RM.D)} roofing words in plain English.</p></div><a class="btn btn-dark" href="/roof-dictionary/">Open the dictionary {ic("arrow",16)}</a></div>', "tight") + sec(f'<div class="srcbox"><h3>Where our information comes from</h3>{srclist(list(RP.SRC.keys()))}<p class="small">{RP.NOTE}</p></div>', "soft"))
 for x in RP.P:
-    u = rp_url(x); h1 = x["h1"]; trail = [("Roof Problems", "/roof-problems/"), (h1.rstrip("?"), u)]
+    u = rp_url(x); h1 = x["h1"]; trail = [("Roof Problems", "/roof-problems/"), (RCN[x["cat"]], cat_url(x["cat"])), (h1.rstrip("?"), u)]
+    mx = RM.MORE.get(x["slug"], {}); allfaq = x["faq"] + mx.get("faq", [])
     rel = [y for y in RP.P if y["cat"] == x["cat"] and y["slug"] != x["slug"]][:3]
     if len(rel) < 3: rel += [y for y in RP.P if y["slug"] != x["slug"] and y not in rel][:3 - len(rel)]
     short = '<div class="shortans"><p class="kick">The short answer</p><ul>' + "".join(f"<li>{t}</li>" for t in x["short"]) + '</ul></div>'
@@ -420,15 +440,17 @@ for x in RP.P:
             + sec(chk(x["check"]), "", "What to check first", "From the ground", "Stay off the roof. Everything here can be done from the ground, inside, or from a safe spot in the attic.", id_="check")
             + sec(pat(x["patterns"]), "soft", "If you see this, it usually means…", "Read the signs", id_="if-you-see")
             + sec(f'<div class="cols2"><div class="col"><h3>{ic("check",18)} What you can do</h3>{ticks2(x["do"])}</div><div class="col warn"><h3>{ic("x",18)} What to avoid</h3>{ticks2(x["avoid"], "xs")}</div></div>', "", "What to do now", "Practical steps", id_="what-to-do")
-            + sec(f'<div class="story1"><p class="kick">A typical situation</p><p>{x["story"]}</p><p class="small">An example to help you recognize your own situation, not a customer review.</p></div>', "tight soft", id_="example")
+            + (sec(say_box(mx["say"], mx["fix"]), "soft", "What a roofer does, and what to tell them", "When you call", id_="roofer") if mx else "")
+            + sec(f'<div class="story1"><p class="kick">A typical situation</p><p>{x["story"]}</p><p class="small">An example to help you recognize your own situation, not a customer review.</p></div>', "tight", id_="example")
             + sec(callcard(x["when"], "when-" + x["slug"]), "tight", id_="pro")
-            + sec(faq_html(x["faq"]), "soft", "Questions", "FAQ", id_="faq")
-            + sec(pcards(rel), "", "Related roof problems", "Keep reading")
+            + sec(faq_html(allfaq), "soft", f'{h1.rstrip("?")}: specific questions', "Questions people ask", id_="faq")
+            + sec(words_box(words_for(x["slug"], x["cat"])), "", None, None, None, "words")
+            + sec(pcards(rel), "soft", f'More about {RCN[x["cat"]].lower()}', "Keep reading", f'<a href="{cat_url(x["cat"])}">See all {RCN[x["cat"]].lower()} problems and how this part of your roof works</a>')
             + sec(f'<div class="srcbox"><h3>Sources</h3>{srclist(x["src"])}<p class="small">{RP.NOTE}</p></div>', "tight soft"))
     add(url=u, title=(f"{h1.rstrip('?')}? What to Check and When to Call | RingaRoofer" if h1.endswith("?") else f"{h1} | RingaRoofer"), desc=x["lead"][:155].rsplit(" ", 1)[0] + ("…" if len(x["lead"]) > 155 else ""),
-        h1=h1, trail=trail, faqs=x["faq"], cls="pestpage", article=True,
+        h1=h1, trail=trail, faqs=allfaq, cls="pestpage", article=True,
         hero=ehero(h1, x["lead"], trail, x["photo"], dict(RP.CATS)[x["cat"]], ulv(x["lv"], True),
-                   qs=[("The short answer", "short"), ("What should I check first?", "check"), ("What do the signs mean?", "if-you-see"), ("What can I do right now?", "what-to-do"), ("A typical situation", "example"), ("When do I need a roofer?", "pro"), ("Questions people ask", "faq")]),
+                   qs=[("The short answer", "short"), ("What should I check first?", "check"), ("What do the signs mean?", "if-you-see"), ("What can I do right now?", "what-to-do"), ("What will a roofer do?", "roofer"), ("When do I need a roofer?", "pro"), ("Questions people ask", "faq")]),
         body=body)
 
 # ---------------------------------------------------------------- community, library, how it works, contact
@@ -476,11 +498,127 @@ for slug, qq, cat, ph, link, short, pts in QS:
 for lp in legal.PAGES:
     add(url=lp["url"], title=lp["title"] + " | RingaRoofer", desc=lp["desc"], h1=lp["h1"], trail=[(lp["h1"], lp["url"])], legal=True,
         hero=lhero(lp["h1"], [(lp["h1"], lp["url"])], "Last updated October 3, 2026"), body=sec(f'<div class="doc legal">{lp["body"]}</div>'))
+
+# ---------------------------------------------------------------- category pages, roof dictionary, tools, roofing pros (Nov 2026)
+for k, n in RP.CATS:
+    c = RM.CAT[k]; u = cat_url(k); items = [x for x in RP.P if x["cat"] == k]; trail = [("Roof Problems", "/roof-problems/"), (n, u)]
+    ws = [d for d in RM.D if d[3] == k or d[3] in {x["slug"] for x in items}][:8]
+    body = (sec('<nav class="jump" aria-label="On this page"><a href="#problems">Problems</a><a href="#how">How it works</a><a href="#faq">Questions</a><a href="#words">Words</a></nav>', "jumpsec")
+            + sec(pcards(items), "", f"{n}: pick your problem", "Start here", "Each one shows what to check from the ground, what it usually means, what a roofer does, and when to call.", id_="problems")
+            + sec('<div class="doc howdoc">' + "".join(f"<p>{t}</p>" for t in c["how"]) + '</div>', "soft", "How this part of your roof works", "The basics", id_="how")
+            + sec(callcard("Call when water is coming in, shingles or panels are missing, something hit the roof, or a problem keeps coming back.", "cat-" + k), "tight")
+            + sec(faq_html(c["faq"]), "soft", f"{n}: questions people ask", "FAQ", id_="faq")
+            + sec(words_box(ws), "", None, None, None, "words")
+            + sec(catcards([o for o, _ in RP.CATS if o != k]), "soft", "Other roof problems", "Keep exploring"))
+    add(url=u, title=f"{n}: Roof Problems, Checks and When to Call | RingaRoofer", desc=c["lead"][:155].rsplit(" ", 1)[0] + ("…" if len(c["lead"]) > 155 else ""),
+        h1=c["h1"], trail=trail, faqs=c["faq"], cls="pestpage", article=True,
+        hero=ehero(c["h1"], c["lead"], trail, c["photo"], "Roof Problems", "", qs=[(x["h1"], rp_url(x)) for x in items] + [("How does this part of my roof work?", "how"), ("Questions people ask", "faq")]),
+        body=body)
+
+_L = sorted({d[1][0].upper() for d in RM.D})
+_dict = '<nav class="jump az" aria-label="Letters">' + "".join(f'<a href="#letter-{l}">{l}</a>' for l in _L) + '</nav>'
+_body = "".join(f'<div class="dgroup" id="letter-{l}"><h2>{l}</h2><dl class="dict">' + "".join(f'<div id="{k}"><dt>{t}</dt><dd>{d}' + (f' <a href="{dlink(lk)}">Related help {ic("arrow",14)}</a>' if lk else "") + '</dd></div>' for k, t, d, lk in sorted(RM.D, key=lambda z: z[1].lower()) if t[0].upper() == l) + '</dl></div>' for l in _L)
+add(url="/roof-dictionary/", title="Roof Dictionary: Plain-English Roofing Terms | RingaRoofer", desc=f"{len(RM.D)} roofing terms explained in plain English, from flashing and underlayment to pipe boots, ice dams and roofing squares.",
+    h1="Roof dictionary", trail=[("Roof Dictionary", "/roof-dictionary/")], cls="pestpage", article=True,
+    hero=ehero("Roof dictionary", f"{len(RM.D)} roofing words in plain English, so you can follow what a roofer tells you. Each one links to the help page where it matters most.", [("Roof Dictionary", "/roof-dictionary/")], "shingles", "Plain English",
+               qs=[("What's flashing?", "/roof-dictionary/#flashing"), ("What's underlayment?", "/roof-dictionary/#underlayment"), ("What's a pipe boot?", "/roof-dictionary/#pipe-boot"), ("What's a roofing square?", "/roof-dictionary/#square"), ("What's an ice dam?", "/roof-dictionary/#ice-dam")]),
+    body=sec(_dict, "jumpsec") + sec(_body, "") + sec(catcards(), "soft", "Roof help by problem type", "Keep exploring"))
+
+TJS = f'<script src="/assets/tools.js?v={V}" defer></script>'
+TOOLS = [("roof-pitch-calculator", "Roof pitch calculator", "Turn rise and run into a pitch like 6/12, the angle in degrees, and what that steepness means.", "aerial"),
+         ("roof-size-calculator", "Roof size calculator", "Rough roof area and roofing squares from your house's length, width, overhang and pitch.", "aerial2"),
+         ("storm-roof-notes", "After-storm roof notes", "A printable checklist and notes sheet for after a storm: what you saw, photos taken, and who you spoke to.", "storm")]
+def tool_cards(skip=None):
+    return '<div class="catgrid">' + "".join(f'<a class="catc" href="/tools/{k}/"><div class="cc-img">{pic(ph, 480, 300)}</div><div class="cc-b"><h3>{n}</h3><p>{d}</p><span class="more">Open the tool {ic("arrow",16)}</span></div></a>' for k, n, d, ph in TOOLS if k != skip) + '</div>'
+add(url="/tools/", title="Roof Tools for Homeowners: Pitch, Roof Size & After-Storm Notes | RingaRoofer", desc="Roof tools for homeowners: roof pitch calculator, roof size and squares calculator, and a printable after-storm roof notes sheet.",
+    h1="Roof tools", trail=[("Roof Tools", "/tools/")], cls="pestpage",
+    hero=ehero("Roof tools for homeowners", "Small tools that answer real roofing questions: how steep is my roof, roughly how big is it, and what should I write down after a storm.", [("Roof Tools", "/tools/")], "aerial", "Tools",
+               qs=[(n, f"/tools/{k}/") for k, n, d, ph in TOOLS] + [("What does that roofing word mean?", "/roof-dictionary/")]),
+    body=sec(tool_cards(), "") + sec(catcards(), "soft", "Roof help by problem type", "Keep exploring"))
+
+_pfaq = [("What does 6/12 pitch mean?", "The roof rises 6 inches for every 12 inches it runs horizontally."),
+         ("How do I find my roof's pitch without going on the roof?", "From the attic, measure 12 inches level along the bottom of a rafter, then measure straight up to the rafter. Or ask your roofer; it's often on old plans."),
+         ("What pitch is too flat for shingles?", "Shingles generally need some slope. Very flat roofs use membranes like TPO, EPDM or modified bitumen instead."),
+         ("Why does pitch matter?", "It affects which materials work, how water drains, how much material is needed, and the safety setup roofers use."),
+         ("Is a steep roof harder to work on?", "Yes. Steep roofs need extra safety gear, which roofers plan for."),
+         ("Can I walk on my roof to measure it?", "It's safer not to. Measure from the attic or the ground, and let a roofer go up.")]
+_pform = ('<div class="toolbox" id="pitchcalc"><div class="tb-grid"><label>Rise (inches)<input id="pc-rise" type="number" min="0" max="36" step="0.5" value="6" inputmode="decimal"></label><label>Run (inches)<input id="pc-run" type="number" min="1" max="48" step="0.5" value="12" inputmode="decimal"></label></div>'
+          '<div class="chips"><span>Common pitches:</span>' + "".join(f'<button type="button" class="chip" data-rise="{r}">{r}/12</button>' for r in (2, 4, 6, 8, 10, 12)) + '</div>'
+          '<div class="lc-out" id="pc-out" hidden aria-live="polite"><div><b id="pc-p">6/12</b><span>pitch</span></div><div><b id="pc-d">0</b><span>angle</span></div><div><b id="pc-f">0</b><span>area multiplier</span></div></div><p id="pc-n" class="pc-n"></p>'
+          '<p class="small">The area multiplier turns flat footprint into actual sloped roof area. It\'s simple geometry; your roofer measures on site.</p></div>')
+add(url="/tools/roof-pitch-calculator/", title="Roof Pitch Calculator: Rise, Run, Angle & What It Means | RingaRoofer", desc="Work out your roof pitch (like 6/12), its angle in degrees and its area multiplier, and what that steepness means for materials and safety.",
+    h1="Roof pitch calculator", trail=[("Roof Tools", "/tools/"), ("Roof pitch calculator", "/tools/roof-pitch-calculator/")], cls="pestpage", faqs=_pfaq, article=True,
+    hero=ehero("How steep is my roof?", "Enter the rise and run to get the pitch, the angle in degrees, and what that steepness usually means.", [("Roof Tools", "/tools/"), ("Roof pitch calculator", "/tools/roof-pitch-calculator/")], "aerial", "Tool",
+               qs=[("Work out my pitch", "tool"), ("How do I measure without going on the roof?", "faq"), ("How big is my roof?", "/tools/roof-size-calculator/")]),
+    body=sec(_pform, "", "Roof pitch", "Calculator", id_="tool") + sec(faq_html(_pfaq), "soft", "Questions people ask", "FAQ", id_="faq") + sec(tool_cards("roof-pitch-calculator"), "", "More tools") + TJS)
+
+_sfaq = [("What is a roofing square?", "100 square feet of roof. Roofers talk about roof size in squares."),
+         ("Why is my roof bigger than my house's footprint?", "A sloped roof has more surface than the flat area under it, plus the overhang past the walls."),
+         ("How accurate is this?", "It's a rough figure for a simple roof. Dormers, valleys, multiple levels and porches change it. A roofer measures on site."),
+         ("Does the garage count?", "If it's under the same roof, include it in the length and width. Measure separate roofs separately."),
+         ("Why do roofers order extra material?", "Cuts at valleys, hips, edges and waste mean a roof needs more material than its exact area."),
+         ("Where do I get my house's length and width?", "Measure outside walls with a tape, or check your property records or plans.")]
+_sform = ('<div class="toolbox" id="sizecalc"><div class="tb-grid"><label>House length (feet)<input id="sc-l" type="number" min="0" max="400" value="50" inputmode="decimal"></label><label>House width (feet)<input id="sc-w" type="number" min="0" max="400" value="30" inputmode="decimal"></label>'
+          '<label>Overhang past the walls (inches)<input id="sc-oh" type="number" min="0" max="48" value="12" inputmode="decimal"></label><label>Pitch (rise per 12)<select id="sc-p">' + "".join(f'<option value="{r}"{" selected" if r == 6 else ""}>{r}/12</option>' for r in range(0, 13)) + '</select></label></div>'
+          '<div class="lc-out" id="sc-out" hidden aria-live="polite"><div><b id="sc-a">0</b><span>sq ft of roof</span></div><div><b id="sc-q">0</b><span>roofing squares</span></div><div><b id="sc-fp">0</b><span>sq ft footprint</span></div></div>'
+          '<p class="small">A rough figure for a simple roof shape. Not sure of the pitch? Use the <a href="/tools/roof-pitch-calculator/">pitch calculator</a>.</p></div>')
+add(url="/tools/roof-size-calculator/", title="Roof Size Calculator: Square Feet & Roofing Squares | RingaRoofer", desc="Rough roof area and roofing squares from your house's length, width, overhang and pitch. Plain-English help for talking with a roofer.",
+    h1="Roof size calculator", trail=[("Roof Tools", "/tools/"), ("Roof size calculator", "/tools/roof-size-calculator/")], cls="pestpage", faqs=_sfaq, article=True,
+    hero=ehero("How big is my roof?", "Enter your house's length and width, the overhang and the pitch, and see the rough roof area and how many roofing squares that is.", [("Roof Tools", "/tools/"), ("Roof size calculator", "/tools/roof-size-calculator/")], "aerial2", "Tool",
+               qs=[("Work out my roof size", "tool"), ("What's a roofing square?", "faq"), ("How steep is my roof?", "/tools/roof-pitch-calculator/")]),
+    body=sec(_sform, "", "Roof size", "Calculator", id_="tool") + sec(faq_html(_sfaq), "soft", "Questions people ask", "FAQ", id_="faq") + sec(tool_cards("roof-size-calculator"), "", "More tools") + TJS)
+
+_nrows = [("Storm date and time", ""), ("What happened", "wind, hail size, tree, heavy rain"), ("What I saw from the ground", "missing shingles, dents on vents, debris"), ("Inside: rooms with drips or stains", ""),
+          ("Photos taken (roof, yard, inside, hail)", ""), ("Temporary cover (tarp) by", ""), ("Roofer I called", f"or RingaRoofer {PHONE}"), ("Agreement in writing?", "yes / no, date")]
+_card = ('<div class="scard" id="card"><div class="sc-h"><b>After-storm roof notes</b><span>Fill in as soon as it\'s safe. Keep with your home papers.</span></div><div class="sc-rows">'
+         + "".join(f'<label><span>{n}</span><input placeholder="{p}"></label>' for n, p in _nrows)
+         + '</div><ol class="sc-steps"><li><b>Stay off the roof.</b> Check from the ground and from inside.</li><li><b>Take photos</b> before anything is moved or covered.</li><li><b>Before you hire:</b> get it in writing and don\'t pay in full up front, as the FTC advises.</li></ol>'
+         + f'<p class="sc-f">RingaRoofer.com · {PHONE}</p></div>'
+         f'<p class="center no-print"><button class="btn btn-call" type="button" data-printcard>{ic("phone",18)}<span>Print my notes</span></button></p><p class="small center no-print">Type in the boxes, then print. Nothing you type is stored or sent anywhere.</p>')
+_nfaq = [("What should I photograph after a storm?", "The roof from several sides from the ground, anything on the ground that came off the roof, hailstones next to a coin, and any ceiling stains or drips inside."),
+         ("Should I go on the roof after a storm?", "No. Check from the ground and from inside. Wet, steep or broken roofs are dangerous."),
+         ("When should I call a roofer?", "If water is coming in, shingles or panels are missing, a tree hit the roof, or you see dents and grit after hail."),
+         ("How do I spot a storm scam?", "The FTC warns about door-to-door offers, pressure to sign fast, and demands for full payment up front."),
+         ("Why write things down?", "Notes and photos made right away are easier to rely on later, when you talk to roofers and others.")]
+add(url="/tools/storm-roof-notes/", title="After-Storm Roof Checklist & Notes (Printable) | RingaRoofer", desc="A printable after-storm roof checklist and notes sheet: what to check from the ground, what to photograph, and what to get in writing before you hire.",
+    h1="After-storm roof notes", trail=[("Roof Tools", "/tools/"), ("After-storm roof notes", "/tools/storm-roof-notes/")], cls="pestpage printcard", faqs=_nfaq, article=True,
+    hero=ehero("After a storm: what to check and write down", "Check from the ground, take photos, note what you saw, and get everything in writing before you hire. Fill in this sheet and print it.", [("Roof Tools", "/tools/"), ("After-storm roof notes", "/tools/storm-roof-notes/")], "storm", "Printable",
+               qs=[("Fill in my notes", "card"), ("What should I photograph?", "faq"), ("Shingles blown off?", "/roof-problems/shingles-blown-off/"), ("Did hail hit my roof?", "/roof-problems/hail-hit-my-roof/")]),
+    body=sec(_card, "", "Your after-storm notes", "Fill in and print", id_="cardsec") + sec(f'<div class="srcbox"><h3>Sources</h3>{srclist(["ftc-storm", "fema-wind"])}</div>', "tight") + sec(faq_html(_nfaq), "soft", "Questions people ask", "FAQ", id_="faq") + sec(tool_cards("storm-roof-notes"), "", "More tools") + TJS)
+
+_svc = ["Roof repair", "Leak repair", "Storm and hail repair", "Emergency tarping", "Roof replacement", "Shingle roofs", "Metal roofs", "Tile roofs", "Flat roofs", "Attic ventilation", "Roof checks for home buyers", "Emergency calls"]
+_proform = ('<form class="pro-form" id="pro-form" novalidate><div class="fg">'
+            '<label>Company name<input name="company" required autocomplete="organization"></label><label>Your name<input name="contact" required autocomplete="name"></label>'
+            '<label>Phone<input name="phone" type="tel" inputmode="tel" required autocomplete="tel" placeholder="(555) 555-5555"></label><label>Email<input name="email" type="email" required autocomplete="email"></label>'
+            '<label>Website <span class="opt">(optional)</span><input name="site" type="url" placeholder="https://"></label><label>State(s) you work in<input name="states" placeholder="e.g. TX, OK"></label>'
+            '<label class="full">Cities, counties or ZIP codes you serve<textarea name="areas" rows="2" maxlength="600"></textarea></label>'
+            '<fieldset class="full"><legend>Work you take on</legend><div class="cbx">' + "".join(f'<label><input type="checkbox" name="services" value="{v}"> {v}</label>' for v in _svc) + '</div></fieldset>'
+            '<label>Do you take after-hours calls?<select name="emergency"><option>Yes, nights and weekends</option><option>Evenings only</option><option>Business hours only</option></select></label>'
+            '<label>Calls you could take per day<select name="capacity"><option>1–3</option><option>4–10</option><option>11–25</option><option>More than 25</option></select></label>'
+            '<label>State contractor registration number <span class="opt">(if your state issues one)</span><input name="state_number"></label><label>Years in business<input name="years" inputmode="numeric"></label>'
+            '<label class="full">Anything else? <span class="opt">(optional)</span><textarea name="notes" rows="3" maxlength="1000"></textarea></label>'
+            '<input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">'
+            '<label class="full agree"><input type="checkbox" name="agree" value="yes"> I\'m authorized to share these details for my company, and RingaRoofer may contact me by phone or email about working together.</label>'
+            '</div><button class="btn btn-call" type="submit">Send my details</button><p class="pro-msg" id="pro-msg" hidden aria-live="polite"></p></form>')
+_profaq = [("What is RingaRoofer?", "A referral service. Homeowners call us, and we connect each call to an independent roofing company that serves their area."),
+           ("What kind of calls would I get?", "Homeowners calling about the roofing work you tell us you take on, in the areas you serve. We don't promise a set number of calls; volume depends on your area and the season."),
+           ("Do homeowners pay RingaRoofer?", "No. Roofing companies in our network pay for the connections, on terms agreed with each company."),
+           ("Who agrees the work with the homeowner?", "You do, directly. We don't set your terms or do the work."),
+           ("What do you look for in a roofing company?", "A real local business that answers its phone, serves the areas it lists, does the work it says it does, and holds the credentials and coverage its state and city require."),
+           ("What happens after I send my details?", "We review them and reach out by phone or email to talk through areas, services and terms. There's no obligation.")]
+add(url="/for-roofing-pros/", title="For Roofing Companies: Get Homeowner Calls in Your Area | RingaRoofer", desc="Roofing companies: tell us where you work and what you take on. RingaRoofer connects homeowner calls to independent local roofing companies.",
+    h1="For roofing pros", trail=[("For Roofing Pros", "/for-roofing-pros/")], cls="pestpage", faqs=_profaq, form=True,
+    hero=ehero("Roofing company? Get homeowner calls in your area", "Homeowners use RingaRoofer to find a roofer. If you serve their area and take on the work they need, we can connect their calls to you.", [("For Roofing Pros", "/for-roofing-pros/")], "roofer", "For roofing companies",
+               qs=[("How does it work?", "how"), ("What do you look for?", "faq"), ("Send my details", "apply")]),
+    body=sec('<ol class="steps"><li><span>1</span><h3>Tell us your areas and services</h3><p>Where you work, what you take on, and when you answer the phone.</p></li><li><span>2</span><h3>We talk it through</h3><p>A call or email to agree areas, services and terms. No obligation.</p></li><li><span>3</span><h3>Homeowners call, you answer</h3><p>Calls from homeowners in your areas are connected to your phone. You agree the work with them directly.</p></li></ol>', "", "How it works", "Simple", id_="how")
+         + sec(_proform, "soft", "Send your details", "Apply", "Takes about two minutes. We'll reach out by phone or email.", id_="apply")
+         + sec(faq_html(_profaq), "", "Questions roofing companies ask", "FAQ", id_="faq") + TJS)
+
 def sitemap_page():
-    groups = {"Main": [], "Services": [], "Roof Types": [], "Coverage": [], "Roof Library": [], "Legal": []}
+    groups = {"Main": [], "Roof Problems & Tools": [], "Services": [], "Roof Types": [], "Coverage": [], "Roof Library": [], "Legal": []}
     for p in PAGES:
         if p.get("noindex"): continue
-        u = p["url"]; k = ("Legal" if p.get("legal") else "Services" if u.startswith("/services") else "Roof Types" if u.startswith("/roof-types") else "Coverage" if u.startswith("/coverage") else "Roof Library" if u.startswith(("/library", "/questions")) else "Main")
+        u = p["url"]; k = ("Legal" if p.get("legal") else "Roof Problems & Tools" if u.startswith(("/roof-problems", "/roof-dictionary", "/tools", "/for-roofing-pros")) else "Services" if u.startswith("/services") else "Roof Types" if u.startswith("/roof-types") else "Coverage" if u.startswith("/coverage") else "Roof Library" if u.startswith(("/library", "/questions")) else "Main")
         groups[k].append(f'<li><a href="{u}">{p["h1"]}</a></li>')
     return sec('<div class="smap">' + "".join(f'<div><h2>{k}</h2><ul>{"".join(v)}</ul></div>' for k, v in groups.items()) + '</div>')
 add(url="/sitemap/", title="Site Map | RingaRoofer", desc="All pages on RingaRoofer.com.", h1="Site map", trail=[("Site Map", "/sitemap/")], hero=lhero("Site map", [("Site Map", "/sitemap/")]), body="__SMAP__")
