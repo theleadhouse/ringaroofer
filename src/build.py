@@ -3,6 +3,7 @@ Photo-led, call-first roofing referral site for Google/Microsoft paid search (in
 Adds: real photos, app-style mobile bar, roof-problem picker, 60 Roof Questions answers (reviews removed), search-style FAQs, roof inspection + 'roofers near me' pages, Thumbtack backup link."""
 import rr_problems as RP
 import rr_more as RM
+import rr_faq2
 import os, re, json, shutil
 from html import escape as esc
 from content import *
@@ -329,6 +330,7 @@ HOME_FAQS = [
 home_body = (
  sec(trust(), "tight trustsec")
  + sec(pcards([RPB[k] for k in DEFQ]) + f'<p class="center"><a class="btn btn-ghost" href="/roof-problems/">All {len(RP.P)} roof problems {ic("arrow",16)}</a></p>', "soft", "What's going on with your roof?", "Start here", "Tap the one that matches for what to check from the ground, what it usually means and when to call.", id_="problems")
+ + "__TOOLS__"
  + sec(urgency(), "", "How urgent is it?", "An honest answer", "Most roof problems aren't emergencies. Here's how roofers sort them.", id_="urgency")
  + sec(matcher(), "soft", None, id_="match-sec")
  + sec(svc_cards(), "", "Full service roofing", "Services", "From a few missing shingles to a complete re-roof, one call puts you in touch with a roofer who handles it.", id_="help")
@@ -432,7 +434,10 @@ add(url="/roof-problems/", title="Roof Problems: Leaks, Missing Shingles, Hail, 
     body=sec(urgency(), "tight") + hub + sec(f'<div class="dteaser"><div><p class="kick">{ic("book",16)} Roof dictionary</p><h3>Flashing? Underlayment? Pipe boot?</h3><p>{len(RM.D)} roofing words in plain English.</p></div><a class="btn btn-dark" href="/roof-dictionary/">Open the dictionary {ic("arrow",16)}</a></div>', "tight") + sec(f'<div class="srcbox"><h3>Where our information comes from</h3>{srclist(list(RP.SRC.keys()))}<p class="small">{RP.NOTE}</p></div>', "soft"))
 for x in RP.P:
     u = rp_url(x); h1 = x["h1"]; trail = [("Roof Problems", "/roof-problems/"), (RCN[x["cat"]], cat_url(x["cat"])), (h1.rstrip("?"), u)]
-    mx = RM.MORE.get(x["slug"], {}); allfaq = x["faq"] + mx.get("faq", [])
+    mx = RM.MORE.get(x["slug"], {})
+    _seen = set(); allfaq = []
+    for _q, _a in x["faq"] + rr_faq2.F.get(x["slug"], []):
+        if _q.lower() not in _seen: _seen.add(_q.lower()); allfaq.append((_q, _a))
     rel = [y for y in RP.P if y["cat"] == x["cat"] and y["slug"] != x["slug"]][:3]
     if len(rel) < 3: rel += [y for y in RP.P if y["slug"] != x["slug"] and y not in rel][:3 - len(rel)]
     short = '<div class="shortans"><p class="kick">The short answer</p><ul>' + "".join(f"<li>{t}</li>" for t in x["short"]) + '</ul></div>'
@@ -444,7 +449,7 @@ for x in RP.P:
             + (sec(say_box(mx["say"], mx["fix"]), "soft", "What a roofer does, and what to tell them", "When you call", id_="roofer") if mx else "")
             + sec(f'<div class="story1"><p class="kick">A typical situation</p><p>{x["story"]}</p><p class="small">An example to help you recognize your own situation, not a customer review.</p></div>', "tight", id_="example")
             + sec(callcard(x["when"], "when-" + x["slug"]), "tight", id_="pro")
-            + sec(faq_html(allfaq), "soft", f'{h1.rstrip("?")}: specific questions', "Questions people ask", id_="faq")
+            + sec(faq_html(allfaq), "soft", f'{h1.rstrip("?")}: {len(allfaq)} questions people ask', "Questions people ask", id_="faq")
             + sec(words_box(words_for(x["slug"], x["cat"])), "", None, None, None, "words")
             + sec(pcards(rel), "soft", f'More about {RCN[x["cat"]].lower()}', "Keep reading", f'<a href="{cat_url(x["cat"])}">See all {RCN[x["cat"]].lower()} problems and how this part of your roof works</a>')
             + sec(f'<div class="srcbox"><h3>Sources</h3>{srclist(x["src"])}<p class="small">{RP.NOTE}</p></div>', "tight soft"))
@@ -614,6 +619,9 @@ add(url="/for-roofing-pros/", title="For Roofing Companies: Get Homeowner Calls 
     body=sec('<ol class="steps"><li><span>1</span><h3>Tell us your areas and services</h3><p>Where you work, what you take on, and when you answer the phone.</p></li><li><span>2</span><h3>We talk it through</h3><p>A call or email to agree areas, services and terms. No obligation.</p></li><li><span>3</span><h3>Homeowners call, you answer</h3><p>Calls from homeowners in your areas are connected to your phone. You agree the work with them directly.</p></li></ol>', "", "How it works", "Simple", id_="how")
          + sec(_proform, "soft", "Send your details", "Apply", "Takes about two minutes. We'll reach out by phone or email.", id_="apply")
          + sec(faq_html(_profaq), "", "Questions roofing companies ask", "FAQ", id_="faq") + TJS)
+
+for _p in PAGES:
+    if _p["url"] == "/": _p["body"] = _p["body"].replace("__TOOLS__", sec(tool_cards(), "", "Homeowner tools", "Handy tools", "Work out your roof's pitch and size, and print an after-storm checklist. Plus a plain-English roof dictionary.", id_="tools") + sec(f'<div class="dteaser"><div><p class="kick">{ic("book",16)} Roof dictionary</p><h3>Flashing? Underlayment? Pipe boot?</h3><p>{len(RM.D)} roofing words in plain English.</p></div><a class="btn btn-dark" href="/roof-dictionary/">Open the dictionary {ic("arrow",16)}</a></div>', "tight"))
 
 def sitemap_page():
     groups = {"Main": [], "Roof Problems & Tools": [], "Services": [], "Roof Types": [], "Coverage": [], "Roof Library": [], "Legal": []}
