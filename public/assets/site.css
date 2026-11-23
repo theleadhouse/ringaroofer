@@ -460,3 +460,8 @@ h3.mt{margin-top:30px}
 .pro-form button{margin-top:16px}.pro-msg{margin-top:12px;padding:12px 14px;border-radius:12px;font-weight:700}.pro-msg.ok{background:#E7F6EC;color:#1E6B3A}.pro-msg.warn{background:#FFF7E8;color:#8A5A00}
 @media print{body.printcard *{visibility:hidden}body.printcard .scard,body.printcard .scard *{visibility:visible}body.printcard .scard{position:absolute;left:0;top:0;width:100%;border-width:2px}.no-print{display:none!important}}
 .pc-n{margin:4px 0 8px;font-weight:600;color:var(--navy)}
+.fcall{display:none}
+@media(min-width:900px){.fcall{display:flex;position:fixed;right:22px;bottom:22px;z-index:60;align-items:center;gap:12px;padding:12px 20px 12px 16px;border-radius:999px;background:var(--orange);color:#fff;text-decoration:none;box-shadow:0 18px 36px -14px rgba(217,102,43,.9);opacity:0;transform:translateY(16px);pointer-events:none;transition:opacity .25s,transform .25s}
+ .fcall.on{opacity:1;transform:none;pointer-events:auto}.fcall:hover{background:var(--orange2);color:#fff}
+ .fcall span{display:flex;flex-direction:column;line-height:1.15}.fcall b{font-size:15px}.fcall small{font-size:14px;font-weight:700;opacity:.95}}
+@media print{.fcall{display:none!important}}

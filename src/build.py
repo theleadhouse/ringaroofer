@@ -105,7 +105,8 @@ def footer():
  <div class="f-legal"><nav aria-label="Legal"><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms of Use</a><a href="/referral-disclosure/">Referral Disclosure</a><a href="/california-privacy/">California Privacy</a><a href="/california-privacy/#opt-out">Do Not Sell or Share My Personal Information</a><a href="/do-not-call/">Do Not Call</a><a href="/accessibility/">Accessibility</a></nav>
  <p>&copy; 2026 RingaRoofer.com</p></div>
 </div></footer>
-<nav class="tabbar" aria-label="Quick actions"><a href="/" class="tb-i">{ic("home",21)}<span>Home</span></a><a href="/services/" class="tb-i">{ic("grid",21)}<span>Services</span></a><a href="tel:{TEL}" class="tb-call" data-call="tabbar" aria-label="Call {PHONE}">{ic("phone",24)}<span>Call</span></a><a href="/questions/" class="tb-i">{ic("help",21)}<span>Questions</span></a><button type="button" class="tb-i tb-menu" aria-controls="mnav">{ic("menu",21)}<span>Menu</span></button></nav>'''
+<nav class="tabbar" aria-label="Quick actions"><a href="/" class="tb-i">{ic("home",21)}<span>Home</span></a><a href="/services/" class="tb-i">{ic("grid",21)}<span>Services</span></a><a href="tel:{TEL}" class="tb-call" data-call="tabbar" aria-label="Call {PHONE}">{ic("phone",24)}<span>Call</span></a><a href="/questions/" class="tb-i">{ic("help",21)}<span>Questions</span></a><button type="button" class="tb-i tb-menu" aria-controls="mnav">{ic("menu",21)}<span>Menu</span></button></nav>
+<a class="fcall" href="tel:{TEL}" data-call="float-desktop" aria-label="Call a roofer at {PHONE}">{ic("phone",20)}<span><b>Need a roofer?</b><small>Call {PHONE}</small></span></a>'''
 
 def crumbs(trail):
     if not trail: return ""

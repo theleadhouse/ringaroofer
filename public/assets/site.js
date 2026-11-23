@@ -220,3 +220,5 @@
     if (window.gtag) gtag("event", "geo_shown", {region: code});
   }).catch(function(){});
 }catch(e){}})();
+// ---------- desktop floating call button: appears once the visitor scrolls past the first screen ----------
+(function () { var b = document.querySelector(".fcall"); if (!b) return; var f = function () { b.classList.toggle("on", window.scrollY > 600); }; window.addEventListener("scroll", f, { passive: true }); f(); })();
