@@ -415,10 +415,10 @@ for code, name, reg, cities, extra in STATES:
                 f'<aside class="doc-side"><div class="sticky">{now_box()}</div></aside>', "doc-wrap")
             + sec(svc_cards(SERVICES[:3]), "soft", f"Popular roofing services in {name}") + sec(ttbox("state-" + code.lower()), "tight") + sec(faq_html(fq), "", "Questions", id_="faq"))
     body = sec(pcards([RPB[k] for k in DEFQ]), "soft", f"What's going on with your roof?", "Start here", f"The roof problems {name} homeowners search most. Tap yours for what to check and when to call.", id_="problems") + body
-    _t = f"Roofers in {name}: {cities[0]}, {cities[1]} & Nearby | RingaRoofer"
-    if len(_t) > 62: _t = f"Roofers in {name}: {cities[0]} & Nearby | RingaRoofer"
-    if len(_t) > 62: _t = f"Roofers in {name} | Local Roof Repair | RingaRoofer"
-    add(url=u, title=_t, desc=f"Roof leaking or storm-hit in {name}? Call {PHONE} to reach a local roofer serving {cities[0]}, {cities[1]}, {cities[2]} and nearby. Repairs, leaks and new roofs.",
+    # Nov 24: Search Console shows state pages ranking for "roof replacement", "roof repair", "roofer near me", "roofing contractor"
+    _t = f"Roofers in {name}: Roof Repair & Replacement | RingaRoofer"
+    if len(_t) > 64: _t = f"Roofers in {name}: Roof Repair & Replacement"
+    add(url=u, title=_t, desc=f"Roof leaking or storm-hit in {name}? Call {PHONE} to reach a local roofer serving {cities[0]}, {cities[1]}, {cities[2]} and nearby for roof repair, leaks, storm repairs and roof replacement.",
         h1=f"Roofers in {name}", trail=[("Coverage", "/coverage/"), (name, u)],
         hero=phero(f"Roofers in {name}: what to know first", f"Roof leak, storm-hit roof or thinking about a new roof in {name}? Here's what to check, the main roof risks in {name}, and how to find a roofer who serves your area.", [("Coverage", "/coverage/"), (name, u)], "state-" + code.lower(), RPHOTO[reg],
                    qs=[("What's going on with my roof?", "problems"), (f"What are the main roof risks in {name}?", "risks"), ("What can I check from the ground?", "check-ground"), (f"Before I hire a roofer in {name}", "hire"), ("Questions people ask", "faq")], kick=name),
