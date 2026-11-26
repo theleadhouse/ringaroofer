@@ -11,8 +11,9 @@
  *   SBB_USER + SBB_PASS (+ SBB_SRC, SBB_PUB_ID, SBB_LIVE, SBB_MIN_PRICE)  LoanBright/SBBnet roofing ping-post (see functions/_lib/sbb.js)
  *   LEADS              optional KV binding: keeps a 90-day backup log of every lead + the platform's response
  */
-import { pingPost, zipPlace } from "../_lib/sbb.js";
-import { logLead } from "../_lib/leadlog.js";
+import { zipPlace } from "../_lib/sbb.js";
+import { sell } from "../_lib/buyers.js";
+import { logLead, sourceOf } from "../_lib/leadlog.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const S = (v, n = 120) => String(v == null ? "" : v).trim().slice(0, n);
 const ALLOWED = /^https:\/\/(www\.)?(ringaroofer|bathvisionary)\.com$|\.pages\.dev$/;
@@ -41,9 +42,12 @@ export async function onRequestPost({ request, env }) {
   for (const k of ["gclid", "gbraid", "wbraid", "msclkid", "fbclid", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]) if (d[k]) lead[k] = S(d[k], 200);
 
   const jobs = [], log = { lead, platform: null, sbb: null };
-  if (env.SBB_USER && env.SBB_PASS && lead.vertical === "roofing") {
+  lead.source = sourceOf(lead);
+  lead.windows_count = S(d.windows_count, 3); lead.timeframe = lead.timeframe || S(d.timeframe, 40);
+  let sale = null;
+  {   // auction across every connected buyer for this vertical (functions/_lib/buyers.js)
     if (!lead.city || !lead.state) { const pl = await zipPlace(lead.zip); if (pl) { lead.city = lead.city || pl.city; lead.state = lead.state || pl.state; } }
-    jobs.push(pingPost(env, lead).then((r) => { log.sbb = r; return r.stage !== "skip" && !/^error/.test(r.reason); }));
+    if (/^yes$/i.test(lead.homeowner || "")) jobs.push(sell(env, lead).then((r) => { sale = r; log.sbb = r; return r.attempts.some((a) => a.stage !== "skip"); }));
   }
   if (env.QUOTE_POST_URL) {
     let map = {}, extra = {}; try { map = JSON.parse(env.QUOTE_FIELD_MAP || "{}"); } catch {} try { extra = JSON.parse(env.QUOTE_EXTRA || "{}"); } catch {}
@@ -61,7 +65,8 @@ export async function onRequestPost({ request, env }) {
   }
   if (!jobs.length) { await logLead(env, lead, null, { test: true }); return J({ error: "not configured" }, 503); }
   const res = await Promise.allSettled(jobs);
-  await logLead(env, lead, log.sbb, { test: env.SBB_LIVE !== "1" || (env.SBB_SRC || "Test") === "Test" });
+  const anyLive = !!(sale && sale.attempts.some((a) => a.live && a.stage !== "skip"));
+  const logged = await logLead(env, lead, sale, { test: sale && sale.sold ? !sale.live : !anyLive });
   if (env.LEADS) { try { await env.LEADS.put(`lead:${lead.submitted_at}:${phone}`, JSON.stringify(log), { expirationTtl: 90 * 86400 }); } catch {} }
-  return res.some((r) => r.status === "fulfilled" && r.value) ? J({ ok: true }) : J({ error: "delivery" }, 502);
+  return (res.some((r) => r.status === "fulfilled" && r.value) || logged) ? J({ ok: true }) : J({ error: "delivery" }, 502);
 }
