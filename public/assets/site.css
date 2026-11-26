@@ -482,3 +482,4 @@ h3.mt{margin-top:30px}
 @media(max-width:999px){.hcard .qt.pic .qt-img img{aspect-ratio:1/1}.hcard .qt.pic .qt-l{font-size:12.5px;padding:6px 2px}.hero-alt span{display:none}.hero-alt{flex-direction:column;gap:6px}}
 .nowwrap{max-width:760px;margin:0 auto}.nowwrap .nowbox{box-shadow:var(--sh)}
 @media(min-width:1000px){.hero-form .hero-in{align-items:start}.hero-form .hero-txt{padding-top:34px}}
+@media(max-width:999px){.hero-form .geo-pill,.hero-form .lead{display:none}.hero-form h1{font-size:2.05rem}.hero-form .hero-alt{margin-top:10px}.hero-form .hero-alt a:first-child{display:none}.hero-form .hero-in{gap:16px;padding-block:20px 28px}}
