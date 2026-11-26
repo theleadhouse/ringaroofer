@@ -61,7 +61,7 @@ body.lp{margin:0;font:400 17px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe
 .lp-gal figcaption{padding:10px 12px;font-weight:700;font-size:14px}
 .lp-faq{max-width:820px}.lp-faq details{background:#fff;border:1px solid #E4E8EE;border-radius:14px;padding:14px 16px;margin-bottom:10px}
 .lp-faq summary{font-weight:800;cursor:pointer}.lp-faq p{margin:8px 0 0;color:#4A5868}.lp-again{margin-top:20px}
-.lp-thanks{max-width:720px;text-align:center}.lp-ok{display:inline-flex;width:64px;height:64px;border-radius:50%;background:#E7F8EE;color:#12A150;align-items:center;justify-content:center;margin-bottom:12px}
+.lp-thanks{max-width:720px;text-align:center}.lp a.qf-btn,.lp a.qf-btn:visited{color:#fff}.lp-tt{margin-top:26px;padding-top:22px;border-top:1px solid #E3E8F0}.lp-ok{display:inline-flex;width:64px;height:64px;border-radius:50%;background:#E7F8EE;color:#12A150;align-items:center;justify-content:center;margin-bottom:12px}
 .lp-ok svg{width:32px;height:32px}.lp-next{text-align:left;max-width:520px;margin:20px auto}.lp-thanks .lp-sub{margin-inline:auto}
 .lp-doc{max-width:760px}
 .lp-foot{background:#0F1821;color:#AEB9C6;padding:30px 0;font-size:12.5px}.lp-foot nav{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0}.lp-foot a{color:#D8E1EC}

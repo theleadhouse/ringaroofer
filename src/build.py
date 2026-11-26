@@ -14,7 +14,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261127c"; UPDATED = "2026-11-20"
+V = "20261127d"; UPDATED = "2026-11-20"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -356,9 +356,9 @@ home_body = (
  + sec(pro_strip(), "", "Real roofs, real work", "Photos")
  + sec(story_cards(STORIES[:3]) + '<p class="center"><a class="btn btn-ghost" href="/community/">More real roof problems</a></p>', "soft", "Roof problems homeowners call about", "Sound familiar?", "Typical situations and what helps. These are examples, not reviews.")
  + sec(q_cards([QBY[k] for k in ("why-is-my-roof-leaking", "repair-or-replace-roof", "signs-you-need-a-new-roof", "how-to-tell-if-hail-hit-roof", "asphalt-shingles-vs-metal", "how-to-find-a-roofer-near-me")]), "", "Roof questions homeowners ask", "Roof Questions", "Straight answers to the questions homeowners search most.", id_="questions")
- + sec(ttbox("home"), "tight soft")
  + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofing help in every state", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
- + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq"))
+ + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq")
+ + sec(ttbox("home"), "tight"))   # Thumbtack backup now sits at the very bottom; the lead form + calls lead the page
 add(url="/", title="Roofers Near You | Roof Repair & New Roofs · Call (888) 261-1486 | RingaRoofer", desc="Need a roofer near you? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.",
     h1="Need a roofer near you?", hero=make_home_hero({}), body=home_body, faqs=HOME_FAQS, cls="home", ogimg=img(P["roofer2"][0], 1200, 630), hero_form=True)
 # Preview of the homepage with the form in lead mode (sends to the buyer; test server until SBB_LIVE=1). Not indexed.

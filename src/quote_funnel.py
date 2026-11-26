@@ -129,11 +129,16 @@ def write(out, c, check):
     chk = page.replace(consent(c), " ").replace(c["disclaimer"], " ")
     chk = re.sub(r"(?i)\bquotes?\b", " ", chk)
     check(chk, "/get-a-quote/")
+    ttb = (f'<div class="lp-tt" data-unmatched hidden><p><b>Want to compare roofers right now?</b> See roofing companies that serve your ZIP on Thumbtack, our partner, with reviews and photos of past work.</p>'
+           f'<p><a class="qf-btn" href="{c.get("tt_url", "")}" rel="sponsored noopener" target="_blank" data-tt="thanks">See roofers on Thumbtack</a></p></div>') if c.get("tt_url") else ""
     thanks = (head(f"Thanks! | {c['brand']}", "Your request is in.", "noindex, follow") + '<body class="lp">' + top +
               f'<main><section class="lp-sec"><div class="lp-wrap lp-thanks"><span class="lp-ok">{CHECK}</span><h1>You&rsquo;re all set</h1>'
-              f'<p class="lp-sub dark">Thanks! Your request is in. Local {c["trade"]} companies that serve your area may call or text you shortly, sometimes from a number you don&rsquo;t recognize, so keep your phone handy.</p>'
-              '<ul class="lp-next"><li><b>Pick up the call</b> and tell them about your project.</li><li><b>Compare</b> what each company offers before you decide.</li><li><b>No pressure.</b> You are not obligated to hire anyone.</li></ul>'
-              f'<p>Rather talk now? <a class="qf-btn" href="tel:{c["tel"]}" data-call="thanks">{PHONE} Call {c["phone"]}</a></p></div></section></main>' + foot + '</body></html>')
+              f'<div data-matched><p class="lp-sub dark">Thanks! Your request is in. A local {c["trade"]} company that serves your area will call or text you shortly, sometimes from a number you don&rsquo;t recognize, so keep your phone handy.</p>'
+              '<ul class="lp-next"><li><b>Pick up the call</b> and tell them about your project. Most homeowners hear back within minutes.</li><li><b>Have a rough idea</b> of the roof size, age and any leaks or damage.</li><li><b>No pressure.</b> You are not obligated to hire anyone.</li></ul></div>'
+              f'<div data-unmatched hidden><p class="lp-sub dark">Thanks! We have your request. Our partner {c["trade"]} companies may not cover your ZIP code yet, so the fastest way to get help is to call us or compare companies online.</p></div>'
+              f'<p>Rather talk now? <a class="qf-btn" href="tel:{c["tel"]}" data-call="thanks">{PHONE} Call {c["phone"]}</a></p>{ttb}</div></section></main>'
+              '<script>(function(){if(new URLSearchParams(location.search).get("m")==="0"){document.querySelectorAll("[data-matched]").forEach(function(e){e.hidden=true});document.querySelectorAll("[data-unmatched]").forEach(function(e){e.hidden=false})}})();</script>'
+              + foot + '</body></html>')
     plist = "".join(f"<li>{esc(p)}</li>" for p in c["partners"])
     partners = (head(f"Marketing Partners | {c['brand']}", "Companies that may contact you about your request.", "noindex, follow") + '<body class="lp">' + top +
                 f'<main><section class="lp-sec"><div class="lp-wrap lp-doc"><h1>Marketing Partners</h1><p>When you submit a request on {c["url"].split("//")[1]} and agree to be contacted, '

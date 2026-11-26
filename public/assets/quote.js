@@ -101,7 +101,7 @@
         try { if (window.gtag && C.googleAds && C.googleAdsFormLabel) gtag("event", "conversion", { send_to: C.googleAds + "/" + C.googleAdsFormLabel }); } catch (x) {}
         try { if (window.fbq) fbq("track", "Lead"); } catch (x) {}
         track("generate_lead", { vertical: cfg.vertical, method: "get_a_quote" });
-        setTimeout(function () { location.href = "/get-a-quote/thanks/"; }, 1300);
+        setTimeout(function () { location.href = "/get-a-quote/thanks/?m=" + (r.j && r.j.matched ? "1" : "0"); }, 1300);
       })
       .catch(function (x) {
         q("[data-wait]").hidden = true; q(".qf-steps").hidden = false; show(2);

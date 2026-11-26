@@ -51,7 +51,9 @@ export async function onRequestPost({ request, env }) {
     // Real homeowners go only to LIVE buyers once any buyer for this category is live; the /preview/ page always stays on test buyers.
     const modes = await loadModes(env), preview = /\/preview\//.test(lead.landing_page || "");
     const anyLiveBuyer = BUYERS.some((b) => b.verticals.includes(lead.vertical) && b.configured(env) && modes[b.id] === "live");
-    const opts = preview ? { modes, testOnly: true } : anyLiveBuyer ? { modes, liveOnly: true } : { modes };
+    // Real homeowner data never goes to a buyer's TEST server: with no live buyer yet, the lead is logged and the visitor is offered Thumbtack + our phone line.
+    const opts = preview ? { modes, testOnly: true } : { modes, liveOnly: true };
+    if (!preview && !anyLiveBuyer) lead.no_live_buyer = 1;
     if (/^yes$/i.test(lead.homeowner || "")) jobs.push(sell(env, lead, null, opts).then((r) => { sale = r; log.sbb = r; return r.attempts.some((a) => a.stage !== "skip"); }));
   }
   if (env.QUOTE_POST_URL) {
@@ -73,5 +75,6 @@ export async function onRequestPost({ request, env }) {
   const anyLive = !!(sale && sale.attempts.some((a) => a.live && a.stage !== "skip"));
   const logged = await logLead(env, lead, sale, { test: sale && sale.sold ? !sale.live : !anyLive });
   if (env.LEADS) { try { await env.LEADS.put(`lead:${lead.submitted_at}:${phone}`, JSON.stringify(log), { expirationTtl: 90 * 86400 }); } catch {} }
-  return (res.some((r) => r.status === "fulfilled" && r.value) || logged) ? J({ ok: true }) : J({ error: "delivery" }, 502);
+  const matched = !!(sale && sale.sold);
+  return (res.some((r) => r.status === "fulfilled" && r.value) || logged) ? J({ ok: true, matched }) : J({ error: "delivery" }, 502);
 }

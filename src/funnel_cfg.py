@@ -1,7 +1,8 @@
 """RingaRoofer smart quote form (/get-a-quote/). PARTNERS = companies named in the consent (from your buyer / ping tree)."""
 import os
 from content import P, img, PHONE, TEL, EMAIL, URL, BRAND, TT_BASE
-MODE = "thumbtack"   # "thumbtack": form ends on our Thumbtack page, no contact details collected.  "leads": full form + consent + ping/post.
+MODE = "leads"   # Nov 27 2026: real lead form on every page (Thumbtack stays lower on pages + on the thank-you page when no buyer covers the ZIP).
+# "thumbtack": form ends on our Thumbtack page, no contact details collected.  "leads": full form + consent + ping/post.
 PARTNERS = ["SBBNet, Inc. (LoanBright)", "Connatria", "Alpine Digital Group, Inc."]   # e.g. ["Buyer Company LLC"] — exact legal names your buyer gives you. Required before running ads.
 def pic(k, w=420, h=290): return img(P[k][0], w, h)
 def cfg(v, disclaimer):
@@ -13,7 +14,7 @@ def cfg(v, disclaimer):
 def _cfg(v, disclaimer):
     logo = open(os.path.join(os.path.dirname(__file__), "favicon.svg")).read() + f"<span>{BRAND}</span>"
     return dict(brand=BRAND, url=URL, phone=PHONE, tel=TEL, email=EMAIL, trade="roofing", vertical="roofing", v=v, ca="/california-privacy/",
-        brand_color="#F26B1D", brand_color2="#D85A12", dark="#0B1729", logo_html=logo, disclaimer=disclaimer, partners=[BRAND] + PARTNERS,
+        tt_url=TT_BASE + "thanks", brand_color="#F26B1D", brand_color2="#D85A12", dark="#0B1729", logo_html=logo, disclaimer=disclaimer, partners=[BRAND] + PARTNERS,
         title="Roofing Quotes From Local Roofers | RingaRoofer", desc="Get roofing quotes from local roofers in about 30 seconds. Roof replacement, repairs and storm or hail repairs for homeowners.",
         kicker="Roof replacement &amp; repair · For homeowners", h1="Get roofing quotes from <em>local roofers</em> in 30 seconds",
         sub="Tap your roof type, add your ZIP, and we'll connect you with roofing companies that serve your area.",
@@ -23,9 +24,10 @@ def _cfg(v, disclaimer):
             ("Asphalt shingle", "Asphalt shingles", pic("shingles2"), ""), ("Metal", "Metal roof", pic("metal"), ""), ("Tile", "Tile roof", pic("tile"), ""),
             ("Flat", "Flat roof", pic("flat"), ""), ("Wood shake", "Wood shake", pic("shake"), ""), ("Not sure", "Not sure", pic("aerial"), "")]),
         step2_q="Great! A few quick details",
-        step2_chips=[dict(name="project", q="What do you need?", opts=[("Roof replacement", "Replace my roof"), ("Roof repair", "Repair a leak"), ("Storm or hail repair", "Storm or hail repair"), ("New roof", "New roof")])],
+        step2_chips=[dict(name="project", q="What do you need?", opts=[("Roof replacement", "Replace my roof"), ("Roof repair", "Repair a leak"), ("Storm or hail repair", "Storm or hail repair"), ("New roof", "New roof")]),
+                     dict(name="timeframe", q="When do you want it done?", opts=[("Immediately", "Right away"), ("Within 1-3 months", "In 1 to 3 months"), ("Just planning", "Just planning")])],
         step3_q="Last step: where should local roofers reach you?",
-        labels={"material": "Roof type", "project": "Project"},
+        labels={"material": "Roof type", "project": "Project", "timeframe": "Timing"},
         how=[("Tap your roof", "Pick your roof type, add your ZIP and what you need."), ("We find local roofers", "We match your request with roofing companies that serve your area."),
              ("Compare and choose", "Talk to the companies, compare what each one offers, and pick the one you like.")],
         gallery_h="Roofing work our network handles", gallery=[(pic("tearoff"), "Full roof replacement"), (pic("metal"), "Metal roofs"), (pic("flat"), "Flat roofs"), (pic("hail2"), "Storm and hail repairs")],

@@ -45,7 +45,8 @@ const loanbright = {
     const x = await this.send(e, { ...this.base(e, l), Mode: "post", Lead_ID: p.token, Lead_Cost: "1", NoSale: "No",
       First_Name: l.first_name, Last_Name: l.last_name, Email: l.email, Primary_Phone: l.phone, Property_Address: l.address || "",
       Universal_Lead_ID: l.universal_leadid || "", Active_Prospect_URL: l.xxTrustedFormCertUrl || "",
-      Tcpa_Language: String(l.consent_text || "").replace(/\s+/g, " ").slice(0, 255), vendor_lead_id: l.lead_id || "" });
+      Tcpa_Language: String(l.consent_text || "").replace(/\s+/g, " ").slice(0, 255), vendor_lead_id: l.lead_id || "",
+      Comments: [l.project, l.timeframe && "Timing: " + l.timeframe].filter(Boolean).join(" · ").slice(0, 255) });
     return { ok: /^accepted$/i.test(x.status), price: x.price || p.price, status: x.status, error: x.error, req: x.req, raw: x.raw };
   },
 };
@@ -78,7 +79,7 @@ const connatria = {
 
 // ------------------------------------------------------------------ Alpine Digital Group (adgtrax) — windows (+ roofing when ALPINE_ROOFING=1)
 const AL_URL = "https://adgtrax.com/submit/home-improvement";
-const TIMEFRAME = { emergency: 1, flexible: 2, "within 1 week": 3, "1-2 weeks": 4, "more than 2 weeks": 5 };
+const TIMEFRAME = { emergency: 1, immediately: 1, flexible: 2, "within 1 week": 3, "1-2 weeks": 4, "more than 2 weeks": 5, "within 1-3 months": 5, "just planning": 5 };
 const alpine = {
   id: "alpine", name: "Alpine Digital", verticals: ["windows", "roofing"],
   configured: (e) => !!(e.ALPINE_KEY && e.ALPINE_CAMPAIGN), live: (e) => e.ALPINE_LIVE === "1",
