@@ -1,8 +1,14 @@
 /** GET /api/pub/me (also /v1/me) — a publisher's own account: limits, daily stats, recent leads and monthly statements. Used by the publisher portal. */
 import { J, auth } from "../../_lib/pubs.js";
+import { currentUser } from "../../_lib/session.js";
 export const onRequestOptions = () => new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Allow-Methods": "GET" } });
 const r2 = (n) => Math.round((n || 0) * 100) / 100;
 export async function onRequestGet({ request, env }) {
+  if (!request.headers.get("Authorization")) {   // logged in to the portal with email + password
+    const u = await currentUser(request, env), p = u && u.role === "publisher" && u.pub_id && await env.LEADS_DB.prepare("SELECT * FROM publishers WHERE id=?1").bind(u.pub_id).first();
+    if (!p) return J({ status: "error", reason: "not signed in" }, 401);
+    return build(env.LEADS_DB, p);
+  }
   const { pub, err } = await auth(env, request, null);
   if (err) {   // a paused publisher can still see their numbers
     const h = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();

@@ -14,7 +14,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261127d"; UPDATED = "2026-11-20"
+V = "20261127e"; UPDATED = "2026-11-20"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -136,6 +136,29 @@ def schema(p):
 
 import quote_funnel, funnel_cfg
 _QFS = {}
+APP_GATE = """<script>fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(!j.user){location.href="/app/";return}window.RX_USER=j.user;document.documentElement.classList.add("ok");
+var b=document.getElementById("rxback");if(b)b.href=j.user.role==="admin"?"/app/admin/":"/app/portal/";var k=document.getElementById("key");if(k&&!k.value&&j.user.role==="publisher")fetch("/api/pub/account",{credentials:"same-origin"}).then(function(r){return r.json()}).then(function(a){if(a.key)k.value=a.key})}).catch(function(){location.href="/app/"})</script>"""
+APP_BAR = ('<header class="rxbar"><a class="rxb" href="/app/"><img src="/app/mark.svg" width="26" height="26" alt=""><span><b>Radar Exchange</b> {sub}</span></a>'
+           '<nav><a href="/app/docs/">API docs</a><a href="/app/sandbox/">Sandbox</a><a id="rxback" href="/app/">← Back to dashboard</a></nav></header>')
+APP_CSS = ('<link rel="stylesheet" href="/app/rx.css?v=1"><style>html:not(.ok) body{visibility:hidden}body{background:var(--paper)!important;font-family:Geist,system-ui,sans-serif!important}'
+           '.rxbar{background:#07111F;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 22px;flex-wrap:wrap;position:sticky;top:0;z-index:9}.rxb{display:flex;gap:10px;align-items:center;color:#fff;text-decoration:none}.rxb b{font-family:Archivo,sans-serif}.rxb span{color:#8FA3BC}'
+           '.rxbar nav{display:flex;gap:18px}.rxbar nav a{color:#C5D2E3;text-decoration:none;font-size:14px}.rxbar nav a:hover{color:#fff}header:not(.rxbar){background:#07111F!important}h1,h2{font-family:Archivo,Geist,sans-serif}'
+           'button{background:#FFB547!important;color:#1A1100!important;border-radius:999px!important}button#bpp{background:#07111F!important;color:#3CE0B5!important}pre{background:#07111F!important}</style>')
+def write_app(out):
+    A = os.path.join(ROOT, "admin"); d = os.path.join(out, "app")
+    for sub in ("", "admin", "portal", "docs", "sandbox", "fonts"): os.makedirs(os.path.join(d, sub), exist_ok=True)
+    for f in os.listdir(os.path.join(A, "fonts")): shutil.copy(os.path.join(A, "fonts", f), os.path.join(d, "fonts", f))
+    for f in ("rx.css", "mark.svg"): shutil.copy(os.path.join(A, f), os.path.join(d, f))
+    shutil.copy(os.path.join(A, "app.html"), os.path.join(d, "index.html"))
+    shutil.copy(os.path.join(A, "leads-admin.html"), os.path.join(d, "admin", "index.html"))
+    shutil.copy(os.path.join(A, "portal.html"), os.path.join(d, "portal", "index.html"))
+    for src, dst, sub in (("publisher-spec.html", "docs", "API docs"), ("publisher-console.html", "sandbox", "Sandbox")):
+        h = open(os.path.join(A, src), encoding="utf-8").read()
+        h = h.replace('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', '<link rel="icon" href="/app/mark.svg" type="image/svg+xml">' + APP_CSS + APP_GATE)
+        h = re.sub(r"<header>.*?</header>", lambda m: APP_BAR.format(sub=sub) + m.group(0), h, count=1, flags=re.S)
+        h = h.replace("/publisher-console/", "/app/sandbox/").replace("/publisher-spec/", "/app/docs/").replace('call("/v1/', 'call("/v1/')
+        open(os.path.join(d, dst, "index.html"), "w", encoding="utf-8").write(h)
+
 def qmode(p=None): return "leads" if (p and p.get("leads_preview")) else funnel_cfg.MODE
 def qcfg(p=None):
     """Form settings for this page: the live mode from funnel_cfg.MODE, or 'leads' on the /preview/ page."""
@@ -695,20 +718,18 @@ def main():
     open(os.path.join(OUT, "404.html"), "w").write(page(nf).replace(f'<link rel="canonical" href="{URL}/404/">', ""))
     open(os.path.join(OUT, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(
         f'<url><loc>{URL}{p["url"]}</loc><lastmod>{UPDATED}</lastmod></url>' for p in PAGES if not p.get("noindex")) + "\n</urlset>\n")
-    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /preview/\nDisallow: /leads-admin/\nDisallow: /publisher-spec/\nDisallow: /publisher-console/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
+    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /preview/\nDisallow: /leads-admin/\nDisallow: /publisher-spec/\nDisallow: /publisher-console/\nDisallow: /app/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
     open(os.path.join(OUT, "llms.txt"), "w").write(f"# {BRAND}\n\n> {BRAND} (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling {PHONE} connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, roof inspections, storm and hail repair, emergency roofing and tarping, roof replacement, new roofs and re-roofs on shingle, metal, flat, tile, slate and cedar shake roofs. It does not do roofing work and does not charge homeowners.\n\n## Pages\n" + "\n".join(f"- [{p['h1']}]({URL}{p['url']}): {p['desc']}" for p in PAGES if not p.get("legal") and not p.get("noindex")) + "\n")
     open(os.path.join(OUT, "google6cdd134560bcda8a.html"), "w").write("google-site-verification: google6cdd134560bcda8a.html")
     open(os.path.join(OUT, "BingSiteAuth.xml"), "w").write('<?xml version="1.0"?>\n<users>\n\t<user>143504FD65C9CD8E8439BFD5BD0E4177</user>\n</users>\n')
-    open(os.path.join(OUT, "_redirects"), "w").write(legal.REDIRECTS)
+    open(os.path.join(OUT, "_redirects"), "w").write(legal.REDIRECTS + "\n/leads-admin/* /app/admin/ 301\n/leads-admin /app/admin/ 301\n/publisher-spec/* /app/docs/ 301\n/publisher-console/* /app/sandbox/ 301\n")
     open(os.path.join(OUT, "_headers"), "w").write(legal.HEADERS)
     shutil.copy(os.path.join(ROOT, "favicon.svg"), os.path.join(OUT, "favicon.svg"))
     import quote_funnel, funnel_cfg
     if funnel_cfg.MODE == "leads" and not funnel_cfg.PARTNERS: print("WARNING: funnel_cfg.PARTNERS is empty: add your buyer's company name(s) before running ads to /get-a-quote/")
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
-    os.makedirs(os.path.join(OUT, "leads-admin"), exist_ok=True)   # private leads dashboard (noindex, password via /api/admin/leads)
-    shutil.copy(os.path.join(ROOT, "admin", "leads-admin.html"), os.path.join(OUT, "leads-admin", "index.html"))
-    for pg in ("publisher-spec", "publisher-console", "opt-out"):   # publisher docs + no-code test console (noindex)
-        os.makedirs(os.path.join(OUT, pg), exist_ok=True); shutil.copy(os.path.join(ROOT, "admin", pg + ".html"), os.path.join(OUT, pg, "index.html"))
+    write_app(OUT)   # Radar Exchange app: /app/ sign-in, /app/admin/, /app/portal/, /app/docs/, /app/sandbox/ (served at app.homeproradar.com)
+    os.makedirs(os.path.join(OUT, "opt-out"), exist_ok=True); shutil.copy(os.path.join(ROOT, "admin", "opt-out.html"), os.path.join(OUT, "opt-out", "index.html"))
     if funnel_cfg.MODE != "leads":   # the lead-mode preview links its consent to /partners/: build that page too
         import tempfile
         with tempfile.TemporaryDirectory() as td:

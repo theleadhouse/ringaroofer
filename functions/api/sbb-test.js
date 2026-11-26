@@ -15,9 +15,10 @@ const CASES = {
     { name: "Lakewood CO, 4 windows, replace", city: "Lakewood", state: "CO", zip: "80226", material: "Vinyl", project: "Window replacement", windows_count: "4" },
   ],
 };
+import { isAdmin } from "../_lib/session.js";
 export async function onRequestGet({ request, env }) {
   const u = new URL(request.url), tok = u.searchParams.get("token") || "";
-  if (!tok || (tok !== env.SBB_TEST_TOKEN && tok !== env.ADMIN_PASS)) return J({ error: "locked" }, 403);
+  if (!(tok && (tok === env.SBB_TEST_TOKEN || tok === env.ADMIN_PASS)) && !(await isAdmin(request, env))) return J({ error: "locked" }, 403);
   const bid = (u.searchParams.get("buyer") || "loanbright").toLowerCase(), b = byId(bid);
   if (!b) return J({ error: "unknown buyer", buyers: ALL_BUYERS.map((x) => x.id) }, 400);
   if (!b.configured(env)) return J({ error: `${b.name} is not connected yet (keys missing in Cloudflare)` }, 400);

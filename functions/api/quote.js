@@ -52,9 +52,10 @@ export async function onRequestPost({ request, env }) {
     const modes = await loadModes(env), preview = /\/preview\//.test(lead.landing_page || "");
     const anyLiveBuyer = BUYERS.some((b) => b.verticals.includes(lead.vertical) && b.configured(env) && modes[b.id] === "live");
     // Real homeowner data never goes to a buyer's TEST server: with no live buyer yet, the lead is logged and the visitor is offered Thumbtack + our phone line.
-    const opts = preview ? { modes, testOnly: true } : { modes, liveOnly: true };
+    // Until a buyer is LIVE, real form leads run through the internal Demo Buyer: full ping/post logged, nothing leaves our system, nothing billed.
+    const opts = preview ? { modes, testOnly: true } : anyLiveBuyer ? { modes, liveOnly: true } : { modes, only: "demo", testOnly: true, demo: true };
     if (!preview && !anyLiveBuyer) lead.no_live_buyer = 1;
-    if (/^yes$/i.test(lead.homeowner || "")) jobs.push(sell(env, lead, null, opts).then((r) => { sale = r; log.sbb = r; return r.attempts.some((a) => a.stage !== "skip"); }));
+    if (/^yes$/i.test(lead.homeowner || "")) jobs.push(sell(env, lead, opts.only || null, opts).then((r) => { sale = r; log.sbb = r; return r.attempts.some((a) => a.stage !== "skip"); }));
   }
   if (env.QUOTE_POST_URL) {
     let map = {}, extra = {}; try { map = JSON.parse(env.QUOTE_FIELD_MAP || "{}"); } catch {} try { extra = JSON.parse(env.QUOTE_EXTRA || "{}"); } catch {}
@@ -75,6 +76,6 @@ export async function onRequestPost({ request, env }) {
   const anyLive = !!(sale && sale.attempts.some((a) => a.live && a.stage !== "skip"));
   const logged = await logLead(env, lead, sale, { test: sale && sale.sold ? !sale.live : !anyLive });
   if (env.LEADS) { try { await env.LEADS.put(`lead:${lead.submitted_at}:${phone}`, JSON.stringify(log), { expirationTtl: 90 * 86400 }); } catch {} }
-  const matched = !!(sale && sale.sold);
+  const matched = !!(sale && sale.sold && sale.live);   // only a LIVE buyer means a roofer will actually call
   return (res.some((r) => r.status === "fulfilled" && r.value) || logged) ? J({ ok: true, matched }) : J({ error: "delivery" }, 502);
 }

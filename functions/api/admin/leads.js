@@ -8,11 +8,12 @@ import { init } from "../../_lib/leadlog.js";
 import { BUYERS, loadModes } from "../../_lib/buyers.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const r2 = (v) => Math.round((+v || 0) * 100) / 100;
-function authed(request, env) { const k = request.headers.get("X-Admin-Key") || ""; const want = env.ADMIN_PASS || env.SBB_TEST_TOKEN; return !!want && k === want; }
+import { isAdmin } from "../../_lib/session.js";
+const authed = isAdmin;
 const CH = (src) => (/google/.test(src) ? "google" : /meta|facebook|fb|instagram/.test(src) ? "meta" : /bing|microsoft/.test(src) ? "bing" : /organic|direct/.test(src) ? "organic" : "other");
 
 export async function onRequestGet({ request, env }) {
-  if (!authed(request, env)) return J({ error: "locked" }, 401);
+  if (!(await authed(request, env))) return J({ error: "locked" }, 401);
   const modes = await loadModes(env);
   const buyers = BUYERS.map((b) => ({ id: b.id, name: b.name, verticals: b.verticals, connected: b.configured(env), live: modes[b.id] === "live", paused: modes[b.id] === "paused",
     mode: modes[b.id], min: parseFloat(modes["min:" + b.id] || env[`${b.id.toUpperCase()}_MIN_PRICE`] || "0") || 0 }));
@@ -68,7 +69,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!authed(request, env)) return J({ error: "locked" }, 401);
+  if (!(await authed(request, env))) return J({ error: "locked" }, 401);
   if (!env.LEADS_DB) return J({ error: "no_db" }, 503);
   const db = env.LEADS_DB; await init(db);
   let d; try { d = await request.json(); } catch { return J({ error: "bad json" }, 400); }

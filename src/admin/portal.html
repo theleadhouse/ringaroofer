@@ -1,0 +1,66 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><title>Partner portal · Radar Exchange</title><link rel="icon" href="/app/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/app/rx.css?v=1">
+<style>
+.pn{display:none}.pn.on{display:block;animation:fi .2s}@keyframes fi{from{opacity:.4;transform:translateY(4px)}}
+.kp{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}.kp div{background:var(--ink);color:#fff;border-radius:16px;padding:16px}.kp b{display:block;font:800 26px Archivo,sans-serif}.kp span{font:500 11px Plex,monospace;color:#8FA3BC;text-transform:uppercase;letter-spacing:.05em}.kp .am b{color:var(--amb)}
+.g2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}.card{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:16px;min-width:0}.card h2{font-size:18px;margin-bottom:12px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:170px;border-bottom:1px solid #E6EBE3}.bars div{flex:1;background:#CFE9E0;border-radius:4px 4px 0 0;position:relative;min-height:2px}.bars div i{position:absolute;left:0;right:0;bottom:0;background:var(--amb);border-radius:4px 4px 0 0}
+.lim{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.lim div{background:#F4F6F2;border-radius:12px;padding:12px}.lim b{display:block;font:800 20px Archivo,sans-serif}.lim span{font-size:13px;color:var(--mut)}
+.tbw{overflow:auto}.tb{width:100%;border-collapse:collapse;font-size:14px}.tb th{font:500 11px Plex,monospace;text-transform:uppercase;color:var(--mut);text-align:left;padding:8px 6px;border-bottom:1px solid #E6EBE3;white-space:nowrap}.tb td{padding:9px 6px;border-bottom:1px solid #EEF1EC;white-space:nowrap}.tb td.n{text-align:right;font-family:Plex,monospace}
+.st{font:500 11px Plex,monospace;border-radius:999px;padding:2px 9px}.st.sold{background:#E3F8F1;color:#0E7A55}.st.returned{background:#FDE8E8;color:#B42318}.st.rejected,.st.expired{background:#EEF1EC;color:#5B6B80}.st.open{background:#E7F1FB;color:#0B5CAD}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.row h2{margin:0}select.s{border:1.5px solid #D3DBE4;border-radius:999px;padding:7px 12px;background:#fff}
+.key{font-family:Plex,monospace;background:#07111F;color:var(--sig);border-radius:12px;padding:14px;word-break:break-all;font-size:14px}
+.mode{font:500 12px Plex,monospace;border-radius:999px;padding:5px 11px;text-transform:uppercase}.mode.live{background:#E3F8F1;color:#0E7A55}.mode.test{background:#FFF3DC;color:#8A5A00}.mode.paused{background:#FDE8E8;color:#B42318}
+.note{background:#FFF3DC;border:1px solid #F5D58A;border-radius:14px;padding:12px 16px;margin-bottom:16px}
+.ep{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:14px}.ep code{background:#F4F6F2;border-radius:6px;padding:2px 7px}
+@media(max-width:1100px){.kp{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}@media(max-width:560px){.kp{grid-template-columns:repeat(2,1fr)}.lim{grid-template-columns:1fr}}
+</style></head><body>
+<div class="shell">
+<aside class="side">
+ <a class="brand" href="/app/portal/"><svg width="28" height="28" viewBox="0 0 32 32" class="mk" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-opacity=".35"/><circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-opacity=".55"/><circle cx="16" cy="16" r="3.2" fill="currentColor"/><path d="M16 16 L28 9" stroke="#FFB547" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>Radar Exchange</b><i>Partner portal</i></span></a>
+ <nav class="nav" id="nav"><span class="sec">Your account</span>
+  <button class="on" data-p="ov">Overview</button><button data-p="leads">Leads</button><button data-p="stm">Statements</button>
+  <span class="sec">Integration</span><button data-p="api">API keys</button><a href="/app/docs/">API docs</a><a href="/app/sandbox/">Sandbox</a>
+  <span class="sec">Settings</span><button data-p="acct">Password</button></nav>
+ <div class="who"><span>Signed in as</span><b id="who">…</b><button id="out">Sign out</button></div>
+</aside>
+<div class="mainw">
+ <div class="topbar"><h1 id="ttl">Overview</h1><span class="mode" id="mode"></span><span class="live"><i></i>Updates every minute</span></div>
+ <main class="wrap">
+  <div class="note" id="pause" hidden></div>
+  <section class="pn on" id="pn-ov"><div class="kp" id="kp"></div>
+   <div class="g2"><div class="card"><h2>Last 30 days</h2><div class="bars" id="bars"></div><p style="color:var(--mut);font-size:13px">Bars: pings per day. Amber: sold.</p></div>
+   <div class="card"><h2>Your limits</h2><div class="lim" id="lim"></div><p style="color:var(--mut);font-size:13px;margin:14px 0 0" id="rule"></p></div></div>
+   <div class="card"><div class="row"><h2>Latest leads</h2><a href="#" data-go="leads">All leads →</a></div><div class="tbw"><table class="tb" id="lt5"></table></div></div></section>
+  <section class="pn" id="pn-leads"><div class="card"><div class="row"><h2>Leads</h2><div class="row" style="margin:0"><select class="s" id="f"><option value="">All</option><option value="sold">Sold</option><option value="returned">Returned</option><option value="rejected">Rejected</option><option value="open">Open</option><option value="expired">Expired</option></select><button class="b line" id="csv">Download CSV</button></div></div><div class="tbw"><table class="tb" id="lt"></table></div></div></section>
+  <section class="pn" id="pn-stm"><div class="card"><h2>Monthly statements</h2><table class="tb" id="st"></table><p style="color:var(--mut);font-size:13px">Live leads only. Returned leads are not payable. Payment terms are in your agreement.</p></div></section>
+  <section class="pn" id="pn-api"><div class="card"><h2>Your API key</h2><p style="color:var(--mut);margin:0 0 12px">Your servers send this key with every ping and post: <code>Authorization: Bearer YOUR_KEY</code>. Keep it private. Making a new key stops the old one right away.</p>
+   <div class="key" id="key">••••••••••••••••••••••••</div><p style="margin:12px 0 0"><button class="b dark" id="show">Show &amp; copy</button> <button class="b line" id="rot">Make a new key</button> <span id="km" style="color:var(--mut);font-size:14px"></span></p></div>
+   <div class="card"><h2>Endpoints</h2><div class="ep"><b>Pre-ping</b><code>POST https://api.homeproradar.com/v1/preping</code><b>Ping</b><code>POST https://api.homeproradar.com/v1/ping</code><b>Post</b><code>POST https://api.homeproradar.com/v1/post</code><b>Coverage</b><code>GET https://api.homeproradar.com/v1/coverage</code></div>
+   <p style="margin:14px 0 0"><a class="b amb" href="/app/docs/">Read the API docs</a> <a class="b line" href="/app/sandbox/">Try the sandbox</a></p></div></section>
+  <section class="pn" id="pn-acct"><div class="card" style="max-width:520px"><h2>Change password</h2><form id="pw"><label class="fld">Current password<input name="c" type="password" autocomplete="current-password" required></label><label class="fld">New password (10+ characters)<input name="n" type="password" autocomplete="new-password" required minlength="10"></label><button class="b amb" type="submit">Save</button><p class="msg"></p></form></div></section>
+ </main></div></div>
+<script>
+(function(){"use strict";var $=function(s){return document.querySelector(s)},ME=null,E=function(v){return String(v==null?"":v).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})},
+ M=function(n){return "$"+(+n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})},T={ov:"Overview",leads:"Leads",stm:"Statements",api:"API keys",acct:"Password"};
+function j(u,o){o=o||{};o.credentials="same-origin";o.headers={"Content-Type":"application/json"};return fetch(u,o).then(function(r){if(r.status===401){location.href="/app/";throw new Error("signed out")}return r.json().then(function(x){if(!r.ok)throw new Error(x.error||x.reason||"Error");return x})})}
+function show(p){[].forEach.call(document.querySelectorAll("#nav button"),function(b){b.classList.toggle("on",b.getAttribute("data-p")===p)});[].forEach.call(document.querySelectorAll(".pn"),function(s){s.classList.toggle("on",s.id==="pn-"+p)});$("#ttl").textContent=T[p];scrollTo(0,0)}
+$("#nav").addEventListener("click",function(e){var b=e.target.closest("button");if(b)show(b.getAttribute("data-p"))});document.addEventListener("click",function(e){var a=e.target.closest("[data-go]");if(a){e.preventDefault();show(a.getAttribute("data-go"))}});
+function rows(R){return '<tr><th>Time</th><th>Ping ID</th><th>Category</th><th>ZIP</th><th>Sub ID</th><th>Status</th><th>Payout</th><th>Reason</th></tr>'+(R.length?R.map(function(r){return '<tr><td>'+new Date(r.ts).toLocaleString()+(r.test?' <span class="st open">test</span>':'')+'</td><td class="mono">'+E(r.ping_id)+'</td><td>'+E(r.vertical)+'</td><td>'+E(r.zip)+' '+E(r.state)+'</td><td>'+E(r.sub_id)+'</td><td><span class="st '+E(r.status)+'">'+E(r.status)+'</span></td><td class="n">'+(r.payout?M(r.payout):"–")+'</td><td style="color:var(--mut)">'+E(r.reason)+'</td></tr>'}).join(""):'<tr><td colspan=8 style="color:var(--mut)">Nothing here yet.</td></tr>')}
+function draw(d){ME=d;var p=d.publisher,t=d.totals_30d||{};$("#mode").className="mode "+p.mode;$("#mode").textContent=p.mode;$("#pause").hidden=p.mode!=="paused";$("#pause").textContent="Your account is paused"+(p.paused_reason?": "+p.paused_reason:"")+". Contact your account manager to resume.";
+ $("#kp").innerHTML=[["Pre-pings",t.prepings||0],["Pings",t.pings||0],["We bid on",t.pings?Math.round(100*(t.bids||0)/t.pings)+"%":"–"],["Sold",t.sold||0],["Returned",t.returned||0],["Earned",M(t.payout),"am"]].map(function(x){return '<div class="'+(x[2]||"")+'"><b>'+x[1]+'</b><span>'+x[0]+' · 30 days</span></div>'}).join("");
+ var D=(d.days||[]).slice().reverse(),mx=Math.max.apply(null,[1].concat(D.map(function(x){return x.pings})));$("#bars").innerHTML=D.length?D.map(function(x){return '<div style="height:'+Math.max(2,100*x.pings/mx)+'%" title="'+x.day+': '+x.pings+' pings, '+(x.sold||0)+' sold"><i style="height:'+(x.pings?100*(x.sold||0)/x.pings:0)+'%"></i></div>'}).join(""):'<p style="color:var(--mut)">No activity yet.</p>';
+ var L=p.limits;$("#lim").innerHTML='<div><b>'+(L.requests_per_minute||"∞")+'</b><span>requests / minute</span></div><div><b>'+(L.hourly_cap||"∞")+'</b><span>sold / hour</span></div><div><b>'+(L.daily_cap||"∞")+'</b><span>sold / day</span></div>';
+ $("#rule").textContent="Categories: "+p.verticals.join(", ")+" · You're paid "+p.payout_rule+".";
+ var S=d.statements||[];$("#st").innerHTML='<tr><th>Month</th><th>Sold</th><th>Returned</th><th>Payable</th></tr>'+(S.length?S.map(function(s){return '<tr><td>'+s.month+'</td><td class="n">'+s.sold+'</td><td class="n">'+(s.returned||0)+'</td><td class="n"><b>'+M(s.payable)+'</b></td></tr>'}).join(""):'<tr><td colspan=4 style="color:var(--mut)">No live sales yet.</td></tr>');
+ $("#lt5").innerHTML=rows((d.leads||[]).slice(0,6));filt()}
+function filt(){var f=$("#f").value;$("#lt").innerHTML=rows((ME.leads||[]).filter(function(r){return !f||r.status===f}))}$("#f").addEventListener("change",filt);
+$("#csv").addEventListener("click",function(){var c=["ts","ping_id","test","vertical","zip","state","project","sub_id","status","payout","reason"],t=[c.join(",")].concat((ME.leads||[]).map(function(r){return c.map(function(k){var v=k==="ts"?new Date(r[k]).toISOString():r[k];return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")})).join("\n");var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download="radar-exchange-leads.csv";a.click()});
+$("#show").addEventListener("click",function(){j("/api/pub/account").then(function(x){$("#key").textContent=x.key;try{navigator.clipboard.writeText(x.key);$("#km").textContent="Copied."}catch(e){}})});
+$("#rot").addEventListener("click",function(){if(!confirm("Make a new key? The old key stops working immediately, so update your servers right away."))return;j("/api/pub/account",{method:"POST",body:JSON.stringify({action:"rotate"})}).then(function(x){$("#key").textContent=x.key;$("#km").textContent="New key active. Update your servers."})});
+$("#pw").addEventListener("submit",function(e){e.preventDefault();var f=e.target,m=f.querySelector(".msg");j("/api/auth/password",{method:"POST",body:JSON.stringify({current:f.c.value,password:f.n.value})}).then(function(){m.className="msg ok";m.textContent="Password changed.";f.reset()}).catch(function(x){m.className="msg err";m.textContent=x.message})});
+$("#out").addEventListener("click",function(){fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"}).then(function(){location.href="/app/"})});
+function load(){return j("/api/pub/me").then(draw)}
+j("/api/auth/me").then(function(x){if(!x.user||x.user.role!=="publisher"){location.href="/app/";return}$("#who").textContent=x.user.email;load();setInterval(function(){if(!document.hidden)load().catch(function(){})},60000)}).catch(function(){location.href="/app/"});
+})();
+</script></body></html>

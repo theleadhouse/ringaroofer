@@ -118,15 +118,21 @@ const alpine = {
 const demo = {
   id: "demo", name: "Demo Buyer", verticals: ["roofing", "windows", "bath", "siding"], internal: true,
   configured: () => true, live: () => false, eligible: (l) => (/^000/.test(l.zip || "") ? "No coverage in this ZIP (demo)" : ""),
+  // Logs the same full message a real buyer would get, so the Lead Desk shows exactly what would be sent. Nothing leaves our system.
+  pingBody: (l) => ({ mode: "ping", vertical: l.vertical, project: l.project, material: l.material || "", timeframe: l.timeframe || "", homeowner: "yes",
+    zip: l.zip, city: l.city, state: l.state, ip_address: l.ip_address || "", landing_page: l.landing_page || "", trustedform_cert_url: l.xxTrustedFormCertUrl || "",
+    jornaya_leadid: l.universal_leadid || "", consent_text: String(l.consent_text || "").slice(0, 300), source: l.pub_id ? "publisher" : (l.source || "site"), sub_id: l.sub_id || l.utm_campaign || "" }),
   async ping(e, l) {
-    const base = { roofing: 38, windows: 30, bath: 28, siding: 55 }[l.vertical] || 25;
-    if (/^000/.test(l.zip || "")) return { ok: false, price: 0, status: "rejected", error: "No coverage in this ZIP (demo)", req: { zip: l.zip }, raw: '{"status":"rejected"}' };
-    const price = Math.round((base + (parseInt(String(l.zip).slice(-2), 10) % 7)) * 100) / 100;
-    return { ok: true, price, token: "DEMO-" + crypto.randomUUID().slice(0, 8), status: "success", error: "", req: { vertical: l.vertical, zip: l.zip }, raw: JSON.stringify({ status: "success", price }) };
+    const base = { roofing: 38, windows: 30, bath: 28, siding: 55 }[l.vertical] || 25, req = this.pingBody(l);
+    if (/^000/.test(l.zip || "")) return { ok: false, price: 0, status: "rejected", error: "No coverage in this ZIP (demo)", req, raw: '{"status":"rejected","reason":"no coverage"}' };
+    const price = Math.round((base + (parseInt(String(l.zip).slice(-2), 10) % 7)) * 100) / 100, token = "DEMO-" + crypto.randomUUID().slice(0, 8);
+    return { ok: true, price, token, status: "success", error: "", req, raw: JSON.stringify({ status: "success", bid: price, ping_id: token }) };
   },
   async post(e, l, p) {
-    if (/reject/i.test(l.email || "")) return { ok: false, price: 0, status: "rejected", error: "Rejected on purpose (email contains 'reject')", req: { token: p.token }, raw: '{"status":"rejected"}' };
-    return { ok: true, price: p.price, status: "success", error: "", req: { token: p.token }, raw: JSON.stringify({ status: "success", price: p.price }) };
+    const req = { ...this.pingBody(l), mode: "post", ping_id: p.token, first_name: l.first_name, last_name: l.last_name, phone: l.phone, email: l.email,
+      address: l.address || "", best_time_to_call: l.best_time_to_call || "anytime", lead_id: l.lead_id || "" };
+    if (/reject/i.test(l.email || "")) return { ok: false, price: 0, status: "rejected", error: "Rejected on purpose (email contains 'reject')", req, raw: '{"status":"rejected"}' };
+    return { ok: true, price: p.price, status: "success", error: "", req, raw: JSON.stringify({ status: "accepted", price: p.price, ping_id: p.token }) };
   },
 };
 

@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><title>Sign in · Radar Exchange</title><link rel="icon" href="/app/mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/app/rx.css?v=1"></head><body>
+<div class="auth">
+ <section class="auth-side">
+  <a class="brand" href="https://homeproradar.com/"><svg width="30" height="30" viewBox="0 0 32 32" class="mk" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-opacity=".35"/><circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-opacity=".55"/><circle cx="16" cy="16" r="3.2" fill="currentColor"/><path d="M16 16 L28 9" stroke="#FFB547" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>HomeProRadar</b><i>Radar Exchange · calls + leads</i></span></a>
+  <div class="big"><h1>Every lead,<br>checked before<br>it’s sold.</h1><p>Sign in to see your exchange: live pings, bids, sales, statements and consent proof, in one place.</p></div>
+  <p class="mono" style="font-size:12px;color:#6F86A3;margin:0">Private system · authorized users only · all sign-ins are logged</p>
+  <canvas id="rd" width="520" height="520" aria-hidden="true"></canvas>
+ </section>
+ <section class="auth-main"><div class="box" id="box"></div></section>
+</div>
+<script>
+(function(){"use strict";
+var B=document.getElementById("box"),T="",E=function(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})};
+function post(a,d){return fetch("/api/auth/"+a,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(d||{})}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||"Something went wrong.");return j})})}
+function go(u){location.href=u.role==="admin"?"/app/admin/":"/app/portal/"}
+function msg(t,c){var m=B.querySelector(".msg");m.className="msg "+(c||"err");m.textContent=t}
+function form(html,onsubmit){B.innerHTML=html;var f=B.querySelector("form");f.addEventListener("submit",function(e){e.preventDefault();var b=f.querySelector("button[type=submit]");b.disabled=true;msg("","");onsubmit(f).catch(function(x){msg(x.message)}).then(function(){b.disabled=false})});var i=f.querySelector("input");if(i)i.focus()}
+var SEC='<p class="secure"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Encrypted connection · sessions end after 12 hours</p>';
+function login(){form('<h2>Sign in</h2><p class="sub">Partners and team members.</p><form><label class="fld">Email<input name="email" type="email" autocomplete="username" required></label><label class="fld">Password<input name="password" type="password" autocomplete="current-password" required></label><button class="b amb full" type="submit">Sign in</button><p class="msg"></p></form><div class="links"><a href="#forgot">Forgot password?</a><a href="https://homeproradar.com/access/">Request access</a></div>'+SEC,
+ function(f){return post("login",{email:f.email.value,password:f.password.value}).then(function(j){if(j.step==="code")return code(j);if(j.warn)sessionStorage.setItem("rx_warn",j.warn);go(j.user)})})}
+function code(j){T=j.ticket;form('<h2>Check your email</h2><p class="sub">We sent a 6-digit code to <b>'+E(j.to)+'</b>. It expires in 10 minutes.</p><form><label class="fld">Code<input name="code" class="code-in" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></label><button class="b amb full" type="submit">Confirm and sign in</button><p class="msg"></p></form><div class="links"><a href="#">Start over</a></div>'+SEC,
+ function(f){return post("verify",{ticket:T,code:f.code.value}).then(function(r){go(r.user)})})}
+function invite(tok){form('<h2>Set your password</h2><p class="sub">Choose a password for your Radar Exchange account. At least 10 characters.</p><form><label class="fld">New password<input name="p1" type="password" autocomplete="new-password" required minlength="10"></label><label class="fld">Repeat password<input name="p2" type="password" autocomplete="new-password" required></label><button class="b amb full" type="submit">Save and sign in</button><p class="msg"></p></form>'+SEC,
+ function(f){if(f.p1.value!==f.p2.value)return Promise.reject(new Error("The two passwords don't match."));return post("accept",{token:tok,password:f.p1.value}).then(function(j){history.replaceState(null,"","/app/");go(j.user)})})}
+function forgot(){form('<h2>Reset password</h2><p class="sub">Enter your email. If it has an account, we’ll send a reset link.</p><form><label class="fld">Email<input name="email" type="email" required></label><button class="b amb full" type="submit">Send reset link</button><p class="msg"></p></form><div class="links"><a href="#">Back to sign in</a></div>',
+ function(f){return post("forgot",{email:f.email.value}).then(function(j){msg(j.email_ready?"If that email has an account, a reset link is on its way.":"Email isn't switched on yet. Ask your account manager for a new invite link.",j.email_ready?"ok":"warn")})})}
+function setup(){form('<h2>First-time setup</h2><p class="sub">Create the first admin account. You need the setup password (the dashboard password saved in Cloudflare).</p><form><label class="fld">Setup password<input name="ap" type="password" required></label><label class="fld">Your name<input name="name" autocomplete="name" required></label><label class="fld">Your email<input name="email" type="email" autocomplete="username" required></label><label class="fld">New password (10+ characters)<input name="pw" type="password" autocomplete="new-password" required minlength="10"></label><button class="b amb full" type="submit">Create admin account</button><p class="msg"></p></form>'+SEC,
+ function(f){return post("setup",{admin_pass:f.ap.value,name:f.name.value,email:f.email.value,password:f.pw.value}).then(function(j){go(j.user)})})}
+function route(){var h=location.hash;if(/^#invite=/.test(h))return invite(h.slice(8));if(h==="#forgot")return forgot();
+ fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j.user)return go(j.user);if(j.needs_setup)return setup();login()}).catch(login)}
+window.addEventListener("hashchange",route);route();
+// radar sweep (decorative)
+var c=document.getElementById("rd");if(c&&!matchMedia("(prefers-reduced-motion: reduce)").matches){var x=c.getContext("2d"),a=0;(function f(){x.clearRect(0,0,520,520);x.strokeStyle="rgba(143,163,188,.2)";for(var i=1;i<=4;i++){x.beginPath();x.arc(260,260,60*i,0,7);x.stroke()}
+ if(x.createConicGradient){var g=x.createConicGradient(a-0.9,260,260);g.addColorStop(0,"rgba(60,224,181,0)");g.addColorStop(.14,"rgba(60,224,181,.25)");g.addColorStop(.1433,"rgba(60,224,181,0)");x.fillStyle=g;x.beginPath();x.moveTo(260,260);x.arc(260,260,240,a-.9,a);x.fill()}
+ a=(a+.015)%(Math.PI*2);requestAnimationFrame(f)})()}
+})();
+</script></body></html>

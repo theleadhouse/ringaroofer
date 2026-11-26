@@ -7,8 +7,9 @@ import { init, phoneHash, emailHash } from "../../_lib/leadlog.js";
 import { scores, Q } from "../../_lib/guard.js";
 import { BUYERS, loadModes, liveBlock, byId } from "../../_lib/buyers.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
-function authed(request, env) { const k = request.headers.get("X-Admin-Key") || ""; const want = env.ADMIN_PASS || env.SBB_TEST_TOKEN; return !!want && k === want; }
-const newKey = () => "tlh_" + crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+import { isAdmin } from "../../_lib/session.js";
+const authed = isAdmin;
+const newKey = () => "rx_" + crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "").slice(0, 8);
 async function state(env) {
   const db = env.LEADS_DB, modes = await loadModes(env);
   const buyers = BUYERS.map((b) => ({ id: b.id, name: b.name, verticals: b.verticals, connected: b.configured(env), mode: b.configured(env) ? modes[b.id] : "off",
@@ -26,12 +27,12 @@ async function state(env) {
     publishers: pubs.map((p) => { const { key, ...rest } = p; return { ...rest, key_hint: key.slice(0, 8) + "…" + key.slice(-4), stats: { ...(S[p.id] || {}), ...(QS[p.id] || {}) } }; }) };
 }
 export async function onRequestGet({ request, env }) {
-  if (!authed(request, env)) return J({ error: "locked" }, 401);
+  if (!(await authed(request, env))) return J({ error: "locked" }, 401);
   if (!env.LEADS_DB) return J({ error: "no_db" }, 503);
   await init(env.LEADS_DB); return J(await state(env));
 }
 export async function onRequestPost({ request, env }) {
-  if (!authed(request, env)) return J({ error: "locked" }, 401);
+  if (!(await authed(request, env))) return J({ error: "locked" }, 401);
   if (!env.LEADS_DB) return J({ error: "no_db" }, 503);
   const db = env.LEADS_DB; await init(db);
   let d; try { d = await request.json(); } catch { return J({ error: "bad json" }, 400); }
