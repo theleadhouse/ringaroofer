@@ -39,7 +39,7 @@ async function send(env, body) {
   const r = await fetch(url, { method: "POST", headers: { Authorization: auth, "Content-Type": "application/json", Accept: "application/xml, text/xml, */*" },
     body: JSON.stringify({ Request: body }), signal: AbortSignal.timeout(15000) });
   const text = await r.text();
-  return { http: r.status, ...parseXml(text), raw: text.slice(0, 1500) };
+  return { http: r.status, ...parseXml(text), raw: text.slice(0, 1500), req: body };   // req = what we sent (no password: that's only in the header)
 }
 
 /** lead: our normalized lead (see /api/quote). Returns { sold, stage, price, ping, post, reason } — never throws. */

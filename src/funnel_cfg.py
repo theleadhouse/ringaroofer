@@ -2,7 +2,7 @@
 import os
 from content import P, img, PHONE, TEL, EMAIL, URL, BRAND, TT_BASE
 MODE = "thumbtack"   # "thumbtack": form ends on our Thumbtack page, no contact details collected.  "leads": full form + consent + ping/post.
-PARTNERS = []   # e.g. ["Buyer Company LLC"] — exact legal names your buyer gives you. Required before running ads.
+PARTNERS = ["SBBNet, Inc. (LoanBright)"]   # e.g. ["Buyer Company LLC"] — exact legal names your buyer gives you. Required before running ads.
 def pic(k, w=420, h=290): return img(P[k][0], w, h)
 def cfg(v, disclaimer):
     c = _cfg(v, disclaimer)

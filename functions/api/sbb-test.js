@@ -3,6 +3,7 @@
  * Locked: needs the SBB_TEST_TOKEN secret, and refuses to run when SBB_LIVE=1. Test leads are never used in production (per the spec).
  */
 import { pingPost, roofFields } from "../_lib/sbb.js";
+import { logLead } from "../_lib/leadlog.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o, null, 2), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 export async function onRequestGet({ request, env }) {
   const u = new URL(request.url);
@@ -25,6 +26,7 @@ export async function onRequestGet({ request, env }) {
     const uid = crypto.randomUUID().replace(/-/g, "");
     const lead = { ...base, ...c, lead_id: crypto.randomUUID(), email: `test.${uid.slice(0, 10)}@example.com`, xxTrustedFormCertUrl: `https://cert.trustedform.com/${uid}${uid.slice(0, 8)}` };
     const r = await pingPost(tenv, lead);
+    await logLead(env, { ...lead, source_site: u.hostname.replace(/^www\./, ""), vertical: "roofing" }, r, { test: true, source: "test-runner" });
     results.push({ case: c.name, roof: roofFields(c.material, c.project), sold: r.sold, stage: r.stage, price: r.price, reason: r.reason,
       ping: r.ping && { status: r.ping.status, id: r.ping.id, price: r.ping.price, error: r.ping.error, raw: r.ping.raw },
       post: r.post && { status: r.post.status, id: r.post.id, price: r.post.price, error: r.post.error, raw: r.post.raw } });

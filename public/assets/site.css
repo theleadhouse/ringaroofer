@@ -465,3 +465,20 @@ h3.mt{margin-top:30px}
  .fcall.on{opacity:1;transform:none;pointer-events:auto}.fcall:hover{background:var(--orange2);color:#fff}
  .fcall span{display:flex;flex-direction:column;line-height:1.15}.fcall b{font-size:15px}.fcall small{font-size:14px;font-weight:700;opacity:.95}}
 @media print{.fcall{display:none!important}}
+/* Hero with the smart form card (Nov 2026) */
+.hero-form .hero-in{align-items:center}
+@media(min-width:1000px){.hero-form .hero-in{grid-template-columns:1fr 470px;gap:48px;min-height:640px}}
+.hero-form h1{max-width:13ch}
+.hero-form .lead{max-width:34rem}
+.hero-ticks{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:8px;font-size:17px;font-weight:600}
+.hero-ticks li{display:flex;gap:10px;align-items:center}.hero-ticks .ic{color:var(--amber);flex:none}
+.hero-alt{margin:22px 0 0;display:flex;flex-wrap:wrap;gap:10px;font-size:15.5px}.hero-alt a{color:#fff;font-weight:700;text-decoration:underline;text-underline-offset:3px}.hero-alt span{opacity:.6}
+.hcard{border-top:5px solid var(--brand,#F26B1D)}
+.hcard .hc-k{margin:0 0 6px;font:800 13px/1.2 var(--f,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--brand2,#D85A12)}
+.hcard .qf-q{font-size:1.25rem}
+.hcard .qt-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+.hcard .qt.pic .qt-img img{aspect-ratio:4/3}.hcard .qt.pic .qt-l{font-size:13.5px;padding:7px 4px}
+@media(max-width:999px){.hero-form .hero-in{padding-block:28px 36px}.hero-form .hero-txt{text-align:left}.hero-ticks{display:none}.hero-form .lead{font-size:16px}}
+@media(max-width:999px){.hcard .qt.pic .qt-img img{aspect-ratio:1/1}.hcard .qt.pic .qt-l{font-size:12.5px;padding:6px 2px}.hero-alt span{display:none}.hero-alt{flex-direction:column;gap:6px}}
+.nowwrap{max-width:760px;margin:0 auto}.nowwrap .nowbox{box-shadow:var(--sh)}
+@media(min-width:1000px){.hero-form .hero-in{align-items:start}.hero-form .hero-txt{padding-top:34px}}

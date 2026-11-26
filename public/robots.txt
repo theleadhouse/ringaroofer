@@ -2,6 +2,8 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /preview/
+Disallow: /leads-admin/
 
 # AI search and answer engines, named explicitly so they are never caught by a blanket block
 User-agent: OAI-SearchBot
@@ -24,6 +26,8 @@ User-agent: MistralAI-User
 User-agent: meta-externalagent
 Allow: /
 Disallow: /api/
+Disallow: /preview/
+Disallow: /leads-admin/
 
 # Heavy SEO scrapers that add load but send no visitors
 User-agent: AhrefsBot

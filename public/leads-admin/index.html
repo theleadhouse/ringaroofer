@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Leads dashboard · The Lead House</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+:root{--ink:#0F1B2D;--ink2:#475569;--line:#E2E8F0;--bg:#F5F7FB;--brand:#F26B1D;--ok:#15803D;--bad:#B91C1C;--warn:#B45309;--blue:#1D4ED8}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:#0F1B2D;color:#fff;padding:14px 20px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}header small{opacity:.7}
+main{max-width:1280px;margin:0 auto;padding:18px 16px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+select,input,button{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+button{cursor:pointer;font-weight:700}button.pri{background:var(--brand);color:#fff;border-color:var(--brand)}button.ghost{background:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.kpi b{display:block;font-size:24px}.kpi span{font-size:13px;color:var(--ink2)}
+.kpi.g b{color:var(--ok)}.kpi.r b{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink2);position:sticky;top:0;background:#fff}
+tr.row{cursor:pointer}tr.row:hover{background:#F8FAFC}
+.tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:12px;font-weight:700;background:#EEF2F7;color:var(--ink2)}
+.tag.test{background:#FEF3C7;color:var(--warn)}.tag.ok{background:#DCFCE7;color:var(--ok)}.tag.no{background:#FEE2E2;color:var(--bad)}.tag.m{background:#DBEAFE;color:var(--blue)}
+.scroll{overflow:auto;max-height:620px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.two{grid-template-columns:1fr}}
+pre{white-space:pre-wrap;word-break:break-all;background:#0F1B2D;color:#E2E8F0;padding:12px;border-radius:10px;font-size:12.5px;max-height:320px;overflow:auto}
+#detail{position:fixed;inset:0;background:rgba(15,27,45,.55);display:none;align-items:flex-start;justify-content:center;padding:30px 12px;overflow:auto;z-index:9}
+#detail .card{max-width:900px;width:100%}
+.muted{color:var(--ink2)}.err{color:var(--bad);font-weight:700}
+#login{max-width:420px;margin:60px auto}
+h2{font-size:17px;margin:0 0 10px}
+</style></head>
+<body>
+<header><div><h1>Leads dashboard</h1><small>Every web lead, what the buyer answered, and what we made</small></div><div class="bar" id="hdr" hidden>
+<select id="days"><option value="1">Today (24 h)</option><option value="7" selected>Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
+<select id="test"><option value="all">Live + test</option><option value="0">Live only</option><option value="1">Test only</option></select>
+<select id="site"><option value="">All sites</option></select>
+<button id="reload">Refresh</button><button id="csv" class="ghost">Download CSV</button><button id="runtest" class="ghost" title="Sends 1 test lead to the buyer's TEST server">Send a test lead</button></div></header>
+<main>
+<div id="login" class="card"><h2>Sign in</h2><p class="muted">Enter the dashboard password.</p>
+<form id="lf" class="bar"><input id="key" type="password" placeholder="Password" autocomplete="current-password" style="flex:1"><button class="pri">Open</button></form><p id="lerr" class="err" hidden></p></div>
+<div id="app" hidden>
+ <div class="kpis" id="kpis"></div>
+ <div class="two" style="margin-top:16px">
+  <div class="card"><h2>By day</h2><div class="scroll" style="max-height:300px"><table id="tday"></table></div></div>
+  <div class="card"><h2>By traffic source</h2><table id="tsrc"></table><h2 style="margin-top:16px">Why leads didn't sell</h2><table id="trs"></table></div>
+ </div>
+ <div class="card"><h2>Leads <span class="muted" id="cnt"></span></h2><p class="muted" style="margin-top:-4px">Click a lead to see exactly what we sent the buyer and what it answered.</p><div class="scroll"><table id="tleads"></table></div></div>
+ <div class="two">
+  <div class="card"><h2>Add ad spend</h2><p class="muted">Enter what you spent per day per site and channel (US dollars). Margin = money in − publisher payouts − ad spend.</p>
+   <form id="sf" class="bar"><input type="date" id="sd" required><select id="ss"></select><select id="sc"><option>google</option><option>meta</option><option>bing</option><option>other</option></select>
+   <input id="sa" type="number" step="0.01" min="0" placeholder="Amount $" style="width:110px" required><button class="pri">Save</button></form><p class="muted" id="smsg"></p></div>
+  <div class="card"><h2>Spend entered</h2><div class="scroll" style="max-height:240px"><table id="tsp"></table></div></div>
+ </div>
+</div>
+</main>
+<div id="detail"><div class="card"><div class="bar" style="justify-content:space-between"><h2 id="dh">Lead</h2><button id="dx">Close</button></div><div id="db"></div></div></div>
+<script>
+(function(){
+"use strict";
+var K="", D=null, $=function(s){return document.querySelector(s)};
+function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function money(v){v=+v||0;return (v<0?"-$":"$")+Math.abs(v).toFixed(2)}
+function pct(a,b){return b?Math.round(a/b*100)+"%":"–"}
+function when(ts){var d=new Date(ts);return d.toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}
+function api(path,opt){opt=opt||{};opt.headers=Object.assign({"X-Admin-Key":K,"Content-Type":"application/json"},opt.headers||{});return fetch(path,opt).then(function(r){return r.json().then(function(j){if(!r.ok)throw j;return j})})}
+function tag(s){if(!s)return '<span class="tag">–</span>';var c=/^(Match|Matched)$/i.test(s)?"m":/^Accepted$/i.test(s)?"ok":"no";return '<span class="tag '+c+'">'+esc(s)+'</span>'}
+function load(){
+  var q="?days="+$("#days").value+"&test="+$("#test").value+"&site="+encodeURIComponent($("#site").value);
+  api("/api/admin/leads"+q).then(function(j){D=j;render(j)}).catch(function(e){if(e&&e.error==="locked"){sessionStorage.removeItem("tlh-admin");location.reload();return}
+    $("#kpis").innerHTML='<div class="kpi r"><b>!</b><span>'+esc((e&&e.message)||(e&&e.error)||"Could not load")+'</span></div>'});
+}
+function render(j){
+  var t=j.totals||{}, ss=$("#site"), cur=ss.value;
+  ss.innerHTML='<option value="">All sites</option>'+(j.sites||[]).map(function(s){return '<option'+(s===cur?" selected":"")+'>'+esc(s)+'</option>'}).join("");
+  $("#ss").innerHTML=(j.sites&&j.sites.length?j.sites:["ringaroofer.com"]).map(function(s){return "<option>"+esc(s)+"</option>"}).join("");
+  var k=[["Leads",t.leads||0],["Sent to buyer",t.pinged||0],["Buyer wanted it",(t.matched||0)+" ("+pct(t.matched,t.pinged)+")"],["Sold",(t.sold||0)+" ("+pct(t.sold,t.leads)+")"],
+    ["Money in",money(t.revenue),"g"],["Avg price",money(t.sold?(t.revenue/t.sold):0)],["Ad spend",money(t.spend)],["Publisher payouts",money(t.payouts)],["Margin",money(t.margin),(t.margin||0)>=0?"g":"r"]];
+  $("#kpis").innerHTML=k.map(function(x){return '<div class="kpi '+(x[2]||"")+'"><b>'+esc(x[1])+'</b><span>'+x[0]+'</span></div>'}).join("");
+  $("#tday").innerHTML="<tr><th>Day (UTC)</th><th>Leads</th><th>Wanted</th><th>Sold</th><th>Money in</th></tr>"+(j.byDay||[]).map(function(r){return "<tr><td>"+r.day+"</td><td>"+r.leads+"</td><td>"+(r.matched||0)+"</td><td>"+(r.sold||0)+"</td><td>"+money(r.revenue)+"</td></tr>"}).join("");
+  $("#tsrc").innerHTML="<tr><th>Source</th><th>Leads</th><th>Sold</th><th>Money in</th></tr>"+(j.bySource||[]).map(function(r){return "<tr><td>"+esc(r.source)+"</td><td>"+r.leads+"</td><td>"+(r.sold||0)+"</td><td>"+money(r.revenue)+"</td></tr>"}).join("");
+  $("#trs").innerHTML="<tr><th>Reason</th><th>Count</th></tr>"+((j.reasons||[]).map(function(r){return "<tr><td>"+esc(r.reason)+"</td><td>"+r.n+"</td></tr>"}).join("")||'<tr><td class="muted" colspan=2>None</td></tr>');
+  $("#cnt").textContent="("+(j.rows||[]).length+(j.rows&&j.rows.length===300?"+":"")+")";
+  $("#tleads").innerHTML="<tr><th>Time</th><th>Site · source</th><th>Where</th><th>Job</th><th>Name</th><th>Buyer said</th><th>Price</th><th>Final</th><th>Why not sold</th></tr>"+
+   (j.rows||[]).map(function(r){return '<tr class="row" data-id="'+esc(r.id)+'"><td>'+when(r.ts)+(r.test?' <span class="tag test">TEST</span>':"")+'</td><td>'+esc(r.site)+'<br><span class="muted">'+esc(r.source)+(r.campaign?" · "+esc(r.campaign):"")+'</span></td><td>'+esc(r.zip)+" "+esc(r.state)+'<br><span class="muted">'+esc(r.city)+'</span></td><td>'+esc(r.material)+'<br><span class="muted">'+esc(r.project)+'</span></td><td>'+esc(r.first_name)+" "+esc((r.last_name||"").slice(0,1))+'.</td><td>'+tag(r.ping_status)+'</td><td>'+(r.ping_price?money(r.ping_price):"–")+'</td><td>'+tag(r.post_status)+(r.sold?' <b style="color:var(--ok)">'+money(r.revenue)+'</b>':"")+'</td><td class="muted">'+esc(r.reason)+'</td></tr>'}).join("");
+  $("#tsp").innerHTML="<tr><th>Day</th><th>Site</th><th>Channel</th><th>Amount</th></tr>"+((j.spend||[]).map(function(r){return "<tr><td>"+r.day+"</td><td>"+esc(r.site)+"</td><td>"+esc(r.channel)+"</td><td>"+money(r.amount)+"</td></tr>"}).join("")||'<tr><td class="muted" colspan=4>None yet</td></tr>');
+}
+function pretty(s){if(!s)return "–";try{return JSON.stringify(JSON.parse(s),null,2)}catch(e){return s}}
+function detail(id){
+  api("/api/admin/leads?id="+encodeURIComponent(id)).then(function(j){var r=j.lead||{};
+    $("#dh").textContent=(r.first_name||"")+" "+(r.last_name||"")+" · "+(r.zip||"")+" "+(r.state||"")+(r.test?" · TEST":"");
+    $("#db").innerHTML='<p><b>When:</b> '+new Date(r.ts).toLocaleString()+' (your time) · '+new Date(r.ts).toLocaleString("en-US",{timeZone:"America/New_York"})+' ET<br>'+
+     '<b>Contact:</b> '+esc(r.phone)+' · '+esc(r.email)+(r.address?' · '+esc(r.address):'')+'<br><b>Site:</b> '+esc(r.site)+' · <b>Source:</b> '+esc(r.source)+(r.campaign?' · '+esc(r.campaign):'')+'<br><b>Page:</b> '+esc(r.page)+'<br>'+
+     '<b>TrustedForm:</b> '+(r.tf?'<a href="'+esc(r.tf)+'" target="_blank" rel="noopener">'+esc(r.tf)+'</a>':'<span class="err">missing</span>')+' · <b>Jornaya:</b> '+esc(r.jornaya||"–")+'<br>'+
+     '<b>Buyer:</b> '+esc(r.buyer||"–")+' · <b>Ping:</b> '+tag(r.ping_status)+' '+(r.ping_price?money(r.ping_price):"")+' · <b>Post:</b> '+tag(r.post_status)+' · <b>Sold for:</b> '+money(r.revenue)+(r.reason?'<br><b>Reason:</b> '+esc(r.reason):'')+'</p>'+
+     '<div class="two"><div><h2>1. Ping we sent</h2><pre>'+esc(pretty(r.ping_req))+'</pre></div><div><h2>Buyer answered</h2><pre>'+esc(r.ping_res||"–")+'</pre></div>'+
+     '<div><h2>2. Post we sent</h2><pre>'+esc(pretty(r.post_req))+'</pre></div><div><h2>Buyer answered</h2><pre>'+esc(r.post_res||"–")+'</pre></div></div>';
+    $("#detail").style.display="flex"});
+}
+$("#tleads").addEventListener("click",function(e){var tr=e.target.closest("tr.row");if(tr)detail(tr.getAttribute("data-id"))});
+$("#dx").addEventListener("click",function(){$("#detail").style.display="none"});
+$("#detail").addEventListener("click",function(e){if(e.target.id==="detail")$("#detail").style.display="none"});
+["#days","#test","#site"].forEach(function(s){$(s).addEventListener("change",load)});$("#reload").addEventListener("click",load);
+$("#csv").addEventListener("click",function(){if(!D)return;var cols=["ts","site","test","source","campaign","zip","city","state","material","project","first_name","last_name","phone","buyer","ping_status","ping_price","post_status","post_price","sold","revenue","payout","publisher","reason"];
+  var csv=cols.join(",")+"\n"+D.rows.map(function(r){return cols.map(function(c){var v=c==="ts"?new Date(r.ts).toISOString():r[c];return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")}).join("\n");
+  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="leads.csv";a.click()});
+$("#runtest").addEventListener("click",function(){var b=this;b.disabled=true;b.textContent="Sending…";
+  fetch("/api/sbb-test?case=seattle&token="+encodeURIComponent(K)).then(function(r){return r.json()}).then(function(j){var x=(j.results||[])[0]||{};
+    b.textContent=x.sold?("Test lead sold: "+money(x.price)):("Test lead: "+(x.reason||j.error||"not sold"));setTimeout(function(){b.disabled=false;b.textContent="Send a test lead"},6000);load()})
+  .catch(function(){b.disabled=false;b.textContent="Send a test lead"})});
+$("#sd").value=new Date().toISOString().slice(0,10);
+$("#sf").addEventListener("submit",function(e){e.preventDefault();api("/api/admin/leads",{method:"POST",body:JSON.stringify({spend:{day:$("#sd").value,site:$("#ss").value,channel:$("#sc").value,amount:$("#sa").value}})})
+  .then(function(){$("#smsg").textContent="Saved.";$("#sa").value="";load()}).catch(function(e){$("#smsg").textContent=(e&&e.error)||"Could not save"})});
+function start(){$("#login").hidden=true;$("#app").hidden=false;$("#hdr").hidden=false;load()}
+$("#lf").addEventListener("submit",function(e){e.preventDefault();K=$("#key").value.trim();
+  api("/api/admin/leads?days=1").then(function(){sessionStorage.setItem("tlh-admin",K);start()}).catch(function(err){
+    if(err&&err.error==="no_db"){sessionStorage.setItem("tlh-admin",K);start();return}
+    $("#lerr").hidden=false;$("#lerr").textContent="Wrong password."})});
+K=sessionStorage.getItem("tlh-admin")||"";if(K)start();
+})();
+</script>
+</body></html>

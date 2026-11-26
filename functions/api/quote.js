@@ -12,6 +12,7 @@
  *   LEADS              optional KV binding: keeps a 90-day backup log of every lead + the platform's response
  */
 import { pingPost, zipPlace } from "../_lib/sbb.js";
+import { logLead } from "../_lib/leadlog.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const S = (v, n = 120) => String(v == null ? "" : v).trim().slice(0, n);
 const ALLOWED = /^https:\/\/(www\.)?(ringaroofer|bathvisionary)\.com$|\.pages\.dev$/;
@@ -58,8 +59,9 @@ export async function onRequestPost({ request, env }) {
       body: JSON.stringify({ from: env.LEAD_EMAIL_FROM || `Leads <leads@${host}>`, to: env.LEAD_EMAIL_TO.split(","), subject: `New ${lead.vertical} lead · ${lead.zip} · ${lead.project}`, html: `<table>${rows}</table>` }) })
       .then((r) => r.ok).catch(() => false));
   }
-  if (!jobs.length) return J({ error: "not configured" }, 503);
+  if (!jobs.length) { await logLead(env, lead, null, { test: true }); return J({ error: "not configured" }, 503); }
   const res = await Promise.allSettled(jobs);
+  await logLead(env, lead, log.sbb, { test: env.SBB_LIVE !== "1" || (env.SBB_SRC || "Test") === "Test" });
   if (env.LEADS) { try { await env.LEADS.put(`lead:${lead.submitted_at}:${phone}`, JSON.stringify(log), { expirationTtl: 90 * 86400 }); } catch {} }
   return res.some((r) => r.status === "fulfilled" && r.value) ? J({ ok: true }) : J({ error: "delivery" }, 502);
 }

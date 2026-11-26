@@ -1,7 +1,7 @@
 """RingaRoofer v2 static site generator -> ../public  (python3 build.py)
 Photo-led, call-first roofing referral site for Google/Microsoft paid search (inbound calls). Same URLs as v1 so ads, Search Console and links keep working.
 Adds: real photos, app-style mobile bar, roof-problem picker, 60 Roof Questions answers (reviews removed), search-style FAQs, roof inspection + 'roofers near me' pages, Thumbtack backup link."""
-import rr_problems as RP
+import json, rr_problems as RP
 import rr_more as RM
 import rr_faq2
 import os, re, json, shutil
@@ -135,20 +135,31 @@ def schema(p):
     return json.dumps({"@context": "https://schema.org", "@graph": g}, separators=(",", ":"))
 
 import quote_funnel, funnel_cfg
-_QF = None
-def qf():
-    """Smart quote form as section 2 (+ bottom band) on site pages."""
-    global _QF
-    if _QF is None: _QF = quote_funnel.embed(funnel_cfg.cfg(V, DISCLAIMER), check)
-    return _QF
+_QFS = {}
+def qmode(p=None): return "leads" if (p and p.get("leads_preview")) else funnel_cfg.MODE
+def qcfg(p=None):
+    """Form settings for this page: the live mode from funnel_cfg.MODE, or 'leads' on the /preview/ page."""
+    return funnel_cfg._cfg(V, DISCLAIMER) if qmode(p) == "leads" else funnel_cfg.cfg(V, DISCLAIMER)
+def qf(p=None):
+    """Smart quote form pieces: (section, head, end-of-body, bottom band)."""
+    m = qmode(p)
+    if m not in _QFS: _QFS[m] = quote_funnel.embed(qcfg(p), check)
+    return _QFS[m]
+def hero_form(p):
+    """The same smart form as a card for the hero (one form per page: the page then skips the lower form section)."""
+    c = qcfg(p)
+    cfgjs = json.dumps({"vertical": c["vertical"], "labels": c["labels"], "trade": c["trade"], "mode": c.get("mode", "leads"), "tt": c.get("tt", "")})
+    head = ('Get roofing help in 30 seconds' if c.get("mode") != "thumbtack" else 'Find roofers near you in 30 seconds')
+    return (f'<!--qf--><div class="lp-card hcard" style="--brand:{c["brand_color"]};--brand2:{c["brand_color2"]};--dark:{c["dark"]}">'
+            f'<p class="hc-k">{head}</p>{quote_funnel.form_html(c)}<script type="application/json" id="qf-cfg">{cfgjs}</script></div><!--/qf-->')
 def qf_body(p):
     """Expert-first order (Nov 2026): the quote funnel sits further down the page (before the FAQ), not right under the hero."""
     b = p["body"]
-    if not qf_on(p): return b
+    if not qf_on(p) or p.get("hero_form"): return b
     i = b.find(" id=faq>")
     j = b.rfind("<section", 0, i) if i > -1 else -1
-    return (b[:j] + qf()[0] + b[j:]) if j > -1 else (b + qf()[0])
-def qf_on(p): return not (p.get("legal") or p.get("noindex") or p.get("form") or p["url"] in ("/sitemap/", "/404/"))
+    return (b[:j] + qf(p)[0] + b[j:]) if j > -1 else (b + qf(p)[0])
+def qf_on(p): return bool(p.get("hero_form")) or not (p.get("legal") or p.get("noindex") or p.get("form") or p["url"] in ("/sitemap/", "/404/"))
 
 def page(p):
     og = p.get("ogimg") or URL + "/assets/img/og.png"
@@ -166,7 +177,7 @@ def page(p):
 <meta name="theme-color" content="#13233A"><meta name="format-detection" content="telephone=yes">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/assets/img/logo-192.png">
 <link rel="preconnect" href="https://images.pexels.com"><link rel="preconnect" href="https://images.unsplash.com">
-<link rel="stylesheet" href="/assets/site.css?v={V}">{qf()[1] if qf_on(p) else ""}
+<link rel="stylesheet" href="/assets/site.css?v={V}">{qf(p)[1] if qf_on(p) else ""}
 <script type="application/ld+json">{schema(p)}</script>
 <script src="/assets/config.js?v={V}"></script>
 <script src="/assets/site.js?v={V}" defer></script>
@@ -176,11 +187,11 @@ def page(p):
 <main id="main">
 {p["hero"]}
 {qf_body(p)}
-{qf()[3] if qf_on(p) else ""}
+{qf(p)[3] if qf_on(p) and not p.get("hero_form") else ""}
 </main>
 {footer()}
 {legal.TF_SCRIPT if p.get("form") else ""}
-{qf()[2] if qf_on(p) else ""}
+{qf(p)[2] if qf_on(p) else ""}
 </body></html>
 '''
 
@@ -307,20 +318,22 @@ def catcards(keys=None):
 DEFQ = ["roof-leaking-right-now", "water-stain-on-ceiling", "shingles-blown-off", "hail-hit-my-roof", "repair-or-replace-roof", "door-to-door-roofer"]
 
 # ---------------------------------------------------------------- home
-home_hero = f'''<section class="hero">
+def make_home_hero(p):
+    return f'''<section class="hero hero-form">
  <div class="hero-bg">{pic("roofer2", 1900, 1100, eager=True)}</div>
  <div class="wrap hero-in">
   <div class="hero-txt">
    <p class="kick live"><span class="dot"></span>Roofers near you · Nationwide</p>
-   <h1>Need a roofer near you? <em>Get one on the phone now.</em></h1>
-   <p class="lead">Roof leak, storm-hit shingles, hail, or time for a new roof. One call connects you with an independent roofing company that serves your area.</p>
-   <div class="btns"><a class="btn btn-light xl" href="#problems">{ic("house",18)}<span>What's wrong with my roof?</span></a>{call_btn("btn btn-call xl", None, "home-hero")}</div>
-   {tt_link("home-hero", cls="tt-text light")}
+   <h1>Need a roofer near you? <em>Get matched in minutes.</em></h1>
+   <p class="lead">Roof leaks, storm and hail repair, new roofs and re-roofs, from independent roofing companies that serve your area.</p>
+   <ul class="hero-ticks"><li>{ic("check",18)} Repairs, leaks and full replacements</li><li>{ic("check",18)} Local roofing companies near you</li><li>{ic("check",18)} No obligation to hire anyone</li></ul>
+   <p class="hero-alt"><a href="#problems">What's wrong with my roof?</a><span>·</span><a href="tel:{TEL}" data-call="home-hero">Rather talk? {PHONE}</a></p>
   </div>
-  <div class="hero-side">{now_box()}</div>
+  <div class="hero-side">{hero_form(p)}</div>
  </div>
 </section>
 {marquee()}'''
+home_hero = None
 HOME_FAQS = [
  ("What is RingaRoofer?", "A roofing referral service. When you call, we connect you with an independent roofing company that serves your area. We don't do roofing work ourselves."),
  ("Is there a charge to call?", "No. RingaRoofer doesn't charge homeowners. You agree any work and terms directly with the roofing company."),
@@ -329,6 +342,7 @@ HOME_FAQS = [
  ("Are the photos your jobs?", "No. They're real photographs from Pexels and Unsplash. Ask the roofer you speak with about their own work.")] + FQ.HOME
 home_body = (
  sec(trust(), "tight trustsec")
+ + sec(f'<div class="nowwrap">{now_box()}</div>', "tight")
  + sec(pcards([RPB[k] for k in DEFQ]) + f'<p class="center"><a class="btn btn-ghost" href="/roof-problems/">All {len(RP.P)} roof problems {ic("arrow",16)}</a></p>', "soft", "What's going on with your roof?", "Start here", "Tap the one that matches for what to check from the ground, what it usually means and when to call.", id_="problems")
  + "__TOOLS__"
  + sec(urgency(), "", "How urgent is it?", "An honest answer", "Most roof problems aren't emergencies. Here's how roofers sort them.", id_="urgency")
@@ -346,7 +360,10 @@ home_body = (
  + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofing help in every state", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
  + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq"))
 add(url="/", title="Roofers Near You | Roof Repair & New Roofs · Call (888) 261-1486 | RingaRoofer", desc="Need a roofer near you? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.",
-    h1="Need a roofer near you?", hero=home_hero, body=home_body, faqs=HOME_FAQS, cls="home", ogimg=img(P["roofer2"][0], 1200, 630))
+    h1="Need a roofer near you?", hero=make_home_hero({}), body=home_body, faqs=HOME_FAQS, cls="home", ogimg=img(P["roofer2"][0], 1200, 630), hero_form=True)
+# Preview of the homepage with the form in lead mode (sends to the buyer; test server until SBB_LIVE=1). Not indexed.
+add(url="/preview/", title="Preview: RingaRoofer homepage with lead form", desc="Internal preview.", h1="Need a roofer near you?", hero=make_home_hero({"leads_preview": True}),
+    body=home_body, faqs=[], cls="home", noindex=True, hero_form=True, leads_preview=True)
 
 # ---------------------------------------------------------------- roofers near me (head-term ad landing page)
 RNM_FAQ = [("How do I find a roofer near me?", f"Call {PHONE}. Tell us your ZIP code and what's going on with your roof, and we'll connect you with an independent roofing company that serves your area."),
@@ -678,7 +695,7 @@ def main():
     open(os.path.join(OUT, "404.html"), "w").write(page(nf).replace(f'<link rel="canonical" href="{URL}/404/">', ""))
     open(os.path.join(OUT, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(
         f'<url><loc>{URL}{p["url"]}</loc><lastmod>{UPDATED}</lastmod></url>' for p in PAGES if not p.get("noindex")) + "\n</urlset>\n")
-    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
+    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /preview/\nDisallow: /leads-admin/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
     open(os.path.join(OUT, "llms.txt"), "w").write(f"# {BRAND}\n\n> {BRAND} (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling {PHONE} connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, roof inspections, storm and hail repair, emergency roofing and tarping, roof replacement, new roofs and re-roofs on shingle, metal, flat, tile, slate and cedar shake roofs. It does not do roofing work and does not charge homeowners.\n\n## Pages\n" + "\n".join(f"- [{p['h1']}]({URL}{p['url']}): {p['desc']}" for p in PAGES if not p.get("legal") and not p.get("noindex")) + "\n")
     open(os.path.join(OUT, "google6cdd134560bcda8a.html"), "w").write("google-site-verification: google6cdd134560bcda8a.html")
     open(os.path.join(OUT, "BingSiteAuth.xml"), "w").write('<?xml version="1.0"?>\n<users>\n\t<user>143504FD65C9CD8E8439BFD5BD0E4177</user>\n</users>\n')
@@ -688,6 +705,15 @@ def main():
     import quote_funnel, funnel_cfg
     if funnel_cfg.MODE == "leads" and not funnel_cfg.PARTNERS: print("WARNING: funnel_cfg.PARTNERS is empty: add your buyer's company name(s) before running ads to /get-a-quote/")
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
+    os.makedirs(os.path.join(OUT, "leads-admin"), exist_ok=True)   # private leads dashboard (noindex, password via /api/admin/leads)
+    shutil.copy(os.path.join(ROOT, "admin", "leads-admin.html"), os.path.join(OUT, "leads-admin", "index.html"))
+    if funnel_cfg.MODE != "leads":   # the lead-mode preview links its consent to /partners/: build that page too
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            os.makedirs(os.path.join(td, "assets"))
+            quote_funnel.write(td, funnel_cfg._cfg(V, DISCLAIMER), check)
+            os.makedirs(os.path.join(OUT, "partners"), exist_ok=True)
+            shutil.copy(os.path.join(td, "partners", "index.html"), os.path.join(OUT, "partners", "index.html"))
     print(f"Built {len(PAGES)} pages")
 
 if __name__ == "__main__":
