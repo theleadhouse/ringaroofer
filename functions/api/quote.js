@@ -8,8 +8,10 @@
  *   QUOTE_EXTRA        optional JSON of fixed fields the platform needs, e.g. {"lp_campaign_id":"123","lp_campaign_key":"abc"}
  *   QUOTE_TEST         "1" adds test=1 to every post (for buyer testing)
  *   RESEND_API_KEY + LEAD_EMAIL_TO (+ LEAD_EMAIL_FROM)  email copy of every lead
+ *   SBB_USER + SBB_PASS (+ SBB_SRC, SBB_PUB_ID, SBB_LIVE, SBB_MIN_PRICE)  LoanBright/SBBnet roofing ping-post (see functions/_lib/sbb.js)
  *   LEADS              optional KV binding: keeps a 90-day backup log of every lead + the platform's response
  */
+import { pingPost, zipPlace } from "../_lib/sbb.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const S = (v, n = 120) => String(v == null ? "" : v).trim().slice(0, n);
 const ALLOWED = /^https:\/\/(www\.)?(ringaroofer|bathvisionary)\.com$|\.pages\.dev$/;
@@ -31,13 +33,17 @@ export async function onRequestPost({ request, env }) {
     vertical: S(d.vertical, 20), source_site: host, first_name: S(d.first_name, 60), last_name: S(d.last_name, 60), phone, email: S(d.email).toLowerCase(),
     address: S(d.address, 120), city: S(d.city, 60), state: S(d.state, 2).toUpperCase(), zip: S(d.zip, 5),
     homeowner: S(d.homeowner, 10), project: S(d.project, 60), material: S(d.material, 60), property_type: S(d.property_type, 40), timeframe: S(d.timeframe, 40),
-    stories: S(d.stories, 20), xxTrustedFormCertUrl: S(d.xxTrustedFormCertUrl, 300), consent: "yes", consent_text: S(d.consent_text, 2000),
+    stories: S(d.stories, 20), universal_leadid: S(d.universal_leadid, 100), lead_id: crypto.randomUUID(), xxTrustedFormCertUrl: S(d.xxTrustedFormCertUrl, 300), consent: "yes", consent_text: S(d.consent_text, 2000),
     landing_page: S(d.page, 400), ip_address: request.headers.get("CF-Connecting-IP") || "", user_agent: S(request.headers.get("User-Agent"), 300),
     submitted_at: new Date().toISOString(),
   };
   for (const k of ["gclid", "gbraid", "wbraid", "msclkid", "fbclid", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"]) if (d[k]) lead[k] = S(d[k], 200);
 
-  const jobs = [], log = { lead, platform: null };
+  const jobs = [], log = { lead, platform: null, sbb: null };
+  if (env.SBB_USER && env.SBB_PASS && lead.vertical === "roofing") {
+    if (!lead.city || !lead.state) { const pl = await zipPlace(lead.zip); if (pl) { lead.city = lead.city || pl.city; lead.state = lead.state || pl.state; } }
+    jobs.push(pingPost(env, lead).then((r) => { log.sbb = r; return r.stage !== "skip" && !/^error/.test(r.reason); }));
+  }
   if (env.QUOTE_POST_URL) {
     let map = {}, extra = {}; try { map = JSON.parse(env.QUOTE_FIELD_MAP || "{}"); } catch {} try { extra = JSON.parse(env.QUOTE_EXTRA || "{}"); } catch {}
     const out = { ...extra }; for (const [k, v] of Object.entries(lead)) out[map[k] || k] = v; if (env.QUOTE_TEST === "1") out.test = 1;
