@@ -118,9 +118,13 @@ details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-
   <label>Pay them (% of our best bid)<input id="ps" type="number" min="5" max="95" value="70"></label>
   <label>Or fixed $ per sold lead (optional)<input id="pfx" type="number" min="0" step="0.5" placeholder="0 = use %"></label>
   <label>Categories<select id="pv"><option value="roofing">Roofing</option><option value="windows">Windows</option><option value="roofing,windows">Roofing + Windows</option></select></label>
-  <label>Daily cap (sold leads, 0 = none)<input id="pc" type="number" min="0" value="0"></label></div>
+  <label>Daily cap (sold leads, 0 = none)<input id="pc" type="number" min="0" value="0"></label>
+  <label>Hourly cap (sold leads, 0 = none)<input id="phc" type="number" min="0" value="0"></label>
+  <label>Speed limit (requests per minute)<input id="prpm" type="number" min="0" value="60"></label></div>
   <p style="margin:12px 0 0"><button class="btn pri">Create publisher</button> <span class="muted small" id="pmsg"></span></p></form></div>
  <div class="grid g2" id="pubs" style="margin-top:14px"></div>
+ <div class="card" style="margin-top:14px"><h2>Protection</h2><div id="prot" class="small"></div>
+  <form id="of" class="form-row" style="margin-top:10px"><input id="oph" placeholder="Phone to block (10 digits)"><input id="oem" type="email" placeholder="or email"><button class="btn">Add opt-out</button> <span class="muted small" id="omsg"></span></form></div>
 </section>
 
 <section class="panel" id="p-sources">
@@ -161,12 +165,18 @@ $("#tabs").addEventListener("click",function(e){var b=e.target.closest(".tab");i
 document.addEventListener("click",function(e){var a=e.target.closest("[data-go]");if(a){e.preventDefault();show(a.getAttribute("data-go"))}});
 var SET=null;
 function loadSet(){return api("/api/admin/settings").then(function(j){SET=j;renderPubs();if(D)render()}).catch(function(){})}
-function renderPubs(){if(!SET)return;var P=SET.publishers||[];
+function renderPubs(){if(!SET)return;var P=SET.publishers||[],O=SET.optouts||{},C=SET.consent||{},R=SET.quality_rule||{};
+  $("#prot").innerHTML='<p style="margin:0 0 6px"><b>Opt-outs on file:</b> '+(O.n||0)+(O.last?' · last '+when(O.last):'')+' — any publisher lead with these phones or emails is refused. Public opt-out page: <a href="/opt-out/" target="_blank">/opt-out/</a></p>'+
+   '<p style="margin:0 0 6px"><b>Consent records kept 5 years:</b> '+(C.n||0)+(SET.encrypted?' · contact details encrypted ✓':' · <span class="neg">add the DATA_KEY secret to encrypt contact details</span>')+'</p>'+
+   '<p style="margin:0"><b>Auto-pause:</b> a LIVE publisher is paused when more than '+Math.round((R.maxReject||0.6)*100)+'% of its last '+(R.window||50)+' posts are rejected (checked once it has '+(R.minPosts||20)+'+ posts).</p>';
   $("#pubs").innerHTML=P.length?P.map(function(p){var s=p.stats||{};return '<div class="pub"><h3>'+esc(p.name)+'<span>'+({paused:'<span class="pill">Paused</span>',test:'<span class="pill test">TEST</span>',live:'<span class="pill live">LIVE</span>'})[p.mode]+'</span></h3>'+
    '<p class="muted small" style="margin:0 0 10px">'+esc(p.email||"")+' · '+esc(p.verticals)+' · pays '+(p.fixed>0?money(p.fixed)+" fixed":Math.round(p.share*100)+"% of our best bid")+(p.daily_cap?" · cap "+p.daily_cap+"/day":"")+'</p>'+
    '<div class="seg" data-pmode="'+p.id+'">'+["paused","test","live"].map(function(x){return '<button type="button" data-m="'+x+'" class="'+x+(p.mode===x?" on":"")+'">'+({paused:"Pause",test:"Test",live:"Live"})[x]+'</button>'}).join("")+'</div>'+
    '<div class="stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0"><div class="kpi" style="padding:10px"><b style="font-size:18px">'+(s.pings||0)+'</b><div class="l">Pings (30 days)</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+pct(s.bids,s.pings)+'</b><div class="l">We bid on</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+(s.sold||0)+'/'+(s.posts||0)+'</b><div class="l">Sold / posted</div></div>'+
    '<div class="kpi" style="padding:10px"><b style="font-size:18px">'+money(s.avg_bid)+'</b><div class="l">Avg bid to them</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+money(s.owed)+'</b><div class="l">We owe (live)</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+money(s.payout_all)+'</b><div class="l">Incl. test</div></div></div>'+
+   '<div class="stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 14px"><div class="kpi" style="padding:10px"><b style="font-size:18px">'+(s.prepings||0)+'</b><div class="l">Pre-pings</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+pct(s.preping_ok,s.prepings)+'</b><div class="l">Pre-pings passed</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px" class="'+((s.reject_rate||0)>40?"neg":"")+'">'+(s.posts?s.reject_rate+"%":"–")+'</b><div class="l">Buyer rejects</div></div></div>'+
+   (p.paused_reason&&p.mode==="paused"?'<div class="note" style="margin:0 0 12px">'+esc(p.paused_reason)+'</div>':'')+
+   '<div class="form-grid" style="grid-template-columns:repeat(3,1fr);margin:0 0 12px"><label>Per minute<input type="number" min="0" data-plim="rpm" data-pid="'+p.id+'" value="'+(p.rpm==null?60:p.rpm)+'"></label><label>Hourly cap<input type="number" min="0" data-plim="hourly_cap" data-pid="'+p.id+'" value="'+(p.hourly_cap||0)+'"></label><label>Daily cap<input type="number" min="0" data-plim="daily_cap" data-pid="'+p.id+'" value="'+(p.daily_cap||0)+'"></label></div>'+
    '<p class="small" style="margin:0 0 6px"><b>API key</b></p><div class="keybox" data-key="'+p.id+'">'+esc(p.key_hint)+'</div>'+
    '<div class="form-row" style="margin-top:8px"><button class="btn" data-show="'+p.id+'">Show &amp; copy key</button><button class="btn" data-rot="'+p.id+'">New key</button><a class="btn" href="/publisher-console/" target="_blank">Test console</a><a class="btn" href="/publisher-spec/" target="_blank">Spec</a></div></div>'}).join(""):'<div class="card empty">No publishers yet. Add one above.</div>'}
 document.addEventListener("click",function(e){var b=e.target.closest(".seg button");if(!b||b.disabled)return;var seg=b.parentNode,m=b.getAttribute("data-m");
@@ -174,11 +184,15 @@ document.addEventListener("click",function(e){var b=e.target.closest(".seg butto
     api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"buyer_mode",id:id,mode:m})}).then(function(j){SET=j;load()}).catch(function(x){alert((x&&x.error)||"Could not change")})}
   if(seg.hasAttribute("data-pmode")){var pid=seg.getAttribute("data-pmode");if(m==="live"&&!confirm("Switch this publisher to LIVE? Their leads will go to live buyers and you will owe them for sold leads."))return;
     api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_update",id:pid,mode:m})}).then(function(j){SET=j;renderPubs()}).catch(function(x){alert((x&&x.error)||"Could not change")})}});
+document.addEventListener("change",function(e){var i=e.target.closest("[data-plim]");if(!i)return;var o={action:"pub_update",id:i.getAttribute("data-pid")};o[i.getAttribute("data-plim")]=i.value;
+  api("/api/admin/settings",{method:"POST",body:JSON.stringify(o)}).then(function(j){SET=j;renderPubs()}).catch(function(x){alert((x&&x.error)||"Could not save")})});
+$("#of").addEventListener("submit",function(e){e.preventDefault();api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"optout_add",phone:$("#oph").value,email:$("#oem").value})})
+  .then(function(j){SET=j;renderPubs();$("#omsg").textContent="Added";$("#of").reset()}).catch(function(x){$("#omsg").textContent=(x&&x.error)||"Could not add"})});
 document.addEventListener("change",function(e){var i=e.target.closest("[data-min]");if(!i)return;api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"buyer_min",id:i.getAttribute("data-min"),min:i.value})}).then(function(j){SET=j})});
 document.addEventListener("click",function(e){var s=e.target.closest("[data-show]"),r=e.target.closest("[data-rot]");
   if(s){var id=s.getAttribute("data-show");api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_key",id:id})}).then(function(j){$('[data-key="'+id+'"]').textContent=j.key;try{navigator.clipboard.writeText(j.key);s.textContent="Copied"}catch(x){}})}
   if(r){var rid=r.getAttribute("data-rot");if(!confirm("Make a new key? The old key stops working right away."))return;api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_rotate",id:rid})}).then(function(j){SET=j;renderPubs();$('[data-key="'+rid+'"]').textContent=j.key})}});
-$("#pf").addEventListener("submit",function(e){e.preventDefault();api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_create",name:$("#pn").value,email:$("#pe").value,share:(+$("#ps").value||70)/100,fixed:$("#pfx").value,verticals:$("#pv").value,daily_cap:$("#pc").value})})
+$("#pf").addEventListener("submit",function(e){e.preventDefault();api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_create",name:$("#pn").value,email:$("#pe").value,share:(+$("#ps").value||70)/100,fixed:$("#pfx").value,verticals:$("#pv").value,daily_cap:$("#pc").value,hourly_cap:$("#phc").value,rpm:$("#prpm").value})})
   .then(function(j){SET=j;renderPubs();$("#pmsg").innerHTML='Created. API key (copy it now): <span class="keybox">'+esc(j.key)+'</span>';$("#pf").reset()}).catch(function(x){$("#pmsg").textContent=(x&&x.error)||"Could not create"})});
 function load(){loadSet();var q="?days="+$("#days").value+"&test="+$("#test").value+"&site="+encodeURIComponent($("#site").value);
   api("/api/admin/leads"+q).then(function(j){D=j;render()}).catch(function(e){if(e&&e.status===401){sessionStorage.removeItem("tlh-admin");location.reload();return}

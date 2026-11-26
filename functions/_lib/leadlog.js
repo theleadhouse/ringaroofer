@@ -26,8 +26,56 @@ export function init(db) {
       top REAL DEFAULT 0, payout REAL DEFAULT 0, status TEXT, reason TEXT, lead_id TEXT, sold INTEGER DEFAULT 0)`),
     db.prepare("CREATE INDEX IF NOT EXISTS pubpings_pub ON pubpings (pub_id, ts)"),
     db.prepare(`CREATE TABLE IF NOT EXISTS spend (day TEXT NOT NULL, site TEXT NOT NULL, channel TEXT NOT NULL, amount REAL NOT NULL, note TEXT, PRIMARY KEY (day, site, channel))`),
-  ]).catch((e) => { ready = null; throw e; });
+    // pre-pings: cheap yes/no checks that never reach a buyer (used for rate limits and publisher stats)
+    db.prepare(`CREATE TABLE IF NOT EXISTS prepings (id INTEGER PRIMARY KEY AUTOINCREMENT, pub_id TEXT NOT NULL, ts INTEGER NOT NULL, test INTEGER DEFAULT 1,
+      vertical TEXT, zip TEXT, state TEXT, ok INTEGER DEFAULT 0, reason TEXT)`),
+    db.prepare("CREATE INDEX IF NOT EXISTS prepings_pub ON prepings (pub_id, ts)"),
+    // opt-outs: SHA-256 of the 10-digit phone or lowercase email. Checked on every publisher lead.
+    db.prepare(`CREATE TABLE IF NOT EXISTS suppress (hash TEXT PRIMARY KEY, kind TEXT, ts INTEGER, source TEXT)`),
+    // consent proof, kept 5 years (FTC TSR). Phone is stored as a hash, plus AES-GCM encrypted when DATA_KEY is set.
+    db.prepare(`CREATE TABLE IF NOT EXISTS consent (lead_id TEXT PRIMARY KEY, ts INTEGER NOT NULL, site TEXT, publisher TEXT, vertical TEXT, test INTEGER DEFAULT 0,
+      phone_hash TEXT, email_hash TEXT, contact_enc TEXT, tf TEXT, jornaya TEXT, consent_text TEXT, page TEXT, ip TEXT, user_agent TEXT, submitted_at TEXT, sold_to TEXT)`),
+    db.prepare("CREATE INDEX IF NOT EXISTS consent_phone ON consent (phone_hash)"),
+  ]).then(async () => {
+    // columns added after launch (ignore "duplicate column" on later runs)
+    for (const sql of ["ALTER TABLE publishers ADD COLUMN rpm INTEGER DEFAULT 60", "ALTER TABLE publishers ADD COLUMN hourly_cap INTEGER DEFAULT 0",
+      "ALTER TABLE publishers ADD COLUMN paused_reason TEXT", "ALTER TABLE leads ADD COLUMN phone_hash TEXT"]) { try { await db.prepare(sql).run(); } catch {} }
+    try { await db.prepare("CREATE INDEX IF NOT EXISTS leads_phash ON leads (phone_hash, ts)").run(); } catch {}
+  }).catch((e) => { ready = null; throw e; });
   return ready;
+}
+
+/** SHA-256 hex. Phones are hashed as 10 digits, emails lowercase. */
+export async function sha(s) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(s)));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+export const normPhone = (p) => String(p || "").replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
+export const phoneHash = (p) => { const n = normPhone(p); return n.length === 10 ? sha(n) : Promise.resolve(""); };
+export const emailHash = (e) => { const n = String(e || "").trim().toLowerCase(); return n.includes("@") ? sha(n) : Promise.resolve(""); };
+
+/** AES-GCM encrypt with the DATA_KEY secret (any long random string). Returns "" when DATA_KEY isn't set. */
+async function enc(env, text) {
+  if (!env.DATA_KEY || !text) return "";
+  const k = await crypto.subtle.importKey("raw", await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.DATA_KEY)), "AES-GCM", false, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const c = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, new TextEncoder().encode(text)));
+  const all = new Uint8Array(12 + c.length); all.set(iv); all.set(c, 12);
+  return btoa(String.fromCharCode(...all));
+}
+export async function dec(env, b64) {
+  if (!env.DATA_KEY || !b64) return "";
+  const all = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const k = await crypto.subtle.importKey("raw", await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.DATA_KEY)), "AES-GCM", false, ["decrypt"]);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: all.slice(0, 12) }, k, all.slice(12)));
+}
+const FIVE_YEARS = (5 * 365 + 30) * 86400000;
+
+/** Is this phone or email on the opt-out list? */
+export async function suppressed(db, ph, eh) {
+  const hs = [ph, eh].filter(Boolean); if (!hs.length) return false;
+  const r = await db.prepare(`SELECT hash FROM suppress WHERE hash IN (${hs.map((_, i) => "?" + (i + 1)).join(",")}) LIMIT 1`).bind(...hs).first();
+  return !!r;
 }
 
 /** Where the visitor came from, from click IDs and UTM tags. */
@@ -64,6 +112,15 @@ export async function logLead(env, lead, sale, extra = {}) {
       sale && sale.sold ? 1 : 0, sale && sale.sold ? sale.price : 0, extra.payout || 0, extra.publisher || "",
       sale ? (sale.sold ? "" : (sale.reason || "")) : "no buyer connected",
       J(wp && wp.req), J(wp && wp.raw), J(lastPost && lastPost.req), J(lastPost && lastPost.raw))];
+    const ph = await phoneHash(lead.phone), eh = await emailHash(lead.email);
+    stmts.push(db.prepare("UPDATE leads SET phone_hash=?2 WHERE id=?1").bind(lead.lead_id, ph));
+    if (lead.phone || lead.email) stmts.push(db.prepare(`INSERT OR REPLACE INTO consent (lead_id, ts, site, publisher, vertical, test, phone_hash, email_hash, contact_enc, tf, jornaya,
+      consent_text, page, ip, user_agent, submitted_at, sold_to) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)`).bind(
+      lead.lead_id, now, lead.source_site || "", extra.publisher || "", lead.vertical || "", extra.test ? 1 : 0, ph, eh,
+      await enc(env, JSON.stringify({ first_name: lead.first_name, last_name: lead.last_name, phone: lead.phone, email: lead.email, address: lead.address, zip: lead.zip })),
+      lead.xxTrustedFormCertUrl || "", lead.universal_leadid || "", String(lead.consent_text || "").slice(0, 3000), String(lead.landing_page || "").slice(0, 400),
+      lead.ip_address || "", String(lead.user_agent || "").slice(0, 400), lead.submitted_at || new Date(now).toISOString(), win ? win.name : ""));
+    if (Math.random() < 0.01) stmts.push(db.prepare("DELETE FROM consent WHERE ts<?1").bind(now - FIVE_YEARS));   // records older than 5 years + 30 days
     for (const a of at) stmts.push(db.prepare(`INSERT INTO attempts (lead_id, ts, buyer, live, stage, status, price, token, error, ms, won, req, res) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)`)
       .bind(lead.lead_id, now, a.name || a.buyer, a.live ? 1 : 0, a.stage, a.ok ? (a.stage === "post" ? "Accepted" : "Match") : (a.status || ""), a.price || 0, a.token || "", a.error || "", a.ms || 0,
         win && a === win ? 1 : 0, J(a.req), J(a.raw)));

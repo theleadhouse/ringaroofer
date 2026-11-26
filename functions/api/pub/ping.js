@@ -1,7 +1,8 @@
 /** POST /api/pub/ping — publisher sends a lead without name/phone/email; we ask our buyers and answer with our bid. See /publisher-spec/. */
-import { J, body, auth, normPing, payoutFor } from "../../_lib/pubs.js";
+import { J, S, body, auth, normPing, payoutFor } from "../../_lib/pubs.js";
 import { pingAll } from "../../_lib/buyers.js";
 import { zipPlace } from "../../_lib/sbb.js";
+import { rate, dupe } from "../../_lib/guard.js";
 export const onRequestOptions = () => new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Allow-Methods": "POST" } });
 export async function onRequestPost({ request, env }) {
   const d = await body(request); if (!d) return J({ status: "error", reason: "send JSON" }, 400);
@@ -9,11 +10,9 @@ export async function onRequestPost({ request, env }) {
   const n = normPing(d); if (n.reason) return J({ status: "rejected", reason: n.reason }, 200);
   const lead = n.lead, db = env.LEADS_DB, test = pub.mode !== "live";
   if (!(pub.verticals || "roofing").split(",").includes(lead.vertical)) return J({ status: "rejected", reason: `not approved for ${lead.vertical}` });
-  if (pub.daily_cap > 0) {
-    const day0 = new Date(); day0.setUTCHours(0, 0, 0, 0);
-    const c = await db.prepare("SELECT COUNT(*) n FROM pubpings WHERE pub_id=?1 AND ts>?2 AND sold=1").bind(pub.id, day0.getTime()).first();
-    if (c && c.n >= pub.daily_cap) return J({ status: "rejected", reason: "daily cap reached" });
-  }
+  const lim = await rate(db, pub); if (lim) return J({ status: "rejected", reason: lim.reason, retry_after: lim.retry_after }, lim.code || 200);
+  const ph = /^[a-f0-9]{64}$/i.test(S(d.phone_hash, 64)) ? S(d.phone_hash, 64).toLowerCase() : "";
+  const dp = await dupe(db, ph, "", test); if (dp) return J({ status: "rejected", reason: dp });
   if (!lead.city || !lead.state) { const pl = await zipPlace(lead.zip); if (pl) { lead.city = lead.city || pl.city; lead.state = lead.state || pl.state; } }
   if (!lead.state) return J({ status: "rejected", reason: "unknown zip" });
   lead.source = "publisher"; lead.source_site = `pub:${pub.name}`;

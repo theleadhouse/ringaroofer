@@ -14,7 +14,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261127a"; UPDATED = "2026-11-20"
+V = "20261127b"; UPDATED = "2026-11-20"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -707,7 +707,7 @@ def main():
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
     os.makedirs(os.path.join(OUT, "leads-admin"), exist_ok=True)   # private leads dashboard (noindex, password via /api/admin/leads)
     shutil.copy(os.path.join(ROOT, "admin", "leads-admin.html"), os.path.join(OUT, "leads-admin", "index.html"))
-    for pg in ("publisher-spec", "publisher-console"):   # publisher docs + no-code test console (noindex)
+    for pg in ("publisher-spec", "publisher-console", "opt-out"):   # publisher docs + no-code test console (noindex)
         os.makedirs(os.path.join(OUT, pg), exist_ok=True); shutil.copy(os.path.join(ROOT, "admin", pg + ".html"), os.path.join(OUT, pg, "index.html"))
     if funnel_cfg.MODE != "leads":   # the lead-mode preview links its consent to /partners/: build that page too
         import tempfile

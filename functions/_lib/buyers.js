@@ -115,7 +115,7 @@ const alpine = {
 // ------------------------------------------------------------------ Demo Buyer — answers TEST publisher traffic only, never a real company
 const demo = {
   id: "demo", name: "Demo Buyer", verticals: ["roofing", "windows", "bath", "siding"], internal: true,
-  configured: () => true, live: () => false, eligible: () => "",
+  configured: () => true, live: () => false, eligible: (l) => (/^000/.test(l.zip || "") ? "No coverage in this ZIP (demo)" : ""),
   async ping(e, l) {
     const base = { roofing: 38, windows: 30, bath: 28, siding: 55 }[l.vertical] || 25;
     if (/^000/.test(l.zip || "")) return { ok: false, price: 0, status: "rejected", error: "No coverage in this ZIP (demo)", req: { zip: l.zip }, raw: '{"status":"rejected"}' };
@@ -158,7 +158,7 @@ export function envWith(env, modes) {
 }
 
 /** Which buyers get this lead. opts: { only, modes, testOnly (test publisher), demo (include Demo Buyer) } */
-function pick(env, lead, opts, attempts) {
+export function pick(env, lead, opts, attempts) {
   const modes = opts.modes || {};
   let list = opts.only === "demo" ? [] : BUYERS.filter((b) => (!opts.only || b.id === opts.only) && b.configured(env) && b.verticals.includes(lead.vertical));
   list = list.filter((b) => {

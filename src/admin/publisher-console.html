@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
-<title>Publisher Test Console · The Lead House</title><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Radar Exchange · Test Console · HomeProRadar</title><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>body{margin:0;font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#0F1B2D;background:#F3F5F9}
 header{background:#0B1729;color:#fff;padding:20px}header div{max-width:1100px;margin:0 auto}header h1{margin:0;font-size:22px}header p{margin:4px 0 0;color:#B9C6DB}
 main{max-width:1100px;margin:0 auto;padding:18px 20px 60px;display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){main{grid-template-columns:1fr}}
@@ -8,17 +8,17 @@ label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:70
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{font:inherit;font-weight:800;border:0;border-radius:12px;padding:11px 16px;cursor:pointer;background:#F26B1D;color:#fff}button:disabled{opacity:.5}
 pre{background:#0B1729;color:#DDE6F3;border-radius:12px;padding:12px;font-size:12.5px;white-space:pre-wrap;word-break:break-word;min-height:60px}
 .big{font-size:20px;font-weight:800;margin:6px 0}.ok{color:#0E9F6E}.bad{color:#D63B3B}.full{grid-column:1/-1}</style></head><body>
-<header><div><h1>Publisher Test Console</h1><p>Send a test ping and post exactly like an API integration would. <a href="/publisher-spec/" style="color:#FDBA74">Read the spec</a></p></div></header>
+<header><div><h1>Radar Exchange · Test Console</h1><p>Send a test ping and post exactly like an API integration would. <a href="/publisher-spec/" style="color:#FDBA74">Read the spec</a></p></div></header>
 <main>
-<div class="card full"><label>Your API key<input id="key" placeholder="tlh_..." autocomplete="off"></label><span style="font-size:13px;color:#51607A">Your key is only used in this browser tab to call the API.</span></div>
+<div class="card full"><label>Your API key<input id="key" placeholder="your API key" autocomplete="off"></label><span style="font-size:13px;color:#51607A">Your key is only used in this browser tab to call the API.</span></div>
 <div class="card"><h2>1. Ping <span style="font-weight:500;color:#51607A;font-size:13px">(no name, phone or email)</span></h2>
 <div class="two"><label>Vertical<select id="vertical"><option>roofing</option><option>windows</option></select></label><label>Project<select id="project"><option>replace</option><option>new</option><option>repair</option></select></label></div>
 <div class="two"><label>Roof material<select id="roof_material"><option>asphalt</option><option>metal</option><option>tile</option><option>flat</option><option>wood_shake</option><option>slate</option><option>other</option></select></label><label>ZIP<input id="zip" value="98103"></label></div>
 <label>TrustedForm certificate URL<input id="tf"></label>
-<label>Consent text<textarea id="consent" rows="3">By clicking Get Quotes, I agree to be contacted by The Lead House and its marketing partners about my home improvement project at the number provided, including by autodialed calls and texts. Consent is not a condition of purchase.</textarea></label>
+<label>Consent text<textarea id="consent" rows="3">By clicking Get Quotes, I agree to be contacted by HomeProRadar and its marketing partners about my home improvement project at the number provided, including by autodialed calls and texts. Consent is not a condition of purchase.</textarea></label>
 <div class="two"><label>Landing page URL<input id="lp" value="https://example.com/roofing"></label><label>Consumer IP<input id="ip" value="203.0.113.10"></label></div>
 <label>Your sub ID (optional)<input id="sub" value="console-test"></label>
-<button id="bp">Send ping</button><div class="big" id="pres"></div><pre id="pout">Response will appear here.</pre></div>
+<button id="bpp" style="background:#0B1729">Pre-ping (free check)</button> <button id="bp">Send ping</button><div class="big" id="pres"></div><pre id="pout">Response will appear here.</pre></div>
 <div class="card"><h2>2. Post <span style="font-weight:500;color:#51607A;font-size:13px">(after an accepted ping)</span></h2>
 <label>ping_id<input id="pid" placeholder="filled in from the ping"></label>
 <div class="two"><label>First name<input id="fn" value="Test"></label><label>Last name<input id="ln" value="Lead"></label></div>
@@ -37,11 +37,14 @@ function call(path,body){return fetch(path,{method:"POST",headers:{"Content-Type
 $("bp").onclick=function(){var b={vertical:$("vertical").value,project:$("project").value,roof_material:$("roof_material").value,zip:$("zip").value.trim(),homeowner:true,trustedform_cert_url:$("tf").value.trim(),
   tcpa_consent_text:$("consent").value,landing_page_url:$("lp").value.trim(),ip_address:$("ip").value.trim(),user_agent:navigator.userAgent,sub_id:$("sub").value.trim()};
   $("bp").disabled=true;$("pout").textContent="Sending…\n\n"+JSON.stringify(b,null,2);
-  call("/api/pub/ping",b).then(function(j){$("pout").textContent="REQUEST\n"+JSON.stringify(b,null,2)+"\n\nRESPONSE\n"+JSON.stringify(j,null,2);
+  call("/v1/ping",b).then(function(j){$("pout").textContent="REQUEST\n"+JSON.stringify(b,null,2)+"\n\nRESPONSE\n"+JSON.stringify(j,null,2);
     $("pres").innerHTML=j.status==="accepted"?'<span class="ok">Accepted · bid $'+j.payout.toFixed(2)+(j.test?" (test)":"")+'</span>':'<span class="bad">'+(j.status||"error")+': '+(j.reason||"")+'</span>';
     if(j.ping_id)$("pid").value=j.ping_id}).catch(function(e){$("pout").textContent=String(e)}).then(function(){$("bp").disabled=false})};
+$("bpp").onclick=function(){var b={vertical:$("vertical").value,zip:$("zip").value.trim(),project:$("project").value};$("bpp").disabled=true;
+  call("/v1/preping",b).then(function(j){$("pout").textContent="PRE-PING REQUEST\n"+JSON.stringify(b,null,2)+"\n\nRESPONSE\n"+JSON.stringify(j,null,2);
+    $("pres").innerHTML=j.status==="accepted"?'<span class="ok">Pre-ping OK · '+(j.city||"")+' '+(j.state||"")+' — go ahead and ping</span>':'<span class="bad">'+(j.status||"error")+': '+(j.reason||"")+'</span>'}).catch(function(e){$("pout").textContent=String(e)}).then(function(){$("bpp").disabled=false})};
 $("bs").onclick=function(){var b={ping_id:$("pid").value.trim(),first_name:$("fn").value,last_name:$("ln").value,phone:$("ph").value,email:$("em").value,address:$("ad").value};
-  $("bs").disabled=true;call("/api/pub/post",b).then(function(j){$("sout").textContent="REQUEST\n"+JSON.stringify(b,null,2)+"\n\nRESPONSE\n"+JSON.stringify(j,null,2);
+  $("bs").disabled=true;call("/v1/post",b).then(function(j){$("sout").textContent="REQUEST\n"+JSON.stringify(b,null,2)+"\n\nRESPONSE\n"+JSON.stringify(j,null,2);
     $("sres").innerHTML=j.status==="accepted"?'<span class="ok">Accepted · you earn $'+j.payout.toFixed(2)+(j.test?" (test)":"")+'</span>':'<span class="bad">'+(j.status||"error")+': '+(j.reason||"")+'</span>';fresh()}).catch(function(e){$("sout").textContent=String(e)}).then(function(){$("bs").disabled=false})};
 })();
 </script></body></html>

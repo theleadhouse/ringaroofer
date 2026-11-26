@@ -1,7 +1,8 @@
 /** POST /api/pub/post — publisher sends the full lead for an accepted ping; we sell it to the best buyer and answer accepted/rejected. */
 import { J, S, body, auth } from "../../_lib/pubs.js";
 import { postBest, loadModes, envWith } from "../../_lib/buyers.js";
-import { logLead } from "../../_lib/leadlog.js";
+import { logLead, phoneHash, emailHash, suppressed } from "../../_lib/leadlog.js";
+import { quality } from "../../_lib/guard.js";
 export const onRequestOptions = () => new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Allow-Methods": "POST" } });
 export async function onRequestPost({ request, env }) {
   const d = await body(request); if (!d) return J({ status: "error", reason: "send JSON" }, 400);
@@ -23,7 +24,9 @@ export async function onRequestPost({ request, env }) {
   const finish = async (sale, payout, reason) => {
     await logLead(env, lead, { ...sale, attempts: [...pingAttempts, ...(sale.attempts || []).filter((a) => a.stage === "post")], reason }, { test: !!pp.test, source: "publisher", publisher: pub.name, payout });
     await db.prepare("UPDATE pubpings SET status=?2, sold=?3, lead_id=?4, reason=?5 WHERE id=?1").bind(pid, sale.sold ? "sold" : "rejected", sale.sold ? 1 : 0, lead.lead_id, reason || "").run();
+    try { await quality(db, pub); } catch (e) { console.log("quality", String(e)); }
   };
+  if (await suppressed(db, await phoneHash(phone), await emailHash(email))) { await finish({ sold: false, attempts: [] }, 0, "consumer opted out"); return J({ status: "rejected", reason: "consumer opted out" }); }
   if (dup) { await finish({ sold: false, attempts: [] }, 0, "duplicate phone in last 30 days"); return J({ status: "rejected", reason: "duplicate phone in last 30 days" }); }
   const offers = pingAttempts.filter((a) => a.stage === "ping" && a.ok).sort((x, y) => y.price - x.price);
   const env2 = envWith(env, await loadModes(env));
