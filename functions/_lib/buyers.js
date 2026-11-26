@@ -7,7 +7,7 @@
  *   LoanBright  SBB_USER, SBB_PASS, SBB_SRC, SBB_PUB_ID, SBB_LIVE=1
  *   Connatria   CONNATRIA_KEY, CONNATRIA_OFFER_ID, CONNATRIA_SOURCE_ID, CONNATRIA_LIVE=1
  *   Alpine      ALPINE_KEY, ALPINE_CAMPAIGN, ALPINE_LIVE=1, ALPINE_ROOFING=1 (also send roofing)
- *   Any buyer   <ID>_MIN_PRICE (e.g. LOANBRIGHT_MIN_PRICE=20), <ID>_OFF=1 to pause it
+ *   Any buyer   <ID>_MIN_PRICE (e.g. LOANBRIGHT_MIN_PRICE=20). Pause / Test / Live is set on the dashboard (settings table), env flags are the fallback.
  */
 import { roofFields, parseXml } from "./sbb.js";
 
@@ -83,7 +83,6 @@ const alpine = {
   configured: (e) => !!(e.ALPINE_KEY && e.ALPINE_CAMPAIGN), live: (e) => e.ALPINE_LIVE === "1",
   eligible(l, e) {
     if (l.vertical === "roofing" && (!e || e.ALPINE_ROOFING !== "1")) return "roofing not switched on for Alpine";
-    if (!l.universal_leadid) return "needs Jornaya LeadiD";
     return "";
   },
   projectType(l) {
@@ -113,37 +112,99 @@ const alpine = {
   },
 };
 
-export const BUYERS = [loanbright, connatria, alpine];
-export const byId = (id) => BUYERS.find((b) => b.id === id);
+// ------------------------------------------------------------------ Demo Buyer — answers TEST publisher traffic only, never a real company
+const demo = {
+  id: "demo", name: "Demo Buyer", verticals: ["roofing", "windows", "bath", "siding"], internal: true,
+  configured: () => true, live: () => false, eligible: () => "",
+  async ping(e, l) {
+    const base = { roofing: 38, windows: 30, bath: 28, siding: 55 }[l.vertical] || 25;
+    if (/^000/.test(l.zip || "")) return { ok: false, price: 0, status: "rejected", error: "No coverage in this ZIP (demo)", req: { zip: l.zip }, raw: '{"status":"rejected"}' };
+    const price = Math.round((base + (parseInt(String(l.zip).slice(-2), 10) % 7)) * 100) / 100;
+    return { ok: true, price, token: "DEMO-" + crypto.randomUUID().slice(0, 8), status: "success", error: "", req: { vertical: l.vertical, zip: l.zip }, raw: JSON.stringify({ status: "success", price }) };
+  },
+  async post(e, l, p) {
+    if (/reject/i.test(l.email || "")) return { ok: false, price: 0, status: "rejected", error: "Rejected on purpose (email contains 'reject')", req: { token: p.token }, raw: '{"status":"rejected"}' };
+    return { ok: true, price: p.price, status: "success", error: "", req: { token: p.token }, raw: JSON.stringify({ status: "success", price: p.price }) };
+  },
+};
 
-/** Offer a lead to every buyer that takes it; sell to the best price; fall back on rejection.
- *  only: optional buyer id (test runner). Returns { sold, buyer, price, live, attempts: [...] } */
-export async function sell(env, lead, only) {
-  const attempts = [];
-  const list = BUYERS.filter((b) => (!only || b.id === only) && b.configured(env) && env[`${b.id.toUpperCase()}_OFF`] !== "1" && b.verticals.includes(lead.vertical));
-  const active = [];
-  for (const b of list) {
-    const why = b.eligible(lead, env);
-    if (why) attempts.push({ buyer: b.id, name: b.name, live: b.live(env) ? 1 : 0, stage: "skip", status: "skipped", price: 0, error: why });
-    else active.push(b);
+export const BUYERS = [loanbright, connatria, alpine];
+export const ALL_BUYERS = [loanbright, connatria, alpine, demo];
+export const byId = (id) => ALL_BUYERS.find((b) => b.id === id);
+const FLAG = { loanbright: "SBB_LIVE", connatria: "CONNATRIA_LIVE", alpine: "ALPINE_LIVE" };
+
+/** Can this buyer be switched to live? ("" = yes, otherwise the reason) */
+export function liveBlock(b, env) {
+  if (!b.configured(env)) return "keys missing in Cloudflare";
+  if (b.id === "loanbright" && (!env.SBB_SRC || env.SBB_SRC === "Test")) return "set SBB_SRC to LoanBright's live SRC in Cloudflare first";
+  return "";
+}
+/** Buyer modes from the dashboard (settings table): paused | test | live. Falls back to env flags. */
+export async function loadModes(env) {
+  const m = {};
+  for (const b of BUYERS) m[b.id] = env[`${b.id.toUpperCase()}_OFF`] === "1" ? "paused" : env[FLAG[b.id]] === "1" ? "live" : "test";
+  if (env.LEADS_DB) {
+    try { const rows = (await env.LEADS_DB.prepare("SELECT k, v FROM settings WHERE k LIKE 'mode:%' OR k LIKE 'min:%'").all()).results;
+      for (const r of rows) { const [t, id] = r.k.split(":"); if (t === "mode") m[id] = r.v; else m["min:" + id] = r.v; } } catch {}
   }
+  for (const b of BUYERS) if (m[b.id] === "live" && liveBlock(b, env)) m[b.id] = "test";   // never live without what live needs
+  return m;
+}
+/** env copy where each buyer's live flag matches its mode */
+export function envWith(env, modes) {
+  const E = { ...env };
+  for (const b of BUYERS) { E[FLAG[b.id]] = modes[b.id] === "live" ? "1" : "0"; if (modes["min:" + b.id]) E[`${b.id.toUpperCase()}_MIN_PRICE`] = modes["min:" + b.id]; }
+  return E;
+}
+
+/** Which buyers get this lead. opts: { only, modes, testOnly (test publisher), demo (include Demo Buyer) } */
+function pick(env, lead, opts, attempts) {
+  const modes = opts.modes || {};
+  let list = opts.only === "demo" ? [] : BUYERS.filter((b) => (!opts.only || b.id === opts.only) && b.configured(env) && b.verticals.includes(lead.vertical));
+  list = list.filter((b) => {
+    const m = modes[b.id] || "test";
+    if (m === "paused") { attempts.push({ buyer: b.id, name: b.name, live: 0, stage: "skip", status: "skipped", price: 0, error: "paused on dashboard" }); return false; }
+    if (opts.testOnly && m === "live") return false;             // test traffic never reaches a live buyer
+    if (opts.liveOnly && m !== "live") return false;             // live publisher traffic only goes to live buyers
+    return true;
+  });
+  if (opts.only === "demo" || (opts.demo && !opts.only)) list.push(demo);
+  const active = [];
+  for (const b of list) { const why = b.eligible(lead, env); if (why) attempts.push({ buyer: b.id, name: b.name, live: b.live(env) ? 1 : 0, stage: "skip", status: "skipped", price: 0, error: why }); else active.push(b); }
+  return active;
+}
+
+/** Step 1 for everyone: ping all chosen buyers at once. Returns offers sorted best first. */
+export async function pingAll(env0, lead, opts = {}) {
+  const modes = opts.modes || await loadModes(env0), env = envWith(env0, modes), attempts = [];
+  const active = pick(env, lead, { ...opts, modes }, attempts);
   const pings = await Promise.all(active.map(async (b) => {
-    const t0 = Date.now();
-    let r; try { r = await b.ping(env, lead); } catch (e) { r = { ok: false, price: 0, status: "error", error: String(e).slice(0, 200) }; }
-    const a = { buyer: b.id, name: b.name, live: b.live(env) ? 1 : 0, stage: "ping", ms: Date.now() - t0, ...r };
-    attempts.push(a); return { b, a };
+    const t0 = Date.now(); let r;
+    try { r = await b.ping(env, lead); } catch (e) { r = { ok: false, price: 0, status: "error", error: String(e).slice(0, 200) }; }
+    const a = { buyer: b.id, name: b.name, live: b.live(env) ? 1 : 0, stage: "ping", ms: Date.now() - t0, ts: t0, ...r }; attempts.push(a); return a;
   }));
-  const offers = pings.filter((x) => x.a.ok && x.a.price >= (parseFloat(env[`${x.b.id.toUpperCase()}_MIN_PRICE`] || "0") || 0))
-    .sort((x, y) => y.a.price - x.a.price);
-  for (const x of pings) if (x.a.ok && !offers.includes(x)) x.a.error = `bid ${x.a.price} below minimum`;
-  for (const { b, a } of offers) {
-    const t0 = Date.now();
-    let r; try { r = await b.post(env, lead, a); } catch (e) { r = { ok: false, price: 0, status: "error", error: String(e).slice(0, 200) }; }
-    const p = { buyer: b.id, name: b.name, live: b.live(env) ? 1 : 0, stage: "post", ms: Date.now() - t0, ...r };
-    attempts.push(p);
+  const offers = pings.filter((a) => a.ok && a.price >= (parseFloat(env[`${a.buyer.toUpperCase()}_MIN_PRICE`] || "0") || 0)).sort((x, y) => y.price - x.price);
+  for (const a of pings) if (a.ok && !offers.includes(a)) a.error = `bid ${a.price} below minimum`;
+  return { env, modes, attempts, offers, active: active.length };
+}
+
+/** Step 2: post to the best offer; fall back to the next best on rejection. */
+export async function postBest(env, lead, offers, attempts) {
+  for (const a of offers) {
+    const b = byId(a.buyer), t0 = Date.now(); let r;
+    try { r = await b.post(env, lead, a); } catch (e) { r = { ok: false, price: 0, status: "error", error: String(e).slice(0, 200) }; }
+    const p = { buyer: b.id, name: b.name, live: b.live(env) ? 1 : 0, stage: "post", ms: Date.now() - t0, ts: t0, ...r }; attempts.push(p);
     if (r.ok) return { sold: true, buyer: b.id, name: b.name, price: r.price || a.price, live: p.live, attempts };
   }
-  const why = !list.length ? "no buyer for this vertical" : !active.length ? attempts.map((a) => `${a.name}: ${a.error}`).join("; ")
-    : !offers.length ? pings.map((x) => `${x.b.name}: ${x.a.error || x.a.status}`).join("; ") : "all posts rejected";
-  return { sold: false, buyer: "", name: "", price: 0, live: 0, attempts, reason: why };
+  return { sold: false, buyer: "", name: "", price: 0, live: 0, attempts, reason: offers.length ? "all posts rejected" : "" };
+}
+
+/** Our own forms: ping everyone, post to the best. (only = test runner for one buyer) */
+export async function sell(env0, lead, only, opts = {}) {
+  const P = await pingAll(env0, lead, { only, ...opts });
+  if (!P.offers.length) {
+    const reason = P.attempts.length ? P.attempts.map((a) => `${a.name}: ${a.error || a.status}`).join("; ") : "no buyer for this vertical";
+    return { sold: false, buyer: "", name: "", price: 0, live: 0, attempts: P.attempts, reason };
+  }
+  return postBest(P.env, lead, P.offers, P.attempts);
 }

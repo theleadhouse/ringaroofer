@@ -695,7 +695,7 @@ def main():
     open(os.path.join(OUT, "404.html"), "w").write(page(nf).replace(f'<link rel="canonical" href="{URL}/404/">', ""))
     open(os.path.join(OUT, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + "\n".join(
         f'<url><loc>{URL}{p["url"]}</loc><lastmod>{UPDATED}</lastmod></url>' for p in PAGES if not p.get("noindex")) + "\n</urlset>\n")
-    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /preview/\nDisallow: /leads-admin/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
+    open(os.path.join(OUT, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /preview/\nDisallow: /leads-admin/\nDisallow: /publisher-spec/\nDisallow: /publisher-console/\n\nUser-agent: AhrefsBot\nDisallow: /\nUser-agent: SemrushBot\nDisallow: /\nUser-agent: MJ12bot\nDisallow: /\nUser-agent: DotBot\nDisallow: /\n\nSitemap: {URL}/sitemap.xml\n")
     open(os.path.join(OUT, "llms.txt"), "w").write(f"# {BRAND}\n\n> {BRAND} (ringaroofer.com) is a roofing referral service for U.S. homeowners. Calling {PHONE} connects a homeowner with an independent roofing company that serves their area, for roof repair, leak repair, roof inspections, storm and hail repair, emergency roofing and tarping, roof replacement, new roofs and re-roofs on shingle, metal, flat, tile, slate and cedar shake roofs. It does not do roofing work and does not charge homeowners.\n\n## Pages\n" + "\n".join(f"- [{p['h1']}]({URL}{p['url']}): {p['desc']}" for p in PAGES if not p.get("legal") and not p.get("noindex")) + "\n")
     open(os.path.join(OUT, "google6cdd134560bcda8a.html"), "w").write("google-site-verification: google6cdd134560bcda8a.html")
     open(os.path.join(OUT, "BingSiteAuth.xml"), "w").write('<?xml version="1.0"?>\n<users>\n\t<user>143504FD65C9CD8E8439BFD5BD0E4177</user>\n</users>\n')
@@ -707,6 +707,8 @@ def main():
     quote_funnel.write(OUT, funnel_cfg.cfg(V, DISCLAIMER), check)
     os.makedirs(os.path.join(OUT, "leads-admin"), exist_ok=True)   # private leads dashboard (noindex, password via /api/admin/leads)
     shutil.copy(os.path.join(ROOT, "admin", "leads-admin.html"), os.path.join(OUT, "leads-admin", "index.html"))
+    for pg in ("publisher-spec", "publisher-console"):   # publisher docs + no-code test console (noindex)
+        os.makedirs(os.path.join(OUT, pg), exist_ok=True); shutil.copy(os.path.join(ROOT, "admin", pg + ".html"), os.path.join(OUT, pg, "index.html"))
     if funnel_cfg.MODE != "leads":   # the lead-mode preview links its consent to /partners/: build that page too
         import tempfile
         with tempfile.TemporaryDirectory() as td:

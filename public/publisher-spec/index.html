@@ -1,0 +1,73 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>Ping/Post Specification · The Lead House</title><link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>body{margin:0;font:15.5px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#0F1B2D;background:#F3F5F9}
+header{background:#0B1729;color:#fff;padding:26px 20px}header div{max-width:960px;margin:0 auto}header h1{margin:0;font-size:26px}header p{margin:6px 0 0;color:#B9C6DB}
+main{max-width:960px;margin:0 auto;padding:22px 20px 60px}section{background:#fff;border:1px solid #E3E8F0;border-radius:16px;padding:20px 22px;margin-bottom:16px}
+h2{font-size:19px;margin:0 0 10px}code{background:#F3F5F9;border-radius:6px;padding:1px 6px;font-size:14px}
+pre{background:#0B1729;color:#DDE6F3;border-radius:12px;padding:14px;overflow:auto;font-size:13px;line-height:1.5}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px solid #E3E8F0;padding:8px 6px;text-align:left;vertical-align:top}th{font-size:12px;text-transform:uppercase;color:#51607A;letter-spacing:.04em}
+.req{color:#D63B3B;font-weight:700}.opt{color:#51607A}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.steps div{background:#F7F9FC;border-radius:12px;padding:12px}
+@media(max-width:760px){.steps{grid-template-columns:1fr}}</style></head><body>
+<header><div><h1>Ping/Post Specification</h1><p>For approved traffic partners of The Lead House · Home improvement: roofing and windows · v1.0</p></div></header>
+<main>
+<section><h2>How it works</h2><div class="steps">
+<div><b>1. Ping</b><br>Send the lead <b>without</b> name, phone or email. We check our buyers in real time and answer with our bid in USD.</div>
+<div><b>2. Post</b><br>If you accept the bid, send the full lead with the <code>ping_id</code> within <b>2 minutes</b>.</div>
+<div><b>3. Result</b><br>We answer <code>accepted</code> (you are paid the bid) or <code>rejected</code> with the reason. You are paid only for accepted leads.</div></div>
+<p>Your account starts in <b>TEST</b>: everything works the same, but leads only reach our test buyer and nothing is billed. We switch you to LIVE after a successful test. Use the <a href="/publisher-console/">test console</a> to try it without code.</p></section>
+<section><h2>Endpoints and authentication</h2>
+<table><tr><th>Step</th><th>URL</th><th>Method</th></tr>
+<tr><td>Ping</td><td><code>https://ringaroofer.com/api/pub/ping</code></td><td>POST, JSON</td></tr>
+<tr><td>Post</td><td><code>https://ringaroofer.com/api/pub/post</code></td><td>POST, JSON</td></tr></table>
+<p>Headers: <code>Content-Type: application/json</code> and <code>Authorization: Bearer YOUR_API_KEY</code>. The same URLs are used in test and live; your account mode decides. Keep your key private.</p></section>
+<section><h2>Ping fields</h2><table><tr><th>Field</th><th></th><th>Values / notes</th></tr>
+<tr><td><code>vertical</code></td><td class="req">required</td><td><code>roofing</code> or <code>windows</code> (as approved on your account)</td></tr>
+<tr><td><code>project</code></td><td class="req">required</td><td>roofing: <code>replace</code>, <code>new</code>, <code>repair</code> · windows: <code>replace</code>, <code>repair</code></td></tr>
+<tr><td><code>roof_material</code></td><td class="opt">roofing</td><td><code>asphalt</code>, <code>metal</code>, <code>tile</code>, <code>flat</code>, <code>wood_shake</code>, <code>slate</code>, <code>other</code></td></tr>
+<tr><td><code>windows_count</code></td><td class="opt">windows</td><td>1–15</td></tr>
+<tr><td><code>zip</code></td><td class="req">required</td><td>5 digits</td></tr>
+<tr><td><code>city</code>, <code>state</code></td><td class="opt">optional</td><td>2-letter state; we fill them from the ZIP if missing</td></tr>
+<tr><td><code>homeowner</code></td><td class="req">required</td><td><code>true</code> (we buy homeowner leads only)</td></tr>
+<tr><td><code>trustedform_cert_url</code></td><td class="req">required</td><td>https://cert.trustedform.com/… from the page where the consumer gave consent</td></tr>
+<tr><td><code>jornaya_leadid</code></td><td class="opt">optional</td><td>Jornaya LeadiD token, if you have one</td></tr>
+<tr><td><code>tcpa_consent_text</code></td><td class="req">required</td><td>The exact consent language the consumer agreed to. It must cover The Lead House and its marketing partners.</td></tr>
+<tr><td><code>landing_page_url</code></td><td class="req">required</td><td>URL of the page where the form was filled</td></tr>
+<tr><td><code>ip_address</code></td><td class="req">required</td><td>Consumer's IP address</td></tr>
+<tr><td><code>user_agent</code></td><td class="opt">optional</td><td>Consumer's browser user agent</td></tr>
+<tr><td><code>lead_created_at</code></td><td class="opt">optional</td><td>ISO 8601 time the form was submitted</td></tr>
+<tr><td><code>sub_id</code></td><td class="opt">optional</td><td>Your own tracking ID</td></tr></table>
+<pre>POST /api/pub/ping
+{
+  "vertical": "roofing",
+  "project": "replace",
+  "roof_material": "asphalt",
+  "zip": "98103",
+  "homeowner": true,
+  "trustedform_cert_url": "https://cert.trustedform.com/0123456789abcdef0123456789abcdef01234567",
+  "tcpa_consent_text": "By clicking Get Quotes, I agree to be contacted by The Lead House and its marketing partners ...",
+  "landing_page_url": "https://yoursite.com/roofing",
+  "ip_address": "203.0.113.10",
+  "user_agent": "Mozilla/5.0 ...",
+  "sub_id": "fb-campaign-12"
+}</pre>
+<p><b>Ping answers</b></p>
+<pre>{ "status": "accepted", "ping_id": "P-1a2b3c...", "payout": 26.25, "currency": "USD", "expires_in": 120, "test": true }
+{ "status": "rejected", "ping_id": "P-...", "reason": "no buyer for this lead" }</pre></section>
+<section><h2>Post fields</h2><table><tr><th>Field</th><th></th><th>Notes</th></tr>
+<tr><td><code>ping_id</code></td><td class="req">required</td><td>From the accepted ping. Post within 2 minutes.</td></tr>
+<tr><td><code>first_name</code>, <code>last_name</code></td><td class="req">required</td><td></td></tr>
+<tr><td><code>phone</code></td><td class="req">required</td><td>10-digit US number</td></tr>
+<tr><td><code>email</code></td><td class="req">required</td><td></td></tr>
+<tr><td><code>address</code></td><td class="opt">optional</td><td>Street address</td></tr></table>
+<pre>POST /api/pub/post
+{ "ping_id": "P-1a2b3c...", "first_name": "Jane", "last_name": "Smith", "phone": "2065550147", "email": "jane@example.com", "address": "123 Main St" }</pre>
+<p><b>Post answers</b></p>
+<pre>{ "status": "accepted", "payout": 26.25, "currency": "USD", "lead_id": "4bb05f0f-...", "test": true }
+{ "status": "rejected", "reason": "duplicate phone in last 30 days" }</pre></section>
+<section><h2>Rules</h2><ul>
+<li>Only real consumers who requested contact on your page. No incentivized, co-registration or purchased lists.</li>
+<li>Every lead needs a valid TrustedForm certificate from the same session and consent that covers The Lead House and its partners.</li>
+<li>Duplicate phone numbers within 30 days are rejected. Leads can be returned by buyers for invalid contact details; returned leads are deducted.</li>
+<li>Payment: monthly, for accepted leads net of returns, per your agreement.</li>
+<li>Questions: email us and include your <code>ping_id</code>.</li></ul></section>
+</main></body></html>

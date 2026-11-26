@@ -5,7 +5,7 @@
  *   POST /api/admin/leads {spend:{day,site,channel,amount}}   save ad spend (amount 0 deletes)
  */
 import { init } from "../../_lib/leadlog.js";
-import { BUYERS } from "../../_lib/buyers.js";
+import { BUYERS, loadModes } from "../../_lib/buyers.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const r2 = (v) => Math.round((+v || 0) * 100) / 100;
 function authed(request, env) { const k = request.headers.get("X-Admin-Key") || ""; const want = env.ADMIN_PASS || env.SBB_TEST_TOKEN; return !!want && k === want; }
@@ -13,8 +13,9 @@ const CH = (src) => (/google/.test(src) ? "google" : /meta|facebook|fb|instagram
 
 export async function onRequestGet({ request, env }) {
   if (!authed(request, env)) return J({ error: "locked" }, 401);
-  const buyers = BUYERS.map((b) => ({ id: b.id, name: b.name, verticals: b.verticals, connected: b.configured(env), live: b.live(env), paused: env[`${b.id.toUpperCase()}_OFF`] === "1",
-    min: parseFloat(env[`${b.id.toUpperCase()}_MIN_PRICE`] || "0") || 0 }));
+  const modes = await loadModes(env);
+  const buyers = BUYERS.map((b) => ({ id: b.id, name: b.name, verticals: b.verticals, connected: b.configured(env), live: modes[b.id] === "live", paused: modes[b.id] === "paused",
+    mode: modes[b.id], min: parseFloat(modes["min:" + b.id] || env[`${b.id.toUpperCase()}_MIN_PRICE`] || "0") || 0 }));
   if (!env.LEADS_DB) return J({ error: "no_db", message: "Add the D1 binding LEADS_DB to this Pages project.", buyers }, 503);
   const db = env.LEADS_DB; await init(db);
   const u = new URL(request.url), id = u.searchParams.get("id");

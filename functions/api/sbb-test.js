@@ -2,7 +2,7 @@
  * GET /api/sbb-test?token=...&buyer=loanbright|connatria|alpine&case=...  — sends sample leads to a buyer's TEST system and logs them.
  * Locked: token must match ADMIN_PASS (or SBB_TEST_TOKEN). Refuses to run for any buyer that is switched to live.
  */
-import { sell, byId, BUYERS } from "../_lib/buyers.js";
+import { sell, byId, ALL_BUYERS, loadModes } from "../_lib/buyers.js";
 import { logLead } from "../_lib/leadlog.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o, null, 2), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 const CASES = {
@@ -19,9 +19,11 @@ export async function onRequestGet({ request, env }) {
   const u = new URL(request.url), tok = u.searchParams.get("token") || "";
   if (!tok || (tok !== env.SBB_TEST_TOKEN && tok !== env.ADMIN_PASS)) return J({ error: "locked" }, 403);
   const bid = (u.searchParams.get("buyer") || "loanbright").toLowerCase(), b = byId(bid);
-  if (!b) return J({ error: "unknown buyer", buyers: BUYERS.map((x) => x.id) }, 400);
+  if (!b) return J({ error: "unknown buyer", buyers: ALL_BUYERS.map((x) => x.id) }, 400);
   if (!b.configured(env)) return J({ error: `${b.name} is not connected yet (keys missing in Cloudflare)` }, 400);
-  if (b.live(env)) return J({ error: `${b.name} is LIVE: test leads are blocked` }, 403);
+  const modes = await loadModes(env);
+  if (modes[bid] === "live") return J({ error: `${b.name} is LIVE: test leads are blocked` }, 403);
+  if (modes[bid] === "paused") return J({ error: `${b.name} is paused: switch it to Test to send a test lead` }, 403);
   const vert = u.searchParams.get("vertical") || (b.verticals.includes("roofing") && bid !== "alpine" ? "roofing" : "windows");
   const only = (u.searchParams.get("case") || "").toLowerCase(), n = Math.min(+u.searchParams.get("n") || 1, 3);
   const cases = (CASES[vert] || []).filter((c) => !only || c.name.toLowerCase().includes(only)).slice(0, n);
@@ -33,7 +35,7 @@ export async function onRequestGet({ request, env }) {
       landing_page: `https://${u.hostname}/get-a-quote/`, submitted_at: new Date().toISOString(), lead_id: crypto.randomUUID(),
       consent_text: "By clicking Get my quote, I agree to the Terms and Privacy Policy and give my express written consent to be contacted about my project (TEST LEAD).",
       xxTrustedFormCertUrl: `https://cert.trustedform.com/${uid}${uid.slice(0, 8)}`, universal_leadid: u.searchParams.get("leadid") || (bid === "alpine" ? "00000000-0000-0000-0000-000000000000" : ""), ...c };
-    const r = await sell(env, lead, bid);
+    const r = await sell(env, lead, bid, { modes, testOnly: true });
     await logLead(env, lead, r, { test: true, source: "test-runner" });
     results.push({ case: c.name, buyer: b.name, sold: r.sold, price: r.price, reason: r.reason || "", attempts: r.attempts.map((a) => ({ stage: a.stage, status: a.status, ok: !!a.ok, price: a.price, error: a.error, ms: a.ms, raw: a.raw })) });
   }

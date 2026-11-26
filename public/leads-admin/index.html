@@ -62,13 +62,22 @@ details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-
 .login{max-width:420px;margin:80px auto}.login input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;margin:10px 0}
 .empty{padding:26px;text-align:center;color:var(--ink2)}
 .note{background:var(--bluebg);color:#1E3A8A;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}.seg button{border:0;background:#fff;padding:7px 12px;font-weight:700;cursor:pointer;color:var(--ink2)}
+.seg button+button{border-left:1px solid var(--line)}.seg button.on.paused{background:#64748B;color:#fff}.seg button.on.test{background:var(--warn);color:#fff}.seg button.on.live{background:var(--ok);color:#fff}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.pub{border:1px solid var(--line);border-radius:var(--r);background:#fff;padding:18px}
+.pub h3{margin:0 0 4px;font-size:18px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.keybox{font-family:ui-monospace,Menlo,monospace;background:#F3F5F9;border-radius:8px;padding:6px 10px;font-size:13px;word-break:break-all}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.form-grid label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--ink2)}
+.form-grid input,.form-grid select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-weight:500;color:var(--ink)}
+@media(max-width:980px){.form-grid{grid-template-columns:1fr}}
 .form-row{display:flex;gap:8px;flex-wrap:wrap}.form-row input,.form-row select{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 </style></head>
 <body>
 <div class="top"><div class="top-in">
  <div class="logo"><i>⚡</i><div>Lead Desk<small>The Lead House · web leads</small></div></div>
  <nav class="tabs" id="tabs" hidden>
-  <button class="tab on" data-t="overview">Overview</button><button class="tab" data-t="leads">Leads</button><button class="tab" data-t="buyers">Buyers</button>
+  <button class="tab on" data-t="overview">Overview</button><button class="tab" data-t="leads">Leads</button><button class="tab" data-t="buyers">Buyers</button><button class="tab" data-t="pubs">Publishers</button>
   <button class="tab" data-t="sources">Sources &amp; margin</button><button class="tab" data-t="money">Money</button><button class="tab" data-t="help">How to use</button></nav>
  <div class="filters" id="filters" hidden>
   <select id="days"><option value="1">Today</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="90">90 days</option></select>
@@ -101,6 +110,18 @@ details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-
 
 <section class="panel" id="p-buyers"><div class="grid g3" id="buyers"></div>
  <div class="card" style="margin-top:14px"><h2>Why buyers said no <small>most common answers</small></h2><div id="breasons"></div></div></section>
+
+<section class="panel" id="p-pubs">
+ <div class="note">Publishers are outside traffic sources that send us leads by API: they <b>ping</b> us (no name or phone), we answer with our bid, and if they accept they <b>post</b> the full lead. New publishers start in <b>TEST</b>: their leads only reach the <b>Demo Buyer</b>, never a real buyer. Send them the <a href="/publisher-spec/" target="_blank">ping/post spec</a>; they can try it without code in the <a href="/publisher-console/" target="_blank">test console</a>.</div>
+ <div class="card"><h2>Add a publisher</h2><form id="pf"><div class="form-grid">
+  <label>Company or name<input id="pn" required placeholder="e.g. Ankush Test Publisher"></label><label>Email<input id="pe" type="email" placeholder="contact@example.com"></label>
+  <label>Pay them (% of our best bid)<input id="ps" type="number" min="5" max="95" value="70"></label>
+  <label>Or fixed $ per sold lead (optional)<input id="pfx" type="number" min="0" step="0.5" placeholder="0 = use %"></label>
+  <label>Categories<select id="pv"><option value="roofing">Roofing</option><option value="windows">Windows</option><option value="roofing,windows">Roofing + Windows</option></select></label>
+  <label>Daily cap (sold leads, 0 = none)<input id="pc" type="number" min="0" value="0"></label></div>
+  <p style="margin:12px 0 0"><button class="btn pri">Create publisher</button> <span class="muted small" id="pmsg"></span></p></form></div>
+ <div class="grid g2" id="pubs" style="margin-top:14px"></div>
+</section>
 
 <section class="panel" id="p-sources">
  <div class="note">Where leads come from and whether each source makes money. <b>Our sites</b>: cost = the ad spend you enter on the Money tab. <b>Publishers</b>: cost = what we owe them for accepted leads.</div>
@@ -138,7 +159,28 @@ function st(s){if(!s)return '<span class="pill">–</span>';if(/^(Match|Matched)
 function show(t){TAB=t;$$(".tab").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-t")===t)});$$(".panel").forEach(function(p){p.classList.toggle("on",p.id==="p-"+t)});window.scrollTo(0,0)}
 $("#tabs").addEventListener("click",function(e){var b=e.target.closest(".tab");if(b)show(b.getAttribute("data-t"))});
 document.addEventListener("click",function(e){var a=e.target.closest("[data-go]");if(a){e.preventDefault();show(a.getAttribute("data-go"))}});
-function load(){var q="?days="+$("#days").value+"&test="+$("#test").value+"&site="+encodeURIComponent($("#site").value);
+var SET=null;
+function loadSet(){return api("/api/admin/settings").then(function(j){SET=j;renderPubs();if(D)render()}).catch(function(){})}
+function renderPubs(){if(!SET)return;var P=SET.publishers||[];
+  $("#pubs").innerHTML=P.length?P.map(function(p){var s=p.stats||{};return '<div class="pub"><h3>'+esc(p.name)+'<span>'+({paused:'<span class="pill">Paused</span>',test:'<span class="pill test">TEST</span>',live:'<span class="pill live">LIVE</span>'})[p.mode]+'</span></h3>'+
+   '<p class="muted small" style="margin:0 0 10px">'+esc(p.email||"")+' · '+esc(p.verticals)+' · pays '+(p.fixed>0?money(p.fixed)+" fixed":Math.round(p.share*100)+"% of our best bid")+(p.daily_cap?" · cap "+p.daily_cap+"/day":"")+'</p>'+
+   '<div class="seg" data-pmode="'+p.id+'">'+["paused","test","live"].map(function(x){return '<button type="button" data-m="'+x+'" class="'+x+(p.mode===x?" on":"")+'">'+({paused:"Pause",test:"Test",live:"Live"})[x]+'</button>'}).join("")+'</div>'+
+   '<div class="stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0"><div class="kpi" style="padding:10px"><b style="font-size:18px">'+(s.pings||0)+'</b><div class="l">Pings (30 days)</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+pct(s.bids,s.pings)+'</b><div class="l">We bid on</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+(s.sold||0)+'/'+(s.posts||0)+'</b><div class="l">Sold / posted</div></div>'+
+   '<div class="kpi" style="padding:10px"><b style="font-size:18px">'+money(s.avg_bid)+'</b><div class="l">Avg bid to them</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+money(s.owed)+'</b><div class="l">We owe (live)</div></div><div class="kpi" style="padding:10px"><b style="font-size:18px">'+money(s.payout_all)+'</b><div class="l">Incl. test</div></div></div>'+
+   '<p class="small" style="margin:0 0 6px"><b>API key</b></p><div class="keybox" data-key="'+p.id+'">'+esc(p.key_hint)+'</div>'+
+   '<div class="form-row" style="margin-top:8px"><button class="btn" data-show="'+p.id+'">Show &amp; copy key</button><button class="btn" data-rot="'+p.id+'">New key</button><a class="btn" href="/publisher-console/" target="_blank">Test console</a><a class="btn" href="/publisher-spec/" target="_blank">Spec</a></div></div>'}).join(""):'<div class="card empty">No publishers yet. Add one above.</div>'}
+document.addEventListener("click",function(e){var b=e.target.closest(".seg button");if(!b||b.disabled)return;var seg=b.parentNode,m=b.getAttribute("data-m");
+  if(seg.hasAttribute("data-mode")){var id=seg.getAttribute("data-mode");if(m==="live"&&!confirm("Switch this buyer to LIVE? Real homeowner leads will be sold to them."))return;
+    api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"buyer_mode",id:id,mode:m})}).then(function(j){SET=j;load()}).catch(function(x){alert((x&&x.error)||"Could not change")})}
+  if(seg.hasAttribute("data-pmode")){var pid=seg.getAttribute("data-pmode");if(m==="live"&&!confirm("Switch this publisher to LIVE? Their leads will go to live buyers and you will owe them for sold leads."))return;
+    api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_update",id:pid,mode:m})}).then(function(j){SET=j;renderPubs()}).catch(function(x){alert((x&&x.error)||"Could not change")})}});
+document.addEventListener("change",function(e){var i=e.target.closest("[data-min]");if(!i)return;api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"buyer_min",id:i.getAttribute("data-min"),min:i.value})}).then(function(j){SET=j})});
+document.addEventListener("click",function(e){var s=e.target.closest("[data-show]"),r=e.target.closest("[data-rot]");
+  if(s){var id=s.getAttribute("data-show");api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_key",id:id})}).then(function(j){$('[data-key="'+id+'"]').textContent=j.key;try{navigator.clipboard.writeText(j.key);s.textContent="Copied"}catch(x){}})}
+  if(r){var rid=r.getAttribute("data-rot");if(!confirm("Make a new key? The old key stops working right away."))return;api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_rotate",id:rid})}).then(function(j){SET=j;renderPubs();$('[data-key="'+rid+'"]').textContent=j.key})}});
+$("#pf").addEventListener("submit",function(e){e.preventDefault();api("/api/admin/settings",{method:"POST",body:JSON.stringify({action:"pub_create",name:$("#pn").value,email:$("#pe").value,share:(+$("#ps").value||70)/100,fixed:$("#pfx").value,verticals:$("#pv").value,daily_cap:$("#pc").value})})
+  .then(function(j){SET=j;renderPubs();$("#pmsg").innerHTML='Created. API key (copy it now): <span class="keybox">'+esc(j.key)+'</span>';$("#pf").reset()}).catch(function(x){$("#pmsg").textContent=(x&&x.error)||"Could not create"})});
+function load(){loadSet();var q="?days="+$("#days").value+"&test="+$("#test").value+"&site="+encodeURIComponent($("#site").value);
   api("/api/admin/leads"+q).then(function(j){D=j;render()}).catch(function(e){if(e&&e.status===401){sessionStorage.removeItem("tlh-admin");location.reload();return}
    $("#kpis").innerHTML='<div class="kpi"><div class="v neg">!</div><div class="l">'+esc((e&&e.message)||(e&&e.error)||"Could not load")+'</div></div>'})}
 function render(){
@@ -168,7 +210,8 @@ function render(){
      '<div class="stats"><div><b>'+(s.pings||0)+'</b><span>Leads offered</span></div><div><b>'+pct(s.matched,s.pings)+'</b><span>Wanted (bid)</span></div><div><b>'+money(s.avg_bid)+'</b><span>Avg bid</span></div>'+
      '<div><b>'+money(s.max_bid)+'</b><span>Top bid</span></div><div><b>'+pct(s.accepted,s.posts)+'</b><span>Accepted after post</span></div><div><b>'+money(s.revenue)+'</b><span>Money from them</span></div></div>'+
      '<p class="muted small">'+(s.avg_ms?"Answers in ~"+(s.avg_ms/1000).toFixed(1)+"s · ":"")+(s.skipped?s.skipped+" leads not offered (outside what they buy)":"")+'</p>'+
-     '<button class="btn" data-test="'+b.id+'"'+(!b.connected||b.live?" disabled":"")+'>'+(b.live?"Live: test leads off":!b.connected?"Not connected yet":"Send 1 test lead")+'</button> <span class="small muted" data-testmsg="'+b.id+'"></span></div>'}).join("");
+     modeCtl(b)+'<div class="form-row" style="margin-top:10px"><button class="btn" data-test="'+b.id+'"'+(!b.connected||b.mode!=="test"?" disabled":"")+'>'+(b.mode==="live"?"Live: test leads off":b.mode==="paused"?"Paused":!b.connected?"Not connected yet":"Send 1 test lead")+'</button>'+
+     '<label class="small muted" style="display:flex;align-items:center;gap:6px">Min bid $<input type="number" min="0" step="1" value="'+(b.min||0)+'" data-min="'+b.id+'" style="width:70px;border:1px solid var(--line);border-radius:8px;padding:6px"></label></div><p class="small muted" data-testmsg="'+b.id+'" style="margin:8px 0 0"></p></div>'}).join("");
   $("#breasons").innerHTML=(j.buyerReasons||[]).length?'<table><tr><th>Buyer</th><th>Step</th><th>Answer</th><th class="n">Times</th></tr>'+j.buyerReasons.map(function(r){return '<tr><td>'+esc(r.buyer)+'</td><td>'+esc(r.stage)+'</td><td>'+esc(r.reason)+'</td><td class="n">'+r.n+'</td></tr>'}).join("")+'</table>':'<div class="empty">Nothing yet.</div>';
   // sources
   $("#tsrc").innerHTML='<tr><th>Source</th><th>Type</th><th class="n">Leads</th><th class="n">Sold</th><th class="n">Money in</th><th class="n">Cost</th><th class="n">Cost / lead</th><th class="n">Margin</th></tr>'+
@@ -180,7 +223,11 @@ function render(){
    '<h3 style="margin:16px 0 8px;font-size:14px">We owe publishers</h3><table>'+(pubs.map(function(s){return '<tr><td>'+esc(s.name)+'</td><td class="n">'+s.sold+' leads</td><td class="n neg"><b>'+money(s.cost)+'</b></td></tr>'}).join("")||'<tr><td class="muted">No publishers yet</td></tr>')+'</table>'+
    '<p class="muted small">Test leads are not real money. Pick <b>Live only</b> at the top for invoices.</p>';
 }
-function bstat(b){return b.paused?' <span class="pill warn">Paused</span>':!b.connected?' <span class="pill">Not connected</span>':b.live?' <span class="pill live">LIVE</span>':' <span class="pill test">TEST</span>'}
+function modeCtl(b){var SB=(SET&&SET.buyers||[]).filter(function(x){return x.id===b.id})[0]||{};var m=SB.mode||b.mode||"test",blk=SB.live_block||"";
+  if(!b.connected)return '<p class="small muted">Add this buyer\'s keys in Cloudflare to connect it.</p>';
+  return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="seg" data-mode="'+b.id+'">'+["paused","test","live"].map(function(x){return '<button type="button" data-m="'+x+'" class="'+x+(m===x?" on":"")+'"'+(x==="live"&&blk?' disabled title="'+esc(blk)+'"':'')+'>'+({paused:"Pause",test:"Test",live:"Live"})[x]+'</button>'}).join("")+'</div>'+
+   (blk&&m!=="live"?'<span class="small muted">Live needs: '+esc(blk)+'</span>':'')+'</div>'}
+function bstat(b){b.mode=b.mode||(b.paused?"paused":b.live?"live":"test");return b.paused?' <span class="pill warn">Paused</span>':!b.connected?' <span class="pill">Not connected</span>':b.live?' <span class="pill live">LIVE</span>':' <span class="pill test">TEST</span>'}
 function leadTable(rows){if(!rows.length)return '<div class="empty">No leads yet.</div>';
   return '<table><tr><th>Time</th><th>Site · source</th><th>Where</th><th>Job</th><th>Name</th><th class="n">Bids</th><th>Result</th><th class="n">Price</th></tr>'+rows.map(function(r){
    return '<tr class="row" data-id="'+esc(r.id)+'"><td>'+when(r.ts)+(r.test?' <span class="pill test">TEST</span>':'')+'</td><td>'+esc(r.site)+'<br><span class="muted small">'+esc(r.source)+(r.publisher?" · "+esc(r.publisher):"")+'</span></td><td>'+esc(r.zip)+' '+esc(r.state)+'<br><span class="muted small">'+esc(r.city)+'</span></td><td>'+esc(r.vertical)+'<br><span class="muted small">'+esc(r.project)+'</span></td><td>'+esc(r.first_name)+' '+esc((r.last_name||"").slice(0,1))+'.</td><td class="n">'+(r.bids||0)+'</td><td>'+(r.sold?'<span class="pill ok">Sold · '+esc(r.buyer)+'</span>':'<span class="pill bad" title="'+esc(r.reason)+'">Not sold</span><br><span class="muted small">'+esc((r.reason||"").slice(0,60))+'</span>')+'</td><td class="n">'+(r.sold?'<b class="pos">'+money(r.revenue)+'</b>':'–')+'</td></tr>'}).join("")+'</table>'}

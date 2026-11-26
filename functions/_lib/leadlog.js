@@ -19,6 +19,12 @@ export function init(db) {
       stage TEXT, status TEXT, price REAL DEFAULT 0, token TEXT, error TEXT, ms INTEGER, won INTEGER DEFAULT 0, req TEXT, res TEXT)`),
     db.prepare("CREATE INDEX IF NOT EXISTS attempts_lead ON attempts (lead_id)"),
     db.prepare("CREATE INDEX IF NOT EXISTS attempts_ts ON attempts (ts)"),
+    db.prepare(`CREATE TABLE IF NOT EXISTS settings (k TEXT PRIMARY KEY, v TEXT)`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS publishers (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT, key TEXT UNIQUE NOT NULL, mode TEXT DEFAULT 'test',
+      share REAL DEFAULT 0.7, fixed REAL DEFAULT 0, verticals TEXT DEFAULT 'roofing', daily_cap INTEGER DEFAULT 0, created INTEGER, note TEXT)`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS pubpings (id TEXT PRIMARY KEY, pub_id TEXT NOT NULL, ts INTEGER NOT NULL, test INTEGER DEFAULT 1, lead TEXT, offers TEXT,
+      top REAL DEFAULT 0, payout REAL DEFAULT 0, status TEXT, reason TEXT, lead_id TEXT, sold INTEGER DEFAULT 0)`),
+    db.prepare("CREATE INDEX IF NOT EXISTS pubpings_pub ON pubpings (pub_id, ts)"),
     db.prepare(`CREATE TABLE IF NOT EXISTS spend (day TEXT NOT NULL, site TEXT NOT NULL, channel TEXT NOT NULL, amount REAL NOT NULL, note TEXT, PRIMARY KEY (day, site, channel))`),
   ]).catch((e) => { ready = null; throw e; });
   return ready;

@@ -4,6 +4,8 @@ Allow: /
 Disallow: /api/
 Disallow: /preview/
 Disallow: /leads-admin/
+Disallow: /publisher-spec/
+Disallow: /publisher-console/
 
 # AI search and answer engines, named explicitly so they are never caught by a blanket block
 User-agent: OAI-SearchBot
@@ -28,6 +30,8 @@ Allow: /
 Disallow: /api/
 Disallow: /preview/
 Disallow: /leads-admin/
+Disallow: /publisher-spec/
+Disallow: /publisher-console/
 
 # Heavy SEO scrapers that add load but send no visitors
 User-agent: AhrefsBot
