@@ -13,7 +13,8 @@ const URLS = { test: "https://uat.sbbnetinc.com/rest/api/roofing/submit-inquiry"
 
 // Our form answers -> SBBnet allowed values (exact strings from the spec).
 const MATERIAL = { "asphalt shingle": "Asphalt Shingles", "asphalt shingles": "Asphalt Shingles", "metal": "Metal", "tile": "Clay Tile", "clay tile": "Clay Tile",
-  "cement tile": "Cement Tile", "slate": "Slate", "wood shake": "Wood Shake", "flat": "Other or Unknown", "not sure": "Other or Unknown" };
+  "cement tile": "Cement Tile", "slate": "Slate", "wood shake": "Wood Shake", "wood shake or composite": "Wood Shake", "flat": "Other or Unknown", "not sure": "Other or Unknown", "other": "Other or Unknown" };
+export const BEST_TIME = (v) => ({ morning: "Morning", afternoon: "Afternoon", evening: "Evening" })[String(v || "").toLowerCase()] || "Anytime";
 const FAMILY = { "Asphalt Shingles": "Asphalt Shingle Roofing", "Metal": "Metal Roofing", "Clay Tile": "Traditional Tile Roofing", "Cement Tile": "Traditional Tile Roofing",
   "Slate": "Natural Slate Roofing", "Wood Shake": "Wood Shake or Composite Roofing" };
 export function roofFields(material, project) {

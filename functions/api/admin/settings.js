@@ -21,7 +21,8 @@ async function state(env) {
   const S = Object.fromEntries(st.map((r) => [r.pub_id, r])), QS = await scores(db);
   const opt = await db.prepare("SELECT COUNT(*) n, MAX(ts) last FROM suppress").first();
   const cons = await db.prepare("SELECT COUNT(*) n, MIN(ts) first FROM consent").first();
-  return { buyers, quality_rule: Q, optouts: opt || {}, consent: cons || {}, encrypted: !!env.DATA_KEY,
+  let access = []; try { access = (await db.prepare("SELECT id, ts, name, company, email, phone, role, verticals, volume, website, message, status FROM access_requests ORDER BY ts DESC LIMIT 50").all()).results; } catch {}
+  return { access, buyers, quality_rule: Q, optouts: opt || {}, consent: cons || {}, encrypted: !!env.DATA_KEY,
     publishers: pubs.map((p) => { const { key, ...rest } = p; return { ...rest, key_hint: key.slice(0, 8) + "…" + key.slice(-4), stats: { ...(S[p.id] || {}), ...(QS[p.id] || {}) } }; }) };
 }
 export async function onRequestGet({ request, env }) {
@@ -62,6 +63,22 @@ export async function onRequestPost({ request, env }) {
     const key = newKey(); await db.prepare("UPDATE publishers SET key=?2 WHERE id=?1").bind(d.id, key).run(); return J({ ok: true, key, ...(await state(env)) });
   } else if (d.action === "pub_key") {
     const p = await db.prepare("SELECT key FROM publishers WHERE id=?1").bind(d.id).first(); return J({ ok: true, key: p && p.key });
+  } else if (d.action === "lead_return") {
+    // Buyer returned a lead: revenue and the publisher's payout go to 0 (originals kept, so it can be undone). Statements and margin update automatically.
+    const l = await db.prepare("SELECT id, sold, revenue, payout, returned, ret_revenue, ret_payout FROM leads WHERE id=?1").bind(String(d.id || "")).first();
+    if (!l || !l.sold) return J({ error: "only sold leads can be returned" }, 400);
+    if (d.undo) {
+      if (!l.returned) return J({ error: "not returned" }, 400);
+      await db.batch([db.prepare("UPDATE leads SET returned=0, return_reason=NULL, returned_ts=NULL, revenue=ret_revenue, payout=ret_payout WHERE id=?1").bind(l.id),
+        db.prepare("UPDATE pubpings SET returned=0, payout=?2 WHERE lead_id=?1").bind(l.id, l.ret_payout)]);
+    } else {
+      if (l.returned) return J({ error: "already returned" }, 400);
+      await db.batch([db.prepare("UPDATE leads SET returned=1, return_reason=?2, returned_ts=?3, ret_revenue=revenue, ret_payout=payout, revenue=0, payout=0 WHERE id=?1").bind(l.id, String(d.reason || "returned by buyer").slice(0, 200), Date.now()),
+        db.prepare("UPDATE pubpings SET returned=1, payout=0 WHERE lead_id=?1").bind(l.id)]);
+    }
+    return J({ ok: true });
+  } else if (d.action === "access_status") {
+    await db.prepare("UPDATE access_requests SET status=?2 WHERE id=?1").bind(d.id, ["new", "contacted", "approved", "declined"].includes(d.status) ? d.status : "new").run();
   } else if (d.action === "optout_add") {
     const ph = await phoneHash(d.phone), eh = await emailHash(d.email); if (!ph && !eh) return J({ error: "enter a 10-digit phone or an email" }, 400);
     const st = []; if (ph) st.push(db.prepare("INSERT OR IGNORE INTO suppress (hash, kind, ts, source) VALUES (?1,'phone',?2,'dashboard')").bind(ph, Date.now()));

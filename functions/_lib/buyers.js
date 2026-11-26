@@ -9,7 +9,7 @@
  *   Alpine      ALPINE_KEY, ALPINE_CAMPAIGN, ALPINE_LIVE=1, ALPINE_ROOFING=1 (also send roofing)
  *   Any buyer   <ID>_MIN_PRICE (e.g. LOANBRIGHT_MIN_PRICE=20). Pause / Test / Live is set on the dashboard (settings table), env flags are the fallback.
  */
-import { roofFields, parseXml } from "./sbb.js";
+import { roofFields, parseXml, BEST_TIME } from "./sbb.js";
 
 const T = 12000;
 async function jfetch(url, opt) {
@@ -25,10 +25,11 @@ const LB_URL = { test: "https://uat.sbbnetinc.com/rest/api/roofing/submit-inquir
 const loanbright = {
   id: "loanbright", name: "LoanBright", verticals: ["roofing"],
   configured: (e) => !!(e.SBB_USER && e.SBB_PASS), live: (e) => e.SBB_LIVE === "1",
-  eligible: (l) => (!l.city || !l.state ? "no city/state" : ""),
+  eligible: (l) => (!l.city || !l.state ? "no city/state" : ""),   // street address is checked at post (form + publisher API require it for roofing)
   base(e, l) {
-    return { API_Action: "pingPostLead", TYPE: "16", Return_Best_Price: 1, SRC: this.live(e) ? (e.SBB_SRC || "Test") : "Test", Pub_ID: e.SBB_PUB_ID || "TLH-RR",
-      IP_Address: l.ip_address || "", Property_City: l.city, Property_State: l.state, Property_Zip: l.zip, Property_Owner: "Yes", Best_Time_To_Call: "Anytime",
+    return { API_Action: "pingPostLead", TYPE: "16", Return_Best_Price: 1, SRC: this.live(e) ? (e.SBB_SRC || "Test") : "Test", Pub_ID: (e.SBB_PUB_ID || "TLH-RR") + (l.pub_id ? "-" + l.pub_id.replace(/^pub_/, "") : ""),   // one Pub_ID per traffic source so LoanBright can price each
+      Sub_ID: String(l.sub_id || l.utm_campaign || "").slice(0, 100),
+      IP_Address: l.ip_address || "", Property_City: l.city, Property_State: l.state, Property_Zip: l.zip, Property_Owner: "Yes", Best_Time_To_Call: BEST_TIME(l.best_time_to_call),
       Landing_Page: String(l.landing_page || "").slice(0, 100), ...roofFields(l.material, l.project) };
   },
   async send(e, body) {

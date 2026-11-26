@@ -1,7 +1,7 @@
 """3-step smart quote form (ad landing page) shared by RingaRoofer and BathVisionary — eLocal/Networx style.
 Writes /get-a-quote/ (promote this in ads), /get-a-quote/thanks/ and /partners/ into the site's public folder, plus
 /assets/quote.css, /assets/quote.js, /assets/zip3.json, and a redirect from the earlier /get-matched/ draft.
-Step 1: photo tiles (one tap)  ·  Step 2: ZIP + homeowner + chips (one card)  ·  Step 3: name, phone, email (+ optional address),
+Step 1: photo tiles (one tap)  ·  Step 2: ZIP + homeowner + chips (one card)  ·  Step 3: name, phone, email, street address,
 answer summary with "change", consent text right above the button (button-click consent, tagged for TrustedForm).
 Leads POST to /api/quote (Cloudflare function) which forwards them to the ping tree."""
 import json, os, re
@@ -27,10 +27,10 @@ OLD_STEP3 = '''<fieldset class="qf-step" data-step="2" hidden><legend class="qf-
  <div class="qf-fields"><label>Full name<input class="qf-in" name="full_name" autocomplete="name" placeholder="First and last name"></label>
  <label>Mobile phone<input class="qf-in" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555"></label>
  <label>Email<input class="qf-in" name="email" type="email" autocomplete="email" placeholder="you@example.com"></label>
- <label>Street address <span class="opt">(optional, helps local pros)</span><input class="qf-in" name="address" autocomplete="street-address" placeholder="123 Main St"></label></div>
+ <label>Street address <span class="opt">(where the work is)</span><input class="qf-in" name="address" autocomplete="street-address" placeholder="123 Main St"></label></div>
  {consent}
  <button type="submit" class="qf-btn block go" data-tf-element-role="submit">{submit}</button>
- <p class="qf-err" data-err hidden>Please add your full name, a valid mobile number and email.</p>
+ <p class="qf-err" data-err hidden>Please add your full name, a valid mobile number, email and street address.</p>
  <p class="qf-secure">{LOCK} Secure · Your details go only to the companies named above.</p></fieldset>
 '''
 

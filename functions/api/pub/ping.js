@@ -15,7 +15,7 @@ export async function onRequestPost({ request, env }) {
   const dp = await dupe(db, ph, "", test); if (dp) return J({ status: "rejected", reason: dp });
   if (!lead.city || !lead.state) { const pl = await zipPlace(lead.zip); if (pl) { lead.city = lead.city || pl.city; lead.state = lead.state || pl.state; } }
   if (!lead.state) return J({ status: "rejected", reason: "unknown zip" });
-  lead.source = "publisher"; lead.source_site = `pub:${pub.name}`;
+  lead.source = "publisher"; lead.source_site = `pub:${pub.name}`; lead.pub_id = pub.id;
   const P = await pingAll(env, lead, test ? { only: "demo", testOnly: true, demo: true } : { liveOnly: true });   // test publishers only ever reach the Demo Buyer
   const top = P.offers.length ? P.offers[0].price : 0, payout = top ? payoutFor(pub, top) : 0;
   const id = "P-" + crypto.randomUUID().replace(/-/g, "").slice(0, 20);

@@ -58,7 +58,7 @@ export async function onRequestGet({ request, env }) {
   const sources = Object.values(src).map((s) => ({ ...s, revenue: r2(s.revenue), cost: r2(s.cost), margin: r2(s.revenue - s.cost), per_lead: s.leads ? r2(s.cost / s.leads) : 0 })).sort((a, b) => b.leads - a.leads);
   const spendTotal = spend.reduce((a, r) => a + (r.amount || 0), 0);
   const rows = await q(`SELECT l.id, l.ts, l.site, l.vertical, l.test, l.source, l.campaign, l.zip, l.city, l.state, l.material, l.project, l.first_name, l.last_name, l.phone, l.email,
-    l.buyer, l.ping_status, l.ping_price, l.post_status, l.post_price, l.sold, l.revenue, l.payout, l.publisher, l.reason,
+    l.buyer, l.ping_status, l.ping_price, l.post_status, l.post_price, l.sold, l.revenue, l.payout, l.publisher, l.reason, l.returned,
     (SELECT COUNT(*) FROM attempts a WHERE a.lead_id=l.id AND a.stage='ping') bids FROM leads l WHERE ${W} ORDER BY l.ts DESC LIMIT 500`);
   const sites = (await db.prepare("SELECT DISTINCT site FROM leads ORDER BY site").all()).results.map((r) => r.site);
   const totals = { ...tot, revenue: r2(tot.revenue), payouts: r2(tot.payouts), spend: r2(spendTotal) };

@@ -18,7 +18,7 @@ export async function auth(env, request, d) {
   if (pub.mode === "paused") return { err: J({ status: "rejected", reason: "publisher paused" }, 200) };
   return { pub };
 }
-const MAT = { asphalt: "Asphalt shingle", asphalt_shingle: "Asphalt shingle", shingle: "Asphalt shingle", metal: "Metal", tile: "Tile", clay_tile: "Tile", cement_tile: "Tile",
+const MAT = { asphalt: "Asphalt shingle", asphalt_shingle: "Asphalt shingle", shingle: "Asphalt shingle", metal: "Metal", tile: "Clay tile", clay_tile: "Clay tile", cement_tile: "Cement tile",
   flat: "Flat", wood_shake: "Wood shake", wood: "Wood shake", shake: "Wood shake", slate: "Slate", other: "Not sure", unknown: "Not sure" };
 const PRJ = { roofing: { replace: "Roof replacement", replacement: "Roof replacement", new: "New roof", repair: "Roof repair" },
               windows: { replace: "Window replacement", replacement: "Window replacement", new: "Window replacement", repair: "Window repair" } };
@@ -36,7 +36,7 @@ export function normPing(d) {
   const material = vertical === "roofing" ? (MAT[S(d.roof_material, 30).toLowerCase()] || "Not sure") : S(d.window_material || "", 30);
   return { lead: { vertical, zip, city: S(d.city, 60), state: S(d.state, 2).toUpperCase(), homeowner: "yes", project, material, windows_count: S(d.windows_count, 3),
     xxTrustedFormCertUrl: tf, universal_leadid: S(d.jornaya_leadid, 100), consent_text: consent, landing_page: lp, ip_address: ip, user_agent: S(d.user_agent, 400),
-    sub_id: S(d.sub_id, 60), submitted_at: S(d.lead_created_at, 40) || new Date().toISOString() } };
+    sub_id: S(d.sub_id, 60), best_time_to_call: S(d.best_time_to_call, 12).toLowerCase(), submitted_at: S(d.lead_created_at, 40) || new Date().toISOString() } };
 }
 export function payoutFor(pub, top) {
   if (pub.fixed > 0) return top >= pub.fixed ? Math.round(pub.fixed * 100) / 100 : 0;

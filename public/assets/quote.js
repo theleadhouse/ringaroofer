@@ -81,6 +81,7 @@
     if (parts.length < 2 || parts[0].length < 1 || parts[parts.length - 1].length < 2) { nm.classList.add("bad"); ok = false; }
     if (!phoneOk(ph.value)) { ph.classList.add("bad"); ok = false; }
     if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em.value.trim())) { em.classList.add("bad"); ok = false; }
+    if (ad && !/\d/.test(ad.value) || (ad && ad.value.trim().length < 5)) { ad.classList.add("bad"); ok = false; }   // buyers need the street address of the job
     if (!ok) { q("[data-err]", steps[2]).hidden = false; return; }
     var qs = new URLSearchParams(location.search), body = {};
     Object.keys(data).forEach(function (k) { body[k] = data[k]; });

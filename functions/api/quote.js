@@ -30,6 +30,7 @@ export async function onRequestPost({ request, env }) {
   if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(S(d.email))) return J({ error: "email" }, 400);
   if (d.consent !== "yes") return J({ error: "consent" }, 400);
   if (!S(d.first_name) || !S(d.last_name)) return J({ error: "missing" }, 400);
+  if (S(d.vertical, 20) === "roofing" && !/\d/.test(S(d.address, 120))) return J({ error: "address" }, 400);   // LoanBright requires Property_Address on post
   const host = new URL(request.url).hostname.replace(/^www\./, "");
   const lead = {
     vertical: S(d.vertical, 20), source_site: host, first_name: S(d.first_name, 60), last_name: S(d.last_name, 60), phone, email: S(d.email).toLowerCase(),

@@ -15,7 +15,8 @@ export async function onRequestPost({ request, env }) {
   const phone = S(d.phone, 20).replace(/\D/g, "").replace(/^1(?=\d{10}$)/, ""), email = S(d.email, 120).toLowerCase();
   const fn = S(d.first_name, 60), ln = S(d.last_name, 60);
   const bad = !fn || !ln ? "first_name and last_name are required" : !/^[2-9]\d{2}[2-9]\d{6}$/.test(phone) ? "phone must be a valid 10-digit US number"
-    : !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email) ? "email is invalid" : "";
+    : !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email) ? "email is invalid"
+    : JSON.parse(pp.lead).vertical === "roofing" && !/\d/.test(S(d.address, 120)) ? "address (street address of the job) is required for roofing" : "";
   if (bad) return J({ status: "rejected", reason: bad });
   const dup = await db.prepare("SELECT id FROM leads WHERE phone=?1 AND ts>?2 AND test=?3 LIMIT 1").bind(phone, Date.now() - 30 * 86400000, pp.test).first();
   const lead = { ...JSON.parse(pp.lead), first_name: fn, last_name: ln, phone, email, address: S(d.address, 120), lead_id: crypto.randomUUID(), publisher: pub.name };

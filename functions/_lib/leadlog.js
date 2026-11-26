@@ -39,7 +39,9 @@ export function init(db) {
   ]).then(async () => {
     // columns added after launch (ignore "duplicate column" on later runs)
     for (const sql of ["ALTER TABLE publishers ADD COLUMN rpm INTEGER DEFAULT 60", "ALTER TABLE publishers ADD COLUMN hourly_cap INTEGER DEFAULT 0",
-      "ALTER TABLE publishers ADD COLUMN paused_reason TEXT", "ALTER TABLE leads ADD COLUMN phone_hash TEXT"]) { try { await db.prepare(sql).run(); } catch {} }
+      "ALTER TABLE publishers ADD COLUMN paused_reason TEXT", "ALTER TABLE leads ADD COLUMN phone_hash TEXT",
+      "ALTER TABLE leads ADD COLUMN returned INTEGER DEFAULT 0", "ALTER TABLE leads ADD COLUMN return_reason TEXT", "ALTER TABLE leads ADD COLUMN returned_ts INTEGER",
+      "ALTER TABLE leads ADD COLUMN ret_revenue REAL DEFAULT 0", "ALTER TABLE leads ADD COLUMN ret_payout REAL DEFAULT 0", "ALTER TABLE pubpings ADD COLUMN returned INTEGER DEFAULT 0"]) { try { await db.prepare(sql).run(); } catch {} }
     try { await db.prepare("CREATE INDEX IF NOT EXISTS leads_phash ON leads (phone_hash, ts)").run(); } catch {}
   }).catch((e) => { ready = null; throw e; });
   return ready;
