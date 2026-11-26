@@ -22,7 +22,8 @@ export async function onRequestGet({ request, env }) {
   const results = [];
   for (const c of cases) {
     if (only && !c.name.toLowerCase().includes(only.toLowerCase())) continue;
-    const lead = { ...base, ...c, lead_id: crypto.randomUUID(), email: `test.${Date.now()}@example.com` };
+    const uid = crypto.randomUUID().replace(/-/g, "");
+    const lead = { ...base, ...c, lead_id: crypto.randomUUID(), email: `test.${uid.slice(0, 10)}@example.com`, xxTrustedFormCertUrl: `https://cert.trustedform.com/${uid}${uid.slice(0, 8)}` };
     const r = await pingPost(tenv, lead);
     results.push({ case: c.name, roof: roofFields(c.material, c.project), sold: r.sold, stage: r.stage, price: r.price, reason: r.reason,
       ping: r.ping && { status: r.ping.status, id: r.ping.id, price: r.ping.price, error: r.ping.error, raw: r.ping.raw },
