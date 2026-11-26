@@ -7,7 +7,8 @@ import { logLead } from "../_lib/leadlog.js";
 const J = (o, s = 200) => new Response(JSON.stringify(o, null, 2), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 export async function onRequestGet({ request, env }) {
   const u = new URL(request.url);
-  if (!env.SBB_TEST_TOKEN || u.searchParams.get("token") !== env.SBB_TEST_TOKEN) return J({ error: "locked" }, 403);
+  const tok = u.searchParams.get("token") || "";
+  if (!tok || (tok !== env.SBB_TEST_TOKEN && tok !== env.ADMIN_PASS)) return J({ error: "locked" }, 403);
   if (env.SBB_LIVE === "1") return J({ error: "live mode: test runner disabled" }, 403);
   const tenv = { ...env, SBB_SRC: "Test" };   // always the Test SRC here
   const base = { homeowner: "yes", first_name: "Test", last_name: "Lead", email: "test.lead@example.com", phone: "2065550147", address: "123 Test St",
