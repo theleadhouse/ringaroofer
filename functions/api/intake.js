@@ -5,15 +5,15 @@
  */
 import { logLead, init, phoneHash, emailHash, suppressed } from "../_lib/leadlog.js";
 import { sendMail } from "../_lib/session.js";
-const SITES = { "housefirecleanup.com": "fire" };
+const SITES = { "housefirecleanup.com": "fire", "bathvisionary.com": "bathroom" };
 const host = (o) => { try { return new URL(o).hostname.replace(/^www\./, ""); } catch { return ""; } };
 const H = (o) => ({ "Content-Type": "application/json", "Cache-Control": "no-store", "Access-Control-Allow-Origin": SITES[host(o)] || /\.pages\.dev$/.test(host(o)) ? o : "https://housefirecleanup.com", "Vary": "Origin" });
 const S = (v, n = 200) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 export const onRequestOptions = ({ request }) => new Response(null, { headers: { ...H(request.headers.get("Origin") || ""), "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "POST" } });
 export async function onRequestPost({ request, env }) {
   const o = request.headers.get("Origin") || "", J = (x, s = 200) => new Response(JSON.stringify(x), { status: s, headers: H(o) });
-  const site = host(o), pagesPreview = /^[a-z0-9-]+\.housefirecleanup\.pages\.dev$|^housefirecleanup\.pages\.dev$/.test(site);
-  const vertical = SITES[site] || (pagesPreview ? "fire" : "");
+  const site = host(o), pm = site.match(/^(?:[a-z0-9-]+\.)?(housefirecleanup|bathvisionary)\.pages\.dev$/), pagesPreview = !!pm;
+  const vertical = SITES[site] || (pm ? SITES[pm[1] + ".com"] : "");
   if (!vertical) return J({ error: "This form isn't connected yet." }, 403);
   if (!env.LEADS_DB) return J({ error: "Please try again shortly." }, 503);
   let d; try { d = await request.json(); } catch { return J({ error: "Invalid request." }, 400); }
@@ -29,7 +29,7 @@ export async function onRequestPost({ request, env }) {
   const ip = request.headers.get("CF-Connecting-IP") || "";
   const recent = await db.prepare("SELECT COUNT(*) n FROM leads WHERE site=?1 AND ts>?2 AND page LIKE ?3").bind(site || "housefirecleanup.com", Date.now() - 3600000, "%").first();
   if (recent && recent.n > 200) return J({ error: "Please try again later." }, 429);
-  const lead = { vertical, source_site: pagesPreview ? "housefirecleanup.com (preview)" : site, lead_id: crypto.randomUUID(),
+  const lead = { vertical, source_site: pagesPreview ? pm[1] + ".com (preview)" : site, lead_id: crypto.randomUUID(),
     first_name: S(d.first_name, 80), last_name: S(d.last_name, 80), phone, email, zip, address: S(d.address, 120),
     project: S(d.service, 100), material: "", homeowner: "yes", consent_text: S(d.consent_text, 3000) + (d.consent_sms === "yes" ? " | SMS: " + S(d.sms_text, 500) : ""),
     xxTrustedFormCertUrl: S(d.xxTrustedFormCertUrl, 300), landing_page: S(d.page_url, 400), ip_address: ip, user_agent: S(request.headers.get("User-Agent"), 300),
