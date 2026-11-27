@@ -1,6 +1,6 @@
 /** POST /api/access (also /v1/access) — "Request access" form on homeproradar.com/exchange/. Saved to D1 (shown on the Lead Desk). */
 import { init } from "../_lib/leadlog.js";
-const ORIGINS = /^https:\/\/(www\.)?homeproradar\.com$|\.pages\.dev$|^https:\/\/ringaroofer\.com$/;
+const ORIGINS = /^https:\/\/(www\.)?homeproradar\.com$|^https:\/\/(www\.)?housefirecleanup\.com$|\.pages\.dev$|^https:\/\/ringaroofer\.com$/;
 const H = (o) => ({ "Content-Type": "application/json", "Cache-Control": "no-store", "Access-Control-Allow-Origin": o && ORIGINS.test(o) ? o : "https://homeproradar.com", "Vary": "Origin" });
 const S = (v, n = 200) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 export const onRequestOptions = ({ request }) => new Response(null, { headers: { ...H(request.headers.get("Origin")), "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "POST" } });
