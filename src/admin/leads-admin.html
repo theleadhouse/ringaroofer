@@ -5,7 +5,7 @@
 <title>Admin · Radar Exchange</title>
 <link rel="icon" href="/app/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="/app/rx.css?v=1">
 <style>
-:root{--navy:#07111F;--navy2:#0C1B2E;--ink:#0B1626;--ink2:#5B6B80;--line:#E1E6DE;--bg:#F4F6F2;--card:#fff;--brand:#FFB547;--brand2:#F29F1C;
+:root{--navy:#121417;--navy2:#1B1E23;--ink:#121417;--ink2:#5E6470;--line:#E2DDD1;--bg:#F5F3EE;--card:#fff;--brand:#2747F5;--brand2:#1B34C9;
 --ok:#0E9F6E;--okbg:#E3F8EF;--bad:#D63B3B;--badbg:#FDECEC;--warn:#B7791F;--warnbg:#FEF4DC;--blue:#2563EB;--bluebg:#E7EEFF;--r:16px}
 *{box-sizing:border-box}html,body{margin:0}body{font:15px/1.45 Geist,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
 a{color:var(--blue)}button,select,input{font:inherit}
@@ -13,17 +13,17 @@ a{color:var(--blue)}button,select,input{font:inherit}
 .grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
 @media(max-width:980px){.g4{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
-.card h2{font-family:Archivo,Geist,sans-serif;font-size:17px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card h2{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:20px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .card h2 small{font-weight:500;color:var(--ink2);font-size:13px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
-.kpi .v{font-family:Archivo,Geist,sans-serif;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1}.kpi .l{color:var(--ink2);font-size:13.5px;margin-top:4px}
-.kpi .s{font-size:13px;color:var(--ink2);margin-top:6px}.kpi.hero{background:radial-gradient(400px 200px at 90% 0,rgba(60,224,181,.18),transparent 60%),var(--navy);color:#fff;border:0}.kpi.hero .v{color:var(--brand)}.kpi.hero .l,.kpi.hero .s{color:#B9C6DB}
+.kpi .v{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1}.kpi .l{color:var(--ink2);font-size:13.5px;margin-top:4px}
+.kpi .s{font-size:13px;color:var(--ink2);margin-top:6px}.kpi.hero{background:var(--navy);color:#fff;border:0}.kpi.hero .v{color:#9DB0FF}.kpi.hero .l,.kpi.hero .s{color:#B9C6DB}
 .pos{color:var(--ok)}.neg{color:var(--bad)}.kpi.hero .pos{color:#4ADE9B}.kpi.hero .neg{color:#FF8A8A}
 .mini{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}@media(max-width:980px){.mini{grid-template-columns:1fr 1fr}}
 .mini div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}.mini b{display:block;font-size:19px}.mini span{font-size:12.5px;color:var(--ink2)}
 .bars{display:flex;align-items:flex-end;gap:6px;height:170px;padding-top:8px}
 .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
-.bar i{display:block;width:100%;max-width:38px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#3CE0B5,#1FB894);min-height:3px}
+.bar i{display:block;width:100%;max-width:38px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#5B74FF,#2747F5);min-height:3px}
 .bar small{font-size:11px;color:var(--ink2);white-space:nowrap}.bar b{font-size:11.5px}
 table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;background:#FAFBFD;position:sticky;top:0}
@@ -33,8 +33,8 @@ tr.row{cursor:pointer}tr.row:hover td{background:#F7F9FD}td.n,th.n{text-align:ri
 .pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.warn{background:var(--warnbg);color:var(--warn)}.pill.blue{background:var(--bluebg);color:var(--blue)}
 .pill.live{background:var(--ok);color:#fff}.pill.test{background:var(--warnbg);color:var(--warn)}
 .muted{color:var(--ink2)}.small{font-size:13px}
-.btn{border:1.5px solid #D3DBE4;background:#fff;border-radius:999px;padding:8px 12px;font-weight:700;cursor:pointer}
-.btn.pri{background:var(--brand);border-color:var(--brand);color:#1A1100}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn{border:1.5px solid #CFC8B8;background:#fff;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}.btn:disabled{opacity:.5;cursor:not-allowed}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.toolbar input,.toolbar select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
 .toolbar input{flex:1;min-width:200px}
 .buyer{border:1px solid var(--line);border-radius:var(--r);background:#fff;padding:18px}
@@ -66,7 +66,7 @@ details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-
 <body>
 <div class="shell">
 <aside class="side">
- <a class="brand" href="/app/admin/"><svg width="28" height="28" viewBox="0 0 32 32" class="mk" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-opacity=".35"/><circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-opacity=".55"/><circle cx="16" cy="16" r="3.2" fill="currentColor"/><path d="M16 16 L28 9" stroke="#FFB547" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>Radar Exchange</b><i>Admin console</i></span></a>
+ <a class="brand" href="/app/admin/"><svg width="28" height="28" viewBox="0 0 32 32" class="mk" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-opacity=".35"/><circle cx="16" cy="16" r="9" fill="none" stroke="currentColor" stroke-opacity=".55"/><circle cx="16" cy="16" r="3.2" fill="currentColor"/><path d="M16 16 L28 9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span><b>Radar Exchange</b><i>Admin console</i></span></a>
  <nav class="nav" id="tabs">
   <span class="sec">Exchange</span>
   <button class="tab on" data-t="overview">Overview</button><button class="tab" data-t="leads">Leads</button><button class="tab" data-t="buyers">Buyers</button><button class="tab" data-t="pubs">Publishers</button>
