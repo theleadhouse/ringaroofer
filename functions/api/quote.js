@@ -18,7 +18,16 @@ const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: 
 const S = (v, n = 120) => String(v == null ? "" : v).trim().slice(0, n);
 const ALLOWED = /^https:\/\/(www\.)?(ringaroofer|bathvisionary)\.com$|\.pages\.dev$/;
 
-export async function onRequestPost({ request, env }) {
+// Cross-site forms (bathvisionary.com hero form posts to api.homeproradar.com/api/quote): answer CORS for allowed origins only.
+const cors = (o) => (o && ALLOWED.test(o) ? { "Access-Control-Allow-Origin": o, "Vary": "Origin" } : {});
+export const onRequestOptions = ({ request }) => new Response(null, { headers: { ...cors(request.headers.get("Origin") || ""), "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Allow-Methods": "POST" } });
+export async function onRequestPost(ctx) {
+  const r = await handle(ctx), c = cors(ctx.request.headers.get("Origin") || "");
+  if (!c["Access-Control-Allow-Origin"]) return r;
+  const h = new Headers(r.headers); for (const [k, v] of Object.entries(c)) h.set(k, v);
+  return new Response(r.body, { status: r.status, headers: h });
+}
+async function handle({ request, env }) {
   const origin = request.headers.get("Origin") || "";
   if (origin && !ALLOWED.test(origin)) return J({ error: "origin" }, 403);
   let d; try { d = await request.json(); } catch { return J({ error: "bad request" }, 400); }
@@ -71,7 +80,7 @@ export async function onRequestPost({ request, env }) {
       body: JSON.stringify({ from: env.LEAD_EMAIL_FROM || `Leads <leads@${host}>`, to: env.LEAD_EMAIL_TO.split(","), subject: `New ${lead.vertical} lead · ${lead.zip} · ${lead.project}`, html: `<table>${rows}</table>` }) })
       .then((r) => r.ok).catch(() => false));
   }
-  if (!jobs.length) { await logLead(env, lead, null, { test: true }); return J({ error: "not configured" }, 503); }
+  if (!jobs.length) { await logLead(env, lead, null, { test: true }); return J({ ok: true, matched: false }); }   // e.g. renters: saved, not sold
   const res = await Promise.allSettled(jobs);
   const anyLive = !!(sale && sale.attempts.some((a) => a.live && a.stage !== "skip"));
   const logged = await logLead(env, lead, sale, { test: sale && sale.sold ? !sale.live : !anyLive });
