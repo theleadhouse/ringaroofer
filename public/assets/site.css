@@ -483,3 +483,11 @@ h3.mt{margin-top:30px}
 .nowwrap{max-width:760px;margin:0 auto}.nowwrap .nowbox{box-shadow:var(--sh)}
 @media(min-width:1000px){.hero-form .hero-in{align-items:start}.hero-form .hero-txt{padding-top:34px}}
 @media(max-width:999px){.hero-form .geo-pill,.hero-form .lead{display:none}.hero-form h1{font-size:2.05rem}.hero-form .hero-alt{margin-top:10px}.hero-form .hero-alt a:first-child{display:none}.hero-form .hero-in{gap:16px;padding-block:20px 28px}}
+.pro-form button{margin-top:16px}.pro-msg{margin-top:12px;padding:12px 14px;border-radius:12px;font-weight:700}.pro-msg.ok{background:#E7F6EC;color:#1E6B3A}.pro-msg.warn{background:#FFF7E8;color:#8A5A00}
+@media print{body.printcard *{visibility:hidden}body.printcard .scard,body.printcard .scard *{visibility:visible}body.printcard .scard{position:absolute;left:0;top:0;width:100%;border-width:2px}.no-print{display:none!important}}
+/* guides tiles (homepage) */
+.gtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.gtile{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:var(--navy);transition:border-color .15s,transform .15s}
+.gtile:hover{border-color:var(--navy);transform:translateY(-2px)}.gtile>span:nth-child(2){flex:1}.gtile b{display:block;font-size:16px}.gtile small{display:block;color:#5b6b80;font-size:13.5px;margin-top:2px}
+.gt-ic{width:40px;height:40px;border-radius:10px;background:#EEF5FB;display:grid;place-items:center;flex:none}
+@media(max-width:860px){.gtiles{grid-template-columns:1fr}}

@@ -14,7 +14,7 @@ from questions import Q as QS, CATS as QCATS
 QBY = {q[0]: q for q in QS}
 
 ROOT = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.normpath(os.path.join(ROOT, "..", "public"))
-V = "20261127e"; UPDATED = "2026-11-20"
+V = "20261127f"; UPDATED = "2026-11-20"
 GSC_META = "xz9ncKiRn5z77EkCuE-lelMPzNC5h_5giCsF33PhNyk"
 for _s in SERVICES: _s["faqs"] = _s["faqs"][:-1] + FQ.EXTRA.get(_s["slug"], []) + _s["faqs"][-1:] if _s["faqs"] and _s["faqs"][-1][0].startswith("Do you do") else _s["faqs"] + FQ.EXTRA.get(_s["slug"], [])
 TOPIC = {"roof-repair": "Roof repair", "roof-leak-repair": "Roof leak", "emergency-roof-repair": "Emergency repair or tarp", "roof-tarping": "Emergency repair or tarp",
@@ -61,8 +61,9 @@ LOGO = ('<svg class="logo-mark" width="42" height="42" viewBox="0 0 40 40" aria-
         '<path d="M12 21v9h16v-9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
         '<path d="M26.5 7.5a6 6 0 0 1 3.5 3.5M28 4.5a9.5 9.5 0 0 1 5.5 5.5" fill="none" stroke="#F26B1D" stroke-width="2" stroke-linecap="round"/></svg>')
 BRANDH = f'{LOGO}<span class="wm"><span>Ringa<em>Roofer</em></span><small>Roofers near you, one call</small></span>'
-NAV = [("Roof Problems", "/roof-problems/", [(n, f"/roof-problems/{k}/") for k, n in RP.CATS] + [("Roof dictionary", "/roof-dictionary/"), ("Roof tools", "/tools/")]), ("Services", "/services/", [(s["name"], f"/services/{s['slug']}/") for s in SERVICES]), ("Roof Types", "/roof-types/", [(t["name"], f"/roof-types/{t['slug']}/") for t in TYPES]),
-       ("Coverage", "/coverage/", None), ("Roof Questions", "/questions/", None)]
+NAV = [("Services", "/services/", [(s["name"], f"/services/{s['slug']}/") for s in SERVICES]), ("Roof Types", "/roof-types/", [(t["name"], f"/roof-types/{t['slug']}/") for t in TYPES]),
+       ("How It Works", "/how-it-works/", None),
+       ("Guides", "/roof-problems/", [(n, f"/roof-problems/{k}/") for k, n in RP.CATS] + [("Roof questions", "/questions/"), ("Roof dictionary", "/roof-dictionary/"), ("Roof tools", "/tools/"), ("Help by state", "/coverage/")])]
 SOLO = ("/services/roof-leak-repair/",)
 
 def header(active):
@@ -354,8 +355,7 @@ def make_home_hero(p):
   </div>
   <div class="hero-side">{hero_form(p)}</div>
  </div>
-</section>
-{marquee()}'''
+</section>'''
 home_hero = None
 HOME_FAQS = [
  ("What is RingaRoofer?", "A roofing referral service. When you call, we connect you with an independent roofing company that serves your area. We don't do roofing work ourselves."),
@@ -363,25 +363,23 @@ HOME_FAQS = [
  ("What roofing work is covered?", "Full service roofing: repairs, leak repairs, inspections, new roofs, re-roofs and emergency service, on asphalt shingle, metal, flat, tile, slate and cedar shake roofs."),
  ("Do you cover my area?", "Our network includes independent roofing companies across the country. Availability can vary by ZIP code and type of work, so call and we'll check for you."),
  ("Are the photos your jobs?", "No. They're real photographs from Pexels and Unsplash. Ask the roofer you speak with about their own work.")] + FQ.HOME
+GUIDES = [("Roof problems explained", f"{len(RP.P)} problems: what to check, what it means, when to call", "/roof-problems/", "help"),
+          ("Roof questions", "Straight answers to common roofing questions", "/questions/", "book"),
+          ("Roof types", "Shingle, metal, flat, tile, slate and shake", "/roof-types/", "home"),
+          ("Roof tools", "Handy checklists for your roof", "/tools/", "check"),
+          ("Roof dictionary", "Roofing words in plain English", "/roof-dictionary/", "book"),
+          ("Help by state", "Local weather and common roof problems", "/coverage/", "map")]
+def guides_grid():
+    return '<div class="gtiles">' + "".join(f'<a class="gtile" href="{u}"><span class="gt-ic">{ic(i,20)}</span><span><b>{t}</b><small>{d}</small></span>{ic("arrow",16)}</a>' for t, d, u, i in GUIDES) + "</div>"
 home_body = (
  sec(trust(), "tight trustsec")
- + sec(f'<div class="nowwrap">{now_box()}</div>', "tight")
- + sec(pcards([RPB[k] for k in DEFQ]) + f'<p class="center"><a class="btn btn-ghost" href="/roof-problems/">All {len(RP.P)} roof problems {ic("arrow",16)}</a></p>', "soft", "What's going on with your roof?", "Start here", "Tap the one that matches for what to check from the ground, what it usually means and when to call.", id_="problems")
- + "__TOOLS__"
- + sec(urgency(), "", "How urgent is it?", "An honest answer", "Most roof problems aren't emergencies. Here's how roofers sort them.", id_="urgency")
- + sec(matcher(), "soft", None, id_="match-sec")
- + sec(svc_cards(), "", "Full service roofing", "Services", "From a few missing shingles to a complete re-roof, one call puts you in touch with a roofer who handles it.", id_="help")
+ + sec(svc_cards(), "", "Full service roofing", "Services", "From a few missing shingles to a complete re-roof, local roofing companies that handle it.", id_="help")
  + sec(steps(), "soft", "How it works", "Simple", id_="how-it-works")
- + sec(type_cards(), "", "Every type of roof", "Roof types", "Asphalt shingle, metal, flat, tile, slate and cedar shake.")
+ + sec(urgency(), "", "How urgent is it?", "An honest answer", "Most roof problems aren't emergencies. Here's how roofers sort them.", id_="urgency")
  + f'<section class="band"><div class="band-bg">{pic("storm", 1800, 800)}</div><div class="wrap band-in"><p class="kick">Storm season</p><h2>Storm last night? Get the roof checked.</h2><p>High wind lifts shingles and hail bruises them, often without anything visible from the ground. Stay off the roof, photograph what you can see, and call. We\'ll connect you with a local roofer.</p><div class="btns">{call_btn("btn btn-call xl", None, "storm-band")}<a class="btn btn-ghost light" href="/services/storm-roof-repair/">Storm roof repair {ic("arrow",16)}</a></div></div></section>'
- + sec(straight_talk(), "", "Straight talk, local roofers", "Why call us")
- + sec(seasons(), "soft", "Roofing through the year", "Seasonal")
- + sec(pro_strip(), "", "Real roofs, real work", "Photos")
- + sec(story_cards(STORIES[:3]) + '<p class="center"><a class="btn btn-ghost" href="/community/">More real roof problems</a></p>', "soft", "Roof problems homeowners call about", "Sound familiar?", "Typical situations and what helps. These are examples, not reviews.")
- + sec(q_cards([QBY[k] for k in ("why-is-my-roof-leaking", "repair-or-replace-roof", "signs-you-need-a-new-roof", "how-to-tell-if-hail-hit-roof", "asphalt-shingles-vs-metal", "how-to-find-a-roofer-near-me")]), "", "Roof questions homeowners ask", "Roof Questions", "Straight answers to the questions homeowners search most.", id_="questions")
- + sec('<div class="states">' + "".join(f'<a href="/coverage/{st_slug(s[1])}/">{s[1]}</a>' for s in STATES) + '</div>', "", "Roofing help in every state", "Coverage", "Availability can vary by ZIP code.", id_="coverage")
- + sec(faq_html(HOME_FAQS), "soft", "Common questions", "FAQ", id_="faq")
- + sec(ttbox("home"), "tight"))   # Thumbtack backup now sits at the very bottom; the lead form + calls lead the page
+ + sec(guides_grid(), "soft", "Want to figure it out first?", "Guides", "Plain-language guides written for homeowners. Reach out any time you'd rather talk to a roofer.", id_="guides")
+ + sec(faq_html(HOME_FAQS), "", "Common questions", "FAQ", id_="faq")
+ + sec(ttbox("home"), "tight"))
 add(url="/", title="Roofers Near You | Roof Repair & New Roofs · Call (888) 261-1486 | RingaRoofer", desc="Need a roofer near you? Call (888) 261-1486 to connect with a local roofing company for roof repair, leaks, storm and hail repair, new roofs and re-roofs.",
     h1="Need a roofer near you?", hero=make_home_hero({}), body=home_body, faqs=HOME_FAQS, cls="home", ogimg=img(P["roofer2"][0], 1200, 630), hero_form=True)
 # Preview of the homepage with the form in lead mode (sends to the buyer; test server until SBB_LIVE=1). Not indexed.
@@ -737,6 +735,7 @@ def main():
             quote_funnel.write(td, funnel_cfg._cfg(V, DISCLAIMER), check)
             os.makedirs(os.path.join(OUT, "partners"), exist_ok=True)
             shutil.copy(os.path.join(td, "partners", "index.html"), os.path.join(OUT, "partners", "index.html"))
+    import landing; lp = landing.write(OUT, globals(), form=(qf()[1], hero_form({}), qf()[2])); print(f"+ {len(lp)} ad landing pages with lead form (/call/)")
     print(f"Built {len(PAGES)} pages")
 
 if __name__ == "__main__":
